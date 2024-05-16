@@ -31,9 +31,3 @@ class Menu(tk.Frame):
 def setup_ui(root):
     app = App(master=root)
     return app
-
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    setup_ui(root)
-    root.mainloop()
