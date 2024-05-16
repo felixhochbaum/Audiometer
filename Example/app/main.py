@@ -1,7 +1,5 @@
-import tkinter as tk
 from .ui import setup_ui
 
 def run_app():
-    root = tk.Tk()
-    app = setup_ui(root)
+    app = setup_ui()
     app.mainloop()

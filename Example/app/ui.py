@@ -4,14 +4,14 @@ from .audio_player import AudioPlayer
 # https://www.youtube.com/watch?v=eaxPK9VIkFM
 
 
-class App(tk.Frame):
-    def __init__(self, master=None, title="Sound Player", size=[400, 200]):
-        super().__init__(master)
-        self.master = master
-        self.master.title(title)
-        self.master.geometry(f"{size[0]}x{size[1]}")
+class App(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Sound Player")
+        #self.geometry(f"{size[0]}x{size[1]}")
+        self.geometry("400x200")
         self.menu = Menu(self)
-        self.pack()
+        self.menu.pack()
 
 class Menu(tk.Frame):
     def __init__(self, master):
@@ -28,6 +28,6 @@ class Menu(tk.Frame):
         self.stop_button.grid(row=0, column=1, padx=10, pady=10)
 
 
-def setup_ui(root):
-    app = App(master=root)
+def setup_ui():
+    app = App()
     return app
