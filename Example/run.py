@@ -6,3 +6,6 @@ from app import run_app
 
 if __name__ == "__main__":
     run_app()
+
+# https://realpython.com/if-name-main-python/
+# https://docs.python.org/3/library/__main__.html
