@@ -8,7 +8,6 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Sound Player")
-        #self.geometry(f"{size[0]}x{size[1]}")
         self.geometry("400x200")
         self.menu = Menu(self)
         self.menu.pack()
