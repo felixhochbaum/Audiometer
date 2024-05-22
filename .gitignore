@@ -1,0 +1,17 @@
+# Cache
+__pycache__/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# IDE and editor settings
+.vscode/
+
+# dotenv
+.env
+.venv
+env/
+venv/
