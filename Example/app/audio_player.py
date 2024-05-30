@@ -43,3 +43,10 @@ class AudioPlayer:
             self.stream.close()
             self.stream = None
             self.is_playing = False
+
+    def play_beep(self, frequency, volume, duration):
+        # anstatt start_beep und stop_beep
+        self.frequency = frequency
+        self.volume = volume
+        self.beep_duration = duration
+        sd.play(self.generate_tone(), self.fs)

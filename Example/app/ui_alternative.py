@@ -1,18 +1,16 @@
 import tkinter as tk
-from .audio_player import AudioPlayer
-
 
 class App(tk.Tk):
-    def __init__(self):
+    def __init__(self, startfunc):
         super().__init__()
         self.title("Sound Player")
         self.geometry("400x200")
         self.frames = {}
-        self.audio_player = AudioPlayer()
+        self.start = startfunc
 
         for F in (Menu, Programm):
             page_name = F.__name__
-            frame = F(parent=self, controller=self, audio_player=self.audio_player)
+            frame = F(parent=self, controller=self, start=self.start)
             self.frames[page_name] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
@@ -24,26 +22,25 @@ class App(tk.Tk):
 
 
 class Menu(tk.Frame):
-    def __init__(self, parent, controller, audio_player):
+    def __init__(self, parent, controller, start):
         super().__init__(parent)
         self.controller = controller
-        self.audio_player = audio_player
+        self.start = start
         self.create_widgets()
 
     def create_widgets(self):
-        self.play_button = tk.Button(self, text="Click me :)", command=self.start)
+        self.play_button = tk.Button(self, text="Click me :)", command=self.start_view)
         self.play_button.grid(row=0, column=0, padx=10, pady=10)
 
-    def start(self):
-        self.audio_player.start_beep()
+    def start_view(self):
+        self.start()
         self.controller.show_frame("Programm")
 
 
 class Programm(tk.Frame):
-    def __init__(self, parent, controller, audio_player):
+    def __init__(self, parent, controller, start):
         super().__init__(parent)
         self.controller = controller
-        self.audio_player = audio_player
         self.create_widgets()
 
     def create_widgets(self):
@@ -56,7 +53,7 @@ class Programm(tk.Frame):
 
 
 
-def setup_ui_alternative():
-    app = App()
+def setup_ui_alternative(startfunc):
+    app = App(startfunc)
     return app
 
