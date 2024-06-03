@@ -4,7 +4,6 @@ from pynput import keyboard
 import time
 
 
-
 class Procedure():
 
     def __init__(self, startlevel, signal_length):
