@@ -13,6 +13,7 @@ class Procedure():
             startlevel (float): starting level of procedure in dBHL
             signal_length (float): length of played signals in seconds
         """
+        self.ap = AudioPlayer()
         self.startlevel = startlevel
         self.level = startlevel
         self.signal_length = signal_length
@@ -49,7 +50,7 @@ class Procedure():
         self.ap.play_beep(self.frequency, self.dbhl_to_volume(self.level), self.signal_length)
         listener = keyboard.Listener(on_press=self.key_press, on_release=None)
         listener.start()
-        time.sleep(5) # time to wait for keypress
+        time.sleep(5) # time to wait for keypress # TODO
         listener.stop()
         if self.tone_heard == False:
             print("Tone not heard :(")
@@ -66,13 +67,12 @@ class Familiarization(Procedure):
             signal_length (int, optional): length of played signals in seconds. Defaults to 1.
         """
 
-        super().__init__(startlevel, signal_length)
-        self.ap = AudioPlayer()
+        super().__init__(startlevel, signal_length)      
         self.fails = 0 # number of times familiarization failed
 
 
 
-    def familiarize(self):
+    def familiarize(self): # TODO Return last level and successfull or unsuccessful
         """main funtion
         """
 
