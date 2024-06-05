@@ -3,6 +3,8 @@ from app import Controller
 # Run this script to start the application
 # make sure you have sounddevice installed 
 # (pip install sounddevice / conda install conda-forge::python-sounddevice)
+# also make sure you pynput installed and allow access to input monitoring in your system settings
+# (pip install pynput)
 
 if __name__ == "__main__":
     c = Controller()
