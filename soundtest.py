@@ -1,19 +1,28 @@
-import numpy as np
 import sounddevice as sd
-import time
+import numpy as np
 
-sps = 44100
+fs = 44100  
+duration = 2 
+frequency = 440.0 
+volume = 0.01  
 
-freq_hz = 440.0
+t = np.linspace(0, duration, int(fs * duration), endpoint=False)
+waveform = volume * np.sin(2 * np.pi * frequency * t)
 
-duration_s = 5.0
+def test_device(device_id):
+    try:
+        sd.default.device = device_id
+        device_info = sd.query_devices(device_id)
+        output_channels = device_info['max_output_channels']
+        print(f"Teste Gerät {device_id}: {device_info['name']} mit {output_channels} Ausgabekanälen")
+        
+        # Abspielen des Sounds
+        sd.play(waveform, samplerate=fs)
+        sd.wait()
+        print(f"Ton erfolgreich auf Gerät {device_id} abgespielt: {device_info['name']}\n\n")
+    except Exception as e:
+        print(f"Fehler beim Testen des Geräts {device_id}: {e}\n\n")
 
-atten = 0.3
-
-each_sample_number = np.arange(duration_s * sps)
-waveform = np.sin(2 * np.pi * each_sample_number * freq_hz / sps)
-waveform_quiet = waveform * atten
-
-sd.play(waveform_quiet, sps)
-time.sleep(duration_s)
-sd.stop()
+# Durchlaufen und Testen aller Geräte
+for device_id in range(len(sd.query_devices())):
+    test_device(device_id)
