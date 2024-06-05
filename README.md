@@ -1,3 +1,3 @@
 # Audiometer
 
-Implementation of a simple software do determine hearing levels.
+Implementation of a simple software to determine hearing levels.
