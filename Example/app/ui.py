@@ -1,4 +1,8 @@
 import tkinter as tk
+import tkinter.ttk as ttk
+
+
+#Achtung, funktioniert noch nicht, bin noch mittendrin
 
 class App(tk.Tk):
     def __init__(self, startfunc):
@@ -8,49 +12,62 @@ class App(tk.Tk):
         self.frames = {}
         self.start = startfunc
 
-        for F in (Menu, Programm):
-            page_name = F.__name__
-            frame = F(parent=self, controller=self, start=self.start)
-            self.frames[page_name] = frame
+        for F in (MenuPage, IntroductionPage, IntroductionDonePage):
+            frame = F(self, self.start)
+            self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
-        self.show_frame("Menu")
+        self.show_frame(MenuPage)
 
     def show_frame(self, page_name):
         frame = self.frames[page_name]
         frame.tkraise()
 
 
-class Menu(tk.Frame):
-    def __init__(self, parent, controller, start):
+class MenuPage(ttk.Frame):
+    def __init__(self, parent, start):
         super().__init__(parent)
-        self.controller = controller
-        self.start = start
+        self.parent = parent
         self.create_widgets()
 
     def create_widgets(self):
-        self.play_button = tk.Button(self, text="Click me :)", command=self.start_view)
+        self.play_button = tk.Button(self, text="Click me :)", command=self.show_intro)
         self.play_button.grid(row=0, column=0, padx=10, pady=10)
 
-    def start_view(self):
-        self.start()
-        self.controller.show_frame("Programm")
+    def show_intro(self):
+        self.parent.show_frame(IntroductionPage)
 
 
-class Programm(tk.Frame):
-    def __init__(self, parent, controller, start):
+
+class IntroductionPage(ttk.Frame):
+    def __init__(self, parent, start):
         super().__init__(parent)
-        self.controller = controller
+        self.start = start
+        self.parent = parent
         self.create_widgets()
 
     def create_widgets(self):
-        self.stop_button = tk.Button(self, text="Make it stop!", command=self.stop)
-        self.stop_button.grid(row=0, column=0, padx=10, pady=10)
+        self.info = ttk.Label(self, text="Eingewöhnung läuft...")
+        self.info.grid(row=0, column=0, padx=10, pady=10)
+        self.start(self.proceed)
 
-    def stop(self):
-        self.audio_player.stop_beep()
-        self.controller.show_frame("Menu")
+    def proceed(self):
+        self.parent.show_frame(IntroductionDonePage)
 
+
+class IntroductionDonePage(ttk.Frame):
+    def __init__(self, parent, start):
+        super().__init__(parent)
+        self.start = start
+        self.parent = parent
+        self.create_widgets()
+
+    def create_widgets(self):
+        self.play_button = ttk.Button(self, text="Restart Introduction", command=self.show_menu)
+        self.play_button.grid(row=0, column=0, padx=10, pady=10)
+
+    def show_menu(self):
+        self.parent.show_frame(MenuPage)
 
 
 def setup_ui(startfunc):

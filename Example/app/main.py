@@ -1,4 +1,4 @@
-from .ui import setup_ui
+from .ui_old import setup_ui
 from .model import *
 
 class Controller():
