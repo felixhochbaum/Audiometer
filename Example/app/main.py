@@ -1,5 +1,6 @@
-from .ui_old import setup_ui
-from .model import *
+from .ui import setup_ui
+#from .model import *
+from .dummy_model import *
 
 class Controller():
     def __init__(self):
