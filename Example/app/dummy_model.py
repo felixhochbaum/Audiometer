@@ -20,6 +20,7 @@ class Familiarization():
         return self.level
 
 class StandardProcedure():
+    
     def __init__(self):
         """Dummy StandardProcedure class
         """
