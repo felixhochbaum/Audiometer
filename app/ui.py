@@ -193,7 +193,7 @@ class DuringProcedureView(ttk.Frame):
 
 
 class ResultPage(ttk.Frame):
-    # TODO find usefull method to store results earlier on
+    # TODO find method to store results earlier on
 
     def __init__(self, parent):
         """Page for showing the results of the program
