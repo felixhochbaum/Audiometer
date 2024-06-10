@@ -40,13 +40,13 @@ def create_audiogram(freqs, right_values, left_values):
     plt.yticks(np.arange(0, 121, 10))
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)  # Raster für bessere Lesbarkeit
     plt.legend(loc='upper right')
-   
+    
     plt.show()
 
 # Beispielwerte
-freq = [63, 125, 250, 500, 1000, 2000, 4000, 8000]
-dummy_right = [10, 15, 20, 25, 30, 35, 40, 45]
-dummy_left = [5, 10, 15, 20, 25, 30, 35, 40]
-# Audiogramm erstellen
-create_audiogram(freq, dummy_right, dummy_left)
+# freq = [63, 125, 250, 500, 1000, 2000, 4000, 8000]
+# dummy_right = [10, 15, 20, 25, 30, 35, 40, 45]
+# dummy_left = [5, 10, 15, 20, 25, 30, 35, 40]
+# # Audiogramm erstellen
+# create_audiogram(freq, dummy_right, dummy_left)
 

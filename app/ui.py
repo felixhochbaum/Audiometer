@@ -17,6 +17,7 @@ class App(tk.Tk):
         # General settings
         self.title("Sound Player")
         self.geometry("800x800")
+
         # TODO add more settings
 
         # Store results ->  TODO: needs to be changed
@@ -104,6 +105,7 @@ class FamiliarizationPage(ttk.Frame):
         """
         self.parent.show_frame(DuringFamiliarizationView)
         self.parent.wait_for_process(self.parent.frames[DuringFamiliarizationView].program, self.end_familiarization)
+
 
     def end_familiarization(self):
         """Ends the familiarization process and shows the next page

@@ -1,6 +1,7 @@
 from .ui import setup_ui
 #from .model import *
 from .dummy_model import *
+from .audiogramm import create_audiogram
 
 class Controller():
 
