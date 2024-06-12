@@ -16,8 +16,6 @@ class App(tk.Tk):
         # General settings
         self.title("Sound Player")
         self.geometry("800x800")
-        #self.icon = tk.PhotoImage(file='?') # nice to have maybe? --> this code changes the icon of the GUI
-        #self.iconphoto(False, self.icon)
 
         # Store results -> TODO: needs to be changed
         self.results = "Hier sollten später Ergebnisse angezeigt werden"
@@ -104,39 +102,34 @@ class MainMenu(ttk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-
-        button_width = 25  
-
         self.label = ttk.Label(self, text="Startseite", font=('Arial', 16))
-        self.label.pack(pady=10)
+        self.label.grid(row=0, column=0, pady=10)
 
-        self.classic_button = ttk.Button(self, text="Klassisches Audiogramm", command=self.start, width=button_width)
-        self.classic_button.pack(pady=10)
+        self.classic_button = ttk.Button(self, text="Klassisches Audiogramm", command=self.start)
+        self.classic_button.grid(row=2, column=0, pady=10)
 
-        self.button2 = ttk.Button(self, text="Hörschwellentest", width=button_width)
-        self.button2.pack(pady=10)
+        self.button2 = ttk.Button(self, text="Hörschwellentest")
+        self.button2.grid(row=3, column=0, pady=10)
 
-        self.button3 = ttk.Button(self, text="Bileterale Testung", width=button_width)
-        self.button3.pack(pady=10)
+        self.button3 = ttk.Button(self, text="Bileterale Testung")
+        self.button3.grid(row=4, column=0, pady=10)
 
-        self.button4 = ttk.Button(self, text="Custom", width=button_width)
-        self.button4.pack(pady=10)
+        self.button4 = ttk.Button(self, text="Custom")
+        self.button4.grid(row=5, column=0, pady=10)
 
-        self.button5 = ttk.Button(self, text="Exit", command=self.on_click_exit, width=button_width)
-        self.button5.pack(pady=10)
+        self.button5 = ttk.Button(self, text="Exit", command=self.on_click_exit)
+        self.button5.grid(row=6, column=0, pady=10)
 
-        # Center the buttons in the middle of the GUI --> not working as it should be why? #TODO
-        for widget in self.winfo_children():
-            widget.pack_configure(anchor='center')
-
+        # Center the frame's content
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(7, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
     def on_click_exit(self):
         self.parent.on_closing()
 
     def start(self):
         self.parent.show_frame(FamiliarizationPage)
-
-    
 
 class FamiliarizationPage(ttk.Frame):
     def __init__(self, parent):
