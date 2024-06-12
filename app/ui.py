@@ -105,9 +105,6 @@ class MainMenu(ttk.Frame):
         self.label = ttk.Label(self, text="Startseite", font=('Arial', 16))
         self.label.grid(row=0, column=0, pady=10)
 
-        self.start_button = ttk.Button(self, text="Start", command=self.start)
-        self.start_button.grid(row=1, column=0, pady=10)
-
         self.classic_button = ttk.Button(self, text="Klassisches Audiogramm", command=self.start)
         self.classic_button.grid(row=2, column=0, pady=10)
 
@@ -252,6 +249,11 @@ class ResultPage(ttk.Frame):
         """
         self.info = ttk.Label(self, text=self.parent.results)
         self.info.grid(row=0, column=0, padx=10, pady=10)
+        self.BackToMainMenu = ttk.Button(self, text="Zurück zur Startseite", command=self.Back_To_MainMenu)
+        self.BackToMainMenu.grid(row=10, column=0, padx=10, pady=10)
+    
+    def Back_To_MainMenu(self):
+        self.parent.show_frame(MainMenu)
 
 def setup_ui(startfunc, *programfuncs):
     app = App(startfunc, *programfuncs)
