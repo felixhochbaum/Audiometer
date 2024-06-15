@@ -5,6 +5,7 @@ from tkinter import messagebox
 from .audiogramm import create_audiogram #TODO
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from app.instructions import text_Familiarization
 
 class App(tk.Tk):
     def __init__(self, familiarization_func, *program_funcs):
@@ -167,7 +168,8 @@ class FamiliarizationPage(ttk.Frame):
         """Creates the widgets for the page
         """
         button_width = 25 
-        self.label = ttk.Label(self, text="\nhier die Eingewöhnung erklären\n", font=('Arial', 16))
+       
+        self.label = ttk.Label(self, text=text_Familiarization, font=('Arial', 16))
         self.label.pack(padx=10, pady=10)
         self.play_button = ttk.Button(self, text="Starte Eingewöhnung", command=self.start_familiarization, width=button_width)
         self.play_button.pack(padx=10, pady=10)
