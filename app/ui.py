@@ -19,7 +19,7 @@ class App(tk.Tk):
 
         # General settings
         self.title("Sound Player")
-        self.geometry("800x800")
+        self.geometry("1000x800")
         #self.iconbitmap("path..")
 
         
