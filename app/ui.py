@@ -3,6 +3,8 @@ import tkinter.ttk as ttk
 import threading
 from tkinter import messagebox
 from .audiogramm import create_audiogram #TODO
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class App(tk.Tk):
     def __init__(self, familiarization_func, *program_funcs):
@@ -17,6 +19,7 @@ class App(tk.Tk):
         # General settings
         self.title("Sound Player")
         self.geometry("800x800")
+        #self.iconbitmap("path..")
 
         
         # Store results -> TODO: needs to be changed
@@ -278,10 +281,33 @@ class ResultPage(ttk.Frame):
     def create_widgets(self):
         """Creates the widgets for the view
         """
-        self.info = ttk.Label(self, text=self.parent.results)
+        #self.info = ttk.Label(self, text=self.parent.results)
+        #self.info.grid(row=0, column=0, padx=10, pady=10)
+
+        self.info = ttk.Label(self, text="Ergebnisse", font=('Arial',18))
         self.info.grid(row=0, column=0, padx=10, pady=10)
+
         self.BackToMainMenu = ttk.Button(self, text="Zurück zur Startseite", command=self.Back_To_MainMenu)
-        self.BackToMainMenu.grid(row=10, column=0, padx=10, pady=10)
+        self.BackToMainMenu.grid(row=11, column=0, padx=10, pady=10)
+
+        self.SaveResults = ttk.Button(self, text="Ergebnisse speichern", command=self.show_warning)
+        self.SaveResults.grid(row=10, column=0, padx=10, pady=10)
+
+        # dummy values
+        freq = [63, 125, 250, 500, 1000, 2000, 4000, 8000]
+        dummy_right = [10, 15, 20, 25, 30, 35, 40, 45]
+        dummy_left = [5, 10, 15, 20, 25, 30, 35, 40]
+
+        # audiogram plot
+        fig = create_audiogram(freq, dummy_right, dummy_left)
+        
+        # Embed the plot in the Tkinter frame
+        canvas = FigureCanvasTkAgg(fig, master=self)
+        canvas.draw()
+        canvas.get_tk_widget().grid(row=1, column=0, padx=10, pady=10)
+   
+    def show_warning(self):
+            messagebox.showwarning("Warnung", "Funktioniert noch nicht :)")
     
     def Back_To_MainMenu(self):
         self.parent.show_frame(MainMenu)
