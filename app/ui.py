@@ -2,6 +2,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import threading
 from tkinter import messagebox
+from .audiogramm import create_audiogram #TODO
 
 class App(tk.Tk):
     def __init__(self, familiarization_func, *program_funcs):
@@ -17,6 +18,7 @@ class App(tk.Tk):
         self.title("Sound Player")
         self.geometry("800x800")
 
+        
         # Store results -> TODO: needs to be changed
         self.results = "Hier sollten später Ergebnisse angezeigt werden"
         
@@ -100,36 +102,52 @@ class MainMenu(ttk.Frame):
         super().__init__(parent)
         self.parent = parent
         self.create_widgets()
-
+        
+  
     def create_widgets(self):
-        self.label = ttk.Label(self, text="Startseite", font=('Arial', 16))
-        self.label.grid(row=0, column=0, pady=10)
+        button_width = 25  # Set a fixed width for all buttons
 
-        self.classic_button = ttk.Button(self, text="Klassisches Audiogramm", command=self.start)
-        self.classic_button.grid(row=2, column=0, pady=10)
+        self.label = ttk.Label(self, text="\nhier sollte kurz das Programm vlt erklärt werden\nText\nbitte wählen Sie iwas", font=('Arial', 16))
+        self.label.pack(pady=10)
 
-        self.button2 = ttk.Button(self, text="Hörschwellentest")
-        self.button2.grid(row=3, column=0, pady=10)
+    
 
-        self.button3 = ttk.Button(self, text="Bileterale Testung")
-        self.button3.grid(row=4, column=0, pady=10)
+        # Dropdown menu
+        options = ["Klassisches Audiogramm", "Hörschwellentest", "Bileterale Testung", "Custom"]
+        self.dropdown = ttk.Combobox(self, values=options, state="readonly", width=button_width - 2)
+        self.dropdown.set("iwas wählen...")
+        self.dropdown.pack(pady=10)
 
-        self.button4 = ttk.Button(self, text="Custom")
-        self.button4.grid(row=5, column=0, pady=10)
+        self.option_button = ttk.Button(self, text="Test starten", command=self.start_option, width=button_width)
+        self.option_button.pack(pady=10)
 
-        self.button5 = ttk.Button(self, text="Exit", command=self.on_click_exit)
-        self.button5.grid(row=6, column=0, pady=10)
+        self.button5 = ttk.Button(self, text="Exit", command=self.on_click_exit, width=button_width)
+        self.button5.pack(pady=10)
 
-        # Center the frame's content
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(7, weight=1)
-        self.grid_columnconfigure(0, weight=1)
+        # Center the buttons in the middle of the GUI
+        for widget in self.winfo_children():
+            widget.pack_configure(anchor='center')
 
     def on_click_exit(self):
         self.parent.on_closing()
 
     def start(self):
         self.parent.show_frame(FamiliarizationPage)
+
+    def start_option(self):
+        selected_option = self.dropdown.get()
+        if selected_option == "iwas wählen..." or not selected_option:
+            messagebox.showwarning("Hinweis", "bitte iwas wählen...")
+            return
+        if selected_option == "Klassisches Audiogramm":
+            self.parent.show_frame(FamiliarizationPage)
+        elif selected_option == "Hörschwellentest":
+            self.parent.show_frame()
+        elif selected_option == "Bileterale Testung":
+            self.parent.show_frame()
+        elif selected_option == "Custom":
+            self.parent.show_frame()
+
 
 class FamiliarizationPage(ttk.Frame):
     def __init__(self, parent):
@@ -145,12 +163,17 @@ class FamiliarizationPage(ttk.Frame):
     def create_widgets(self):
         """Creates the widgets for the page
         """
-        self.play_button = ttk.Button(self, text="Starte Eingewöhnung", command=self.start_familiarization)
-        self.play_button.grid(row=0, column=0, padx=10, pady=10)
+        button_width = 25 
+        self.label = ttk.Label(self, text="\nhier die Eingewöhnung erklären\n", font=('Arial', 16))
+        self.label.pack(padx=10, pady=10)
+        self.play_button = ttk.Button(self, text="Starte Eingewöhnung", command=self.start_familiarization, width=button_width)
+        self.play_button.pack(padx=10, pady=10)
 
-        self.GoBack_button = ttk.Button(self, text="zurück", command=self.GoBack)
-        self.GoBack_button.grid(row=2, column=5, padx=10, pady=10)
-    
+        self.GoBack_button = ttk.Button(self, text="zurück", command=self.GoBack, width=button_width)
+        self.GoBack_button.pack(padx=10, pady=10)
+
+        for widget in self.winfo_children():
+            widget.pack_configure(anchor='center')
 
     def start_familiarization(self):
         """Starts the familiarization process
@@ -240,6 +263,14 @@ class ResultPage(ttk.Frame):
 
         Args:
             parent (App): parent application"""
+        
+        # Beispielwerte
+        #freq = [63, 125, 250, 500, 1000, 2000, 4000, 8000]
+        #dummy_right = [10, 15, 20, 25, 30, 35, 40, 45]
+        #dummy_left = [5, 10, 15, 20, 25, 30, 35, 40]
+        # Audiogramm erstellen
+        #create_audiogram(freq, dummy_right, dummy_left)
+
         super().__init__(parent)
         self.parent = parent
         self.create_widgets()
