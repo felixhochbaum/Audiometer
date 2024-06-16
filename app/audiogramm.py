@@ -11,7 +11,7 @@ def create_audiogram(freqs, right_values, left_values):
         left_values (list of int): Eine Liste von Hörschwellen in dB HL vom linken Ohr
             
     """
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(5, 4))
     
     # Bereichsfarben hinzufügen
     ax.axhspan(-10, 20, facecolor='lightgreen', alpha=0.3)
