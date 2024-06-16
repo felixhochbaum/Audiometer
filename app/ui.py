@@ -5,8 +5,9 @@ from tkinter import messagebox
 from .audiogramm import create_audiogram #TODO
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from app.instructions import text_Familiarization
+import ttkbootstrap as tb
 
-class App(tk.Tk):
+class App(tb.Window):  # Inherit from ttkbootstrap.Window
     def __init__(self, familiarization_func, *program_funcs):
         """Main application window. Contains all pages and controls the flow of the program.
 
@@ -14,7 +15,8 @@ class App(tk.Tk):
             familiarization_func (function): function to be called for familiarization
             *program_funcs (function): function(s) to be called for the main program
         """
-        super().__init__()
+        #super().__init__()
+        super().__init__(themename="superhero")  # Set/change the theme Link: https://ttkbootstrap.readthedocs.io/en/latest/themes/dark/
 
         # General settings
         self.title("Sound Player")
@@ -59,7 +61,7 @@ class App(tk.Tk):
         file_menu.add_command(label="Startseite", command=lambda: self.show_frame(MainMenu))
         file_menu.add_command(label="Button1")  # , command=)
         file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=self.on_closing)  # this button closes the app after asking
+        file_menu.add_command(label="Exit", command=self.on_closing) 
         menubar.add_cascade(label="File", menu=file_menu)
         
         
@@ -117,7 +119,7 @@ class MainMenu(ttk.Frame):
 
         # Dropdown menu
         options = ["Klassisches Audiogramm", "Hörschwellentest", "Bileterale Testung", "Custom"]
-        self.dropdown = ttk.Combobox(self, values=options, state="readonly", width=button_width - 2)
+        self.dropdown = ttk.Combobox(self, values=options, state="readonly", width=button_width -1)
         self.dropdown.set("Test wählen...")
         self.dropdown.pack(pady=10)
 
