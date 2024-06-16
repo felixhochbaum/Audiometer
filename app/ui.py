@@ -3,7 +3,6 @@ import tkinter.ttk as ttk
 import threading
 from tkinter import messagebox
 from .audiogramm import create_audiogram #TODO
-import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from app.instructions import text_Familiarization
 
@@ -62,7 +61,7 @@ class App(tk.Tk):
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.on_closing)  # this button closes the app after asking
         menubar.add_cascade(label="File", menu=file_menu)
-        file_menu.add_command(label="Super Exit", command=self.destroy)  # this closes the app without asking. Just for the prototype
+        
         
         edit_menu = tk.Menu(menubar, tearoff=0)
         edit_menu.add_command(label="Button1")  # , command=)
@@ -111,7 +110,7 @@ class MainMenu(ttk.Frame):
     def create_widgets(self):
         button_width = 25  # Set a fixed width for all buttons
 
-        self.label = ttk.Label(self, text="\nhier sollte kurz das Programm vlt erklärt werden\nText\nbitte wählen Sie iwas", font=('Arial', 16))
+        self.label = ttk.Label(self, text="\nbitte wählen Sie iwas", font=('Arial', 16))
         self.label.pack(pady=10)
 
     
@@ -119,7 +118,7 @@ class MainMenu(ttk.Frame):
         # Dropdown menu
         options = ["Klassisches Audiogramm", "Hörschwellentest", "Bileterale Testung", "Custom"]
         self.dropdown = ttk.Combobox(self, values=options, state="readonly", width=button_width - 2)
-        self.dropdown.set("iwas wählen...")
+        self.dropdown.set("Test wählen...")
         self.dropdown.pack(pady=10)
 
         self.option_button = ttk.Button(self, text="Test starten", command=self.start_option, width=button_width)
@@ -140,7 +139,7 @@ class MainMenu(ttk.Frame):
 
     def start_option(self):
         selected_option = self.dropdown.get()
-        if selected_option == "iwas wählen..." or not selected_option:
+        if selected_option == "Test wählen..." or not selected_option:
             messagebox.showwarning("Hinweis", "bitte iwas wählen...")
             return
         if selected_option == "Klassisches Audiogramm":
