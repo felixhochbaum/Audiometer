@@ -2,36 +2,36 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import threading
 from tkinter import messagebox
-from .audiogramm import create_audiogram #TODO
+from .audiogram import create_audiogram #TODO
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from app.instructions import text_Familiarization
 import ttkbootstrap as tb
 
-class App(tb.Window):  # Inherit from ttkbootstrap.Window
-    def __init__(self, familiarization_func, *program_funcs):
+class App(tb.Window):
+    def __init__(self, familiarization_func, program_funcs:dict):
         """Main application window. Contains all pages and controls the flow of the program.
 
         Args:
             familiarization_func (function): function to be called for familiarization
             *program_funcs (function): function(s) to be called for the main program
         """
-        #super().__init__()
         super().__init__(themename="superhero")  # Set/change the theme Link: https://ttkbootstrap.readthedocs.io/en/latest/themes/dark/
+
+        self.program_funcs = program_funcs
 
         # General settings
         self.title("Sound Player")
         self.geometry("1000x800")
-        #self.iconbitmap("path..")
+        # self.iconbitmap("path..")
 
-        
         # Store results -> TODO: needs to be changed
         self.results = "Hier sollten später Ergebnisse angezeigt werden"
-        
+
         # Dictionary to store all pages
         self.frames = {}
 
         # Pages, where the user can interact
-        for F in (MainMenu, FamiliarizationPage, StandardProgramPage, ResultPage):
+        for F in (MainMenu, FamiliarizationPage, ProgramPage, ResultPage):
             frame = F(self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -41,9 +41,11 @@ class App(tb.Window):  # Inherit from ttkbootstrap.Window
         self.frames[DuringFamiliarizationView] = frame
         frame.grid(row=0, column=0, sticky="nsew")
 
-        # Views during program(s)
-        for i, program_func in enumerate(program_funcs):
-            frame = DuringProcedureView(self, program_func, text="Programm {} läuft...".format(i+1)) #TODO change this to useful information, this is just for testing purposes
+        # View during programs
+        for program_func in program_funcs.values():
+            frame = DuringProcedureView(self, 
+                                        program_func,
+                                        text="Programm läuft...")
             self.frames[DuringProcedureView] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
@@ -53,6 +55,9 @@ class App(tb.Window):  # Inherit from ttkbootstrap.Window
         # Create menubar
         self.create_menubar()
 
+        # Override the close button protocol (instead of extra button)
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
     def create_menubar(self):
         menubar = tk.Menu(self)
         self.config(menu=menubar)
@@ -61,10 +66,9 @@ class App(tb.Window):  # Inherit from ttkbootstrap.Window
         file_menu.add_command(label="Startseite", command=lambda: self.show_frame(MainMenu))
         file_menu.add_command(label="Button1")  # , command=)
         file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=self.on_closing) 
+        file_menu.add_command(label="Exit", command=self.on_closing)
         menubar.add_cascade(label="File", menu=file_menu)
-        
-        
+
         edit_menu = tk.Menu(menubar, tearoff=0)
         edit_menu.add_command(label="Button1")  # , command=)
         edit_menu.add_command(label="Button2")  # , command=)
@@ -90,7 +94,7 @@ class App(tb.Window):  # Inherit from ttkbootstrap.Window
 
     def run_process(self, process, callback):
         """Runs a process and calls a callback function when the process is done
-        
+
         Args:
             process (function): function to be called
             callback (function): function to be called when process is done
@@ -102,56 +106,44 @@ class App(tb.Window):  # Inherit from ttkbootstrap.Window
         if messagebox.askyesno(title="Quit", message="Möchten Sie wirklich das Programm beenden?"):
             self.destroy()
 
+
 class MainMenu(ttk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
+        self.button_width = 25
+        self.start_button = None
         self.create_widgets()
-        
-  
-    def create_widgets(self):
-        button_width = 25  # Set a fixed width for all buttons
 
-        self.label = ttk.Label(self, text="\nbitte wählen Sie iwas", font=('Arial', 16))
+    def create_widgets(self):
+        self.label = ttk.Label(self, text="\nBitte wählen Sie ein Programm", font=('Arial', 16))
         self.label.pack(pady=10)
 
-    
-
         # Dropdown menu
-        options = ["Klassisches Audiogramm", "Hörschwellentest", "Bileterale Testung", "Custom"]
-        self.dropdown = ttk.Combobox(self, values=options, state="readonly", width=button_width -1)
+        options = list(self.parent.program_funcs.keys())
+        self.dropdown = ttk.Combobox(self, values=options, state="readonly", width=self.button_width-1)
         self.dropdown.set("Test wählen...")
         self.dropdown.pack(pady=10)
+        self.dropdown.bind("<<ComboboxSelected>>", self.on_option_selected)
 
-        self.option_button = ttk.Button(self, text="Test starten", command=self.start_option, width=button_width)
-        self.option_button.pack(pady=10)
+        # Moved that to normal closing button
+        # self.exit_button = ttk.Button(self, text="Exit", command=self.parent.on_closing,
+        #                               width=self.button_width)
+        # self.exit_button.pack(pady=10)
 
-        self.button5 = ttk.Button(self, text="Exit", command=self.on_click_exit, width=button_width)
-        self.button5.pack(pady=10)
-
-        # Center the buttons in the middle of the GUI
         for widget in self.winfo_children():
             widget.pack_configure(anchor='center')
+    
+    def on_option_selected(self, event):
+        self.show_start_button()
 
-    def on_click_exit(self):
-        self.parent.on_closing()
-
-    def start(self):
-        self.parent.show_frame(FamiliarizationPage)
-
-    def start_option(self):
-        selected_option = self.dropdown.get()
-        if selected_option == "Test wählen..." or not selected_option:
-            messagebox.showwarning("Hinweis", "bitte iwas wählen...")
-            return
-        if selected_option == "Klassisches Audiogramm":
-            self.parent.show_frame(FamiliarizationPage)
-        elif selected_option == "Hörschwellentest":
-            self.parent.show_frame()
-        elif selected_option == "Bileterale Testung":
-            self.parent.show_frame()
-        elif selected_option == "Custom":
-            self.parent.show_frame()
+    def show_start_button(self):
+        if self.start_button is None:
+            self.start_button = ttk.Button(self, 
+                                           text="Test starten", 
+                                           command=lambda: self.parent.show_frame(FamiliarizationPage), 
+                                           width=self.button_width)
+            self.start_button.pack(pady=10)
 
 
 class FamiliarizationPage(ttk.Frame):
@@ -172,30 +164,28 @@ class FamiliarizationPage(ttk.Frame):
        
         self.label = ttk.Label(self, text=text_Familiarization, font=('Arial', 16))
         self.label.pack(padx=10, pady=10)
-        self.play_button = ttk.Button(self, text="Starte Eingewöhnung", command=self.start_familiarization, width=button_width)
+        self.play_button = ttk.Button(self, 
+                                      text="Starte Eingewöhnung", 
+                                      command=self.run_familiarization, 
+                                      width=button_width)
         self.play_button.pack(padx=10, pady=10)
-
-        self.GoBack_button = ttk.Button(self, text="zurück", command=self.go_back, width=button_width)
-        self.GoBack_button.pack(padx=10, pady=10)
+        self.go_back_button = ttk.Button(self, 
+                                         text="zurück", 
+                                         command=lambda: self.parent.show_frame(MainMenu), 
+                                         width=button_width)
+        self.go_back_button.pack(padx=10, pady=10)
 
         for widget in self.winfo_children():
             widget.pack_configure(anchor='center')
 
-    def start_familiarization(self):
-        """Starts the familiarization process
+    def run_familiarization(self):
+        """Runs the familiarization process
         """
         self.parent.show_frame(DuringFamiliarizationView)
-        self.parent.wait_for_process(self.parent.frames[DuringFamiliarizationView].program, self.end_familiarization)
+        self.parent.wait_for_process(self.parent.frames[DuringFamiliarizationView].program, 
+                                     lambda: self.parent.show_frame(ProgramPage))
 
-    def end_familiarization(self):
-        """Ends the familiarization process and shows the next page
-        """
-        self.parent.show_frame(StandardProgramPage)
-
-    def go_back(self):
-        self.parent.show_frame(MainMenu)
-
-class StandardProgramPage(ttk.Frame):
+class ProgramPage(ttk.Frame):
     def __init__(self, parent):
         """Page for starting the main program
 
@@ -209,19 +199,15 @@ class StandardProgramPage(ttk.Frame):
     def create_widgets(self):
         """Creates the widgets for the page
         """
-        self.start_button = ttk.Button(self, text="Starte Prozess", command=self.start_program)
+        self.start_button = ttk.Button(self, text="Starte Prozess", command=self.run_program)
         self.start_button.grid(row=0, column=0, padx=10, pady=10)
 
-    def start_program(self):
-        """Starts the familiarization process
+    def run_program(self):
+        """Runs the familiarization process
         """
         self.parent.show_frame(DuringProcedureView)
-        self.parent.wait_for_process(self.parent.frames[DuringProcedureView].program, self.end_program)
-
-    def end_program(self):
-        """Ends the familiarization process and shows the next page
-        """
-        self.parent.show_frame(ResultPage)
+        self.parent.wait_for_process(self.parent.frames[DuringProcedureView].program, 
+                                     lambda: self.parent.show_frame(ResultPage))
 
 class DuringFamiliarizationView(ttk.Frame):
     def __init__(self, parent, familiarization_func):
@@ -293,8 +279,8 @@ class ResultPage(ttk.Frame):
         self.BackToMainMenu = ttk.Button(self, text="Zurück zur Startseite", command=self.back_to_MainMenu)
         self.BackToMainMenu.grid(row=11, column=0, padx=10, pady=10)
 
-        self.SaveResults = ttk.Button(self, text="Ergebnisse speichern", command=self.show_warning)
-        self.SaveResults.grid(row=10, column=0, padx=10, pady=10)
+        # self.SaveResults = ttk.Button(self, text="Ergebnisse speichern", command=self.show_warning)
+        # self.SaveResults.grid(row=10, column=0, padx=10, pady=10) #Ergebnisse sollen eh automatisch gespeichert werden
 
         # dummy values
         freq = [63, 125, 250, 500, 1000, 2000, 4000, 8000]
