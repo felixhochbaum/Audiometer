@@ -175,7 +175,7 @@ class FamiliarizationPage(ttk.Frame):
         self.play_button = ttk.Button(self, text="Starte Eingewöhnung", command=self.start_familiarization, width=button_width)
         self.play_button.pack(padx=10, pady=10)
 
-        self.GoBack_button = ttk.Button(self, text="zurück", command=self.GoBack, width=button_width)
+        self.GoBack_button = ttk.Button(self, text="zurück", command=self.go_back, width=button_width)
         self.GoBack_button.pack(padx=10, pady=10)
 
         for widget in self.winfo_children():
@@ -192,7 +192,7 @@ class FamiliarizationPage(ttk.Frame):
         """
         self.parent.show_frame(StandardProgramPage)
 
-    def GoBack(self):
+    def go_back(self):
         self.parent.show_frame(MainMenu)
 
 class StandardProgramPage(ttk.Frame):
@@ -290,7 +290,7 @@ class ResultPage(ttk.Frame):
         self.info = ttk.Label(self, text="Ergebnisse", font=('Arial',18))
         self.info.grid(row=0, column=0, padx=10, pady=10)
 
-        self.BackToMainMenu = ttk.Button(self, text="Zurück zur Startseite", command=self.Back_To_MainMenu)
+        self.BackToMainMenu = ttk.Button(self, text="Zurück zur Startseite", command=self.back_to_MainMenu)
         self.BackToMainMenu.grid(row=11, column=0, padx=10, pady=10)
 
         self.SaveResults = ttk.Button(self, text="Ergebnisse speichern", command=self.show_warning)
@@ -312,7 +312,7 @@ class ResultPage(ttk.Frame):
     def show_warning(self):
             messagebox.showwarning("Warnung", "Funktioniert noch nicht :)")
     
-    def Back_To_MainMenu(self):
+    def back_to_MainMenu(self):
         self.parent.show_frame(MainMenu)
 
 def setup_ui(startfunc, *programfuncs):
