@@ -17,17 +17,13 @@ class App(tb.Window):
         """
         super().__init__(themename="superhero")  # Set/change the theme Link: https://ttkbootstrap.readthedocs.io/en/latest/themes/dark/
 
-        self.program_funcs = program_funcs
-
         # General settings
         self.title("Sound Player")
         self.geometry("1000x800")
         # self.iconbitmap("path..")
 
-        # Store results -> TODO: needs to be changed
-        self.results = "Hier sollten später Ergebnisse angezeigt werden"
-
         # Dictionary to store all pages
+        self.program_funcs = program_funcs
         self.frames = {}
 
         # Pages, where the user can interact
@@ -42,11 +38,11 @@ class App(tb.Window):
         frame.grid(row=0, column=0, sticky="nsew")
 
         # View during programs
-        for program_func in program_funcs.values():
+        for name, program_func in program_funcs.items():
             frame = DuringProcedureView(self, 
                                         program_func,
                                         text="Programm läuft...")
-            self.frames[DuringProcedureView] = frame
+            self.frames[name] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
         # Show MainMenu first
@@ -108,9 +104,11 @@ class App(tb.Window):
 
 
 class MainMenu(ttk.Frame):
+
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
+        self.selected_option = None  # Instance variable to store selected option
         self.button_width = 25
         self.start_button = None
         self.create_widgets()
@@ -121,29 +119,30 @@ class MainMenu(ttk.Frame):
 
         # Dropdown menu
         options = list(self.parent.program_funcs.keys())
-        self.dropdown = ttk.Combobox(self, values=options, state="readonly", width=self.button_width-1)
+        self.dropdown = ttk.Combobox(self, values=options, state="readonly", width=self.button_width - 1)
         self.dropdown.set("Test wählen...")
         self.dropdown.pack(pady=10)
         self.dropdown.bind("<<ComboboxSelected>>", self.on_option_selected)
 
-        # Moved that to normal closing button
-        # self.exit_button = ttk.Button(self, text="Exit", command=self.parent.on_closing,
-        #                               width=self.button_width)
-        # self.exit_button.pack(pady=10)
-
         for widget in self.winfo_children():
             widget.pack_configure(anchor='center')
-    
+
     def on_option_selected(self, event):
+        self.selected_option = self.dropdown.get() 
         self.show_start_button()
 
     def show_start_button(self):
         if self.start_button is None:
-            self.start_button = ttk.Button(self, 
-                                           text="Test starten", 
-                                           command=lambda: self.parent.show_frame(FamiliarizationPage), 
+            self.start_button = ttk.Button(self,
+                                           text="Test starten",
+                                           command=self.start_familiarization,
                                            width=self.button_width)
             self.start_button.pack(pady=10)
+
+    def start_familiarization(self):
+        self.parent.frames[FamiliarizationPage].selected_option = self.selected_option 
+        self.parent.show_frame(FamiliarizationPage)
+
 
 
 class FamiliarizationPage(ttk.Frame):
@@ -194,6 +193,7 @@ class ProgramPage(ttk.Frame):
         """
         super().__init__(parent)
         self.parent = parent
+        self.selected_option = None 
         self.create_widgets()
 
     def create_widgets(self):
@@ -203,10 +203,11 @@ class ProgramPage(ttk.Frame):
         self.start_button.grid(row=0, column=0, padx=10, pady=10)
 
     def run_program(self):
-        """Runs the familiarization process
+        """Runs the main program
         """
-        self.parent.show_frame(DuringProcedureView)
-        self.parent.wait_for_process(self.parent.frames[DuringProcedureView].program, 
+        self.selected_option = self.parent.frames[MainMenu].selected_option
+        self.parent.show_frame(self.selected_option)
+        self.parent.wait_for_process(self.parent.frames[self.selected_option].program,
                                      lambda: self.parent.show_frame(ResultPage))
 
 class DuringFamiliarizationView(ttk.Frame):
@@ -256,13 +257,6 @@ class ResultPage(ttk.Frame):
         Args:
             parent (App): parent application"""
         
-        # Beispielwerte
-        #freq = [63, 125, 250, 500, 1000, 2000, 4000, 8000]
-        #dummy_right = [10, 15, 20, 25, 30, 35, 40, 45]
-        #dummy_left = [5, 10, 15, 20, 25, 30, 35, 40]
-        # Audiogramm erstellen
-        #create_audiogram(freq, dummy_right, dummy_left)
-
         super().__init__(parent)
         self.parent = parent
         self.create_widgets()
@@ -270,8 +264,6 @@ class ResultPage(ttk.Frame):
     def create_widgets(self):
         """Creates the widgets for the view
         """
-        #self.info = ttk.Label(self, text=self.parent.results)
-        #self.info.grid(row=0, column=0, padx=10, pady=10)
 
         self.info = ttk.Label(self, text="Ergebnisse", font=('Arial',18))
         self.info.grid(row=0, column=0, padx=10, pady=10)
@@ -279,16 +271,13 @@ class ResultPage(ttk.Frame):
         self.BackToMainMenu = ttk.Button(self, text="Zurück zur Startseite", command=self.back_to_MainMenu)
         self.BackToMainMenu.grid(row=11, column=0, padx=10, pady=10)
 
-        # self.SaveResults = ttk.Button(self, text="Ergebnisse speichern", command=self.show_warning)
-        # self.SaveResults.grid(row=10, column=0, padx=10, pady=10) #Ergebnisse sollen eh automatisch gespeichert werden
-
         # dummy values
         freq = [63, 125, 250, 500, 1000, 2000, 4000, 8000]
         dummy_right = [10, 15, 20, 25, 30, 35, 40, 45]
         dummy_left = [5, 10, 15, 20, 25, 30, 35, 40]
 
         # audiogram plot
-        fig = create_audiogram(freq, dummy_right, dummy_left)
+        fig = create_audiogram(freq, dummy_right, dummy_left, save=False)
         
         # Embed the plot in the Tkinter frame
         canvas = FigureCanvasTkAgg(fig, master=self)
@@ -301,6 +290,7 @@ class ResultPage(ttk.Frame):
     def back_to_MainMenu(self):
         self.parent.show_frame(MainMenu)
 
-def setup_ui(startfunc, *programfuncs):
-    app = App(startfunc, *programfuncs)
+
+def setup_ui(startfunc, programfuncs):
+    app = App(startfunc, programfuncs)
     return app

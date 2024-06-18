@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def create_audiogram(freqs, right_values, left_values):
+def create_audiogram(freqs, right_values, left_values, save=True):
     """Erstellt ein Audiogramm basierend auf den gegebenen Frequenzen und Hörschwellenwerten.
 
     Args:
@@ -11,6 +11,8 @@ def create_audiogram(freqs, right_values, left_values):
         left_values (list of int): Eine Liste von Hörschwellen in dB HL vom linken Ohr
             
     """
+
+    #TODO save figure
     fig, ax = plt.subplots(figsize=(5, 4))
     
     # Bereichsfarben hinzufügen
