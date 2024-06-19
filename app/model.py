@@ -2,6 +2,7 @@ from .audio_player import AudioPlayer
 
 from pynput import keyboard
 import time
+import random
 
 
 class Procedure():
@@ -47,20 +48,25 @@ class Procedure():
         If key is pressed, set tone_heard to True.
         """
         self.tone_heard = False
+        print("playing tone..")
         self.ap.play_beep(self.frequency, self.dbhl_to_volume(self.level), self.signal_length)
         listener = keyboard.Listener(on_press=self.key_press, on_release=None)
         listener.start()
         current_wait_time = 0
-        max_wait_time = 5000 # in ms 
-        step_size = 100 # in ms
+        max_wait_time = 4000 # in ms 
+        step_size = 50 # in ms
         while current_wait_time < max_wait_time and self.tone_heard == False: # wait for keypress
             time.sleep(step_size / 1000)
             current_wait_time += step_size
         listener.stop()
         print("listener stopped.")
+        self.ap.stop()
         if self.tone_heard == False:
             print("Tone not heard :(")
-        time.sleep(1) # wait 1s before next tone is played. #TODO Randomize
+        sleep_time = random.gauss(2, 1.2)
+        while sleep_time < 0: # make sure number is not negative
+            sleep_time = random.gauss(2, 1.2)    
+        time.sleep(sleep_time) # wait before next tone is played. #TODO test times
 
 
 

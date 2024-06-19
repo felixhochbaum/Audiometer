@@ -41,6 +41,11 @@ class AudioPlayer:
         self.beep_duration = duration
         sd.play(self.generate_tone(), self.fs)
 
+    def stop(self):
+        """Stops the current playback
+        """
+        sd.stop()
+
 
     def int_or_str(self, text):
         """Helper function for argument parsing."""
