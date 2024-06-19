@@ -50,10 +50,17 @@ class Procedure():
         self.ap.play_beep(self.frequency, self.dbhl_to_volume(self.level), self.signal_length)
         listener = keyboard.Listener(on_press=self.key_press, on_release=None)
         listener.start()
-        time.sleep(5) # time to wait for keypress # TODO
+        current_wait_time = 0
+        max_wait_time = 5000 # in ms 
+        step_size = 100 # in ms
+        while current_wait_time < max_wait_time and self.tone_heard == False: # wait for keypress
+            time.sleep(step_size / 1000)
+            current_wait_time += step_size
         listener.stop()
+        print("listener stopped.")
         if self.tone_heard == False:
             print("Tone not heard :(")
+        time.sleep(1) # wait 1s before next tone is played. #TODO Randomize
 
 
 

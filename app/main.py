@@ -1,6 +1,6 @@
 from .ui import setup_ui
-#from .model import *
-from .dummy_model import *
+from .model import *
+from .dummy_model import StandardProcedure, TestProcedure
 from .audiogram import create_audiogram
 
 class Controller():
