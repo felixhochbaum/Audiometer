@@ -42,7 +42,7 @@ def create_audiogram(freqs, right_values, left_values, save=True):
 
     # Benutzerdefinierte x-Achsen-Ticks
     x_ticks = np.log2(freq)
-    x_labels = [f"{int(freq)} Hz" for freq in freqs]
+    x_labels = [f"{int(freq)}" for freq in freqs]
     ax.set_xticks(x_ticks)
     ax.set_xticklabels(x_labels)
 
@@ -54,10 +54,10 @@ def create_audiogram(freqs, right_values, left_values, save=True):
     return fig
 
 #Beispielwerte
-freq = [63, 125, 250, 500, 1000, 2000, 4000, 8000]
-dummy_right = [10, 15, 20, 25, 30, 35, 40, 45]
-dummy_left = [5, 10, 15, 20, 25, 30, 35, 40]
+#freq = [63, 125, 250, 500, 1000, 2000, 4000, 8000]
+#dummy_right = [10, 15, 20, 25, 30, 35, 40, 45]
+#dummy_left = [5, 10, 15, 20, 25, 30, 35, 40]
 # # Audiogramm erstellen
-create_audiogram(freq, dummy_right, dummy_left)
-plt.show()
+#create_audiogram(freq, dummy_right, dummy_left)
+#plt.show()
 
