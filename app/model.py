@@ -85,8 +85,11 @@ class Familiarization(Procedure):
 
 
 
-    def familiarize(self): # TODO Return last level and successfull or unsuccessful
+    def familiarize(self):
         """main funtion
+
+        Returns:
+            boolean: familiarization successfull
         """
 
         while True:
@@ -116,13 +119,14 @@ class Familiarization(Procedure):
                 self.fails += 1
                 if self.fails >= 2:
                     print("Familiarization unsuccessful. Please read rules and start again.")
-                    return None
+                    return False
                 else:
                     self.level = self.startlevel
 
             else:
                 print("Familiarization successful!")
-                return None
+                # TODO write current level in file
+                return True
 
 
 

@@ -18,7 +18,7 @@ class Controller():
         self.view.mainloop()
 
     def start_familiarization(self):
-        self.familiarization.familiarize()
+        return self.familiarization.familiarize()
 
     def start_standard_procedure(self):
         self.standard_procedure.standard_test()
