@@ -135,11 +135,11 @@ class MainMenu(ttk.Frame):
         if self.start_button is None:
             self.start_button = ttk.Button(self,
                                            text="Test starten",
-                                           command=self.start_familiarization,
+                                           command=self.run_familiarization,
                                            width=self.button_width)
             self.start_button.pack(pady=10)
 
-    def start_familiarization(self):
+    def run_familiarization(self):
         self.parent.frames[FamiliarizationPage].selected_option = self.selected_option 
         self.parent.show_frame(FamiliarizationPage)
 
