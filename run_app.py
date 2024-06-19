@@ -7,7 +7,7 @@ from app import Controller
 # (pip install pynput)
 
 if __name__ == "__main__":
-    c = Controller()
+    c = Controller()   
     c.run_app()
 
 # https://realpython.com/if-name-main-python/

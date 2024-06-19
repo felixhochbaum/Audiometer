@@ -49,7 +49,7 @@ class Procedure():
         """
         self.tone_heard = False
         print("playing tone..")
-        self.ap.play_beep(self.frequency, self.dbhl_to_volume(self.level), self.signal_length)
+        self.ap.play_beep(self.frequency, self.dbhl_to_volume(self.level), self.signal_length, 'l')
         listener = keyboard.Listener(on_press=self.key_press, on_release=None)
         listener.start()
         current_wait_time = 0

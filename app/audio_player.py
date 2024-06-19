@@ -28,18 +28,25 @@ class AudioPlayer:
         tone = np.sin(2 * np.pi * self.frequency * t) * self.volume
         return tone
 
-    def play_beep(self, frequency, volume, duration):
+    def play_beep(self, frequency, volume, duration, channel='lr'):
         """Sets the frequency, volume and beep duration of the audio player and then plays a beep with those parameters
 
         Args:
             frequency (int): f in Hz
             volume (float): volume multiplier (between 0 and 1)
             duration (int): duration of beep in seconds
+            channel (string): 'l', 'r' or 'lr' for only left, only right or both channels respectively
         """
         self.frequency = frequency
         self.volume = volume
         self.beep_duration = duration
-        sd.play(self.generate_tone(), self.fs)
+        tone = self.generate_tone()
+        if channel == 'l':
+            sd.play(np.array([tone, np.zeros(len(tone))]).T, self.fs)
+        elif channel == 'r':
+            sd.play(np.array([np.zeros(len(tone)), tone]).T, self.fs)
+        else:
+            sd.play(tone, self.fs)
 
     def stop(self):
         """Stops the current playback
@@ -84,4 +91,3 @@ class AudioPlayer:
             help='amplitude (default: %(default)s)')
         args = parser.parse_args(remaining)
         return sd.query_devices(args.device, 'output')['default_samplerate']
-    
