@@ -54,6 +54,9 @@ class App(tb.Window):
         # Override the close button protocol (instead of extra button)
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
     def create_menubar(self):
         menubar = tk.Menu(self)
         self.config(menu=menubar)
