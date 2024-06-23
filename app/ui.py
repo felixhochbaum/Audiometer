@@ -64,13 +64,13 @@ class App(tb.Window):
 
         file_menu = tk.Menu(menubar, tearoff=0)
         file_menu.add_command(label="Startseite", command=lambda: self.show_frame(MainMenu))
-        file_menu.add_command(label="Button1")  # , command=)
+        file_menu.add_command(label="Change theme")  # , command=)  #TODO add change theme feature 
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.on_closing)
         menubar.add_cascade(label="File", menu=file_menu)
 
         edit_menu = tk.Menu(menubar, tearoff=0)
-        edit_menu.add_command(label="Button1")  # , command=)
+        edit_menu.add_command(label="Button1")  # , command=)  
         edit_menu.add_command(label="Button2")  # , command=)
         menubar.add_cascade(label="Edit", menu=edit_menu)
 
