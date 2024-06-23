@@ -19,7 +19,8 @@ class App(tb.Window):
 
         # General settings
         self.title("Sound Player")
-        self.geometry("1000x800")
+        self.geometry("800x800")
+        self.minsize(650,650)
         # self.iconbitmap("path..")
 
         # Dictionary to store all pages
@@ -203,7 +204,11 @@ class ProgramPage(ttk.Frame):
         """Creates the widgets for the page
         """
         self.start_button = ttk.Button(self, text="Starte Prozess", command=self.run_program)
-        self.start_button.grid(row=0, column=0, padx=10, pady=10)
+        self.start_button.pack(padx=10, pady=200)
+    
+
+        for widget in self.winfo_children():
+            widget.pack_configure(anchor='center')
 
     def run_program(self):
         """Runs the main program
@@ -269,10 +274,7 @@ class ResultPage(ttk.Frame):
         """
 
         self.info = ttk.Label(self, text="Ergebnisse", font=('Arial',18))
-        self.info.grid(row=0, column=0, padx=10, pady=10)
-
-        self.BackToMainMenu = ttk.Button(self, text="Zurück zur Startseite", command=self.back_to_MainMenu)
-        self.BackToMainMenu.grid(row=11, column=0, padx=10, pady=10)
+        self.info.pack(padx=10, pady=10)
 
         # dummy values
         freq = [63, 125, 250, 500, 1000, 2000, 4000, 8000]
@@ -285,8 +287,11 @@ class ResultPage(ttk.Frame):
         # Embed the plot in the Tkinter frame
         canvas = FigureCanvasTkAgg(fig, master=self)
         canvas.draw()
-        canvas.get_tk_widget().grid(row=1, column=0, padx=10, pady=10)
-   
+        canvas.get_tk_widget().pack(padx=10, pady=10)
+
+        self.BackToMainMenu = ttk.Button(self, text="Zurück zur Startseite", command=self.back_to_MainMenu)
+        self.BackToMainMenu.pack(padx=10, pady=10)
+
     def show_warning(self):
             messagebox.showwarning("Warnung", "Funktioniert noch nicht :)")
     
