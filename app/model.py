@@ -3,6 +3,8 @@ from .audio_player import AudioPlayer
 from pynput import keyboard
 import time
 import random
+import tempfile as tfile
+import csv
 
 
 class Procedure():
@@ -20,7 +22,8 @@ class Procedure():
         self.signal_length = signal_length
         self.frequency = 1000
         self.zero_dbhl = 0.00002 # zero_dbhl in absolute numbers. Needs to be calibrated!
-        self.tone_heard = False 
+        self.tone_heard = False
+        self.freq_bands = ['125', '250', '500', '1000', '2000', '4000', '8000']
 
 
     def dbhl_to_volume(self, dbhl):
@@ -44,8 +47,9 @@ class Procedure():
 
 
     def play_tone(self):
-        """set tone_heard to False, play beep, then wait 5s(?) for keypress.
+        """set tone_heard to False, play beep, then wait max 4s for keypress.
         If key is pressed, set tone_heard to True.
+        Then wait for around about 2s (randomized).
         """
         self.tone_heard = False
         print("playing tone..")
@@ -63,10 +67,49 @@ class Procedure():
         self.ap.stop()
         if self.tone_heard == False:
             print("Tone not heard :(")
-        sleep_time = random.gauss(2, 1.2)
-        while sleep_time < 0: # make sure number is not negative
-            sleep_time = random.gauss(2, 1.2)    
+        sleep_time = abs(random.gauss(2, 1.2)) # non negative random number
         time.sleep(sleep_time) # wait before next tone is played. #TODO test times
+
+    
+    def create_temp_csv(self):
+        """creates a temporary CSV file with the relevant frequency bands as a header
+        and NaN in the second line as starting value for each band.
+
+        Returns:
+            str: name of temporary file
+        """
+        with tfile.NamedTemporaryFile(mode='w+', delete=False, newline='', suffix='.csv') as temp_file:
+            # Define the CSV writer
+            csv_writer = csv.writer(temp_file)
+
+            # Write header
+            csv_writer.writerow(self.freq_bands)
+
+            # Write value NaN for each frequency in second row
+            csv_writer.writerow(['NaN' for i in range(len(self.freq_bands))])
+
+            return temp_file.name
+        
+        
+    def add_to_temp_csv(self, value, frequency, temp_filename):
+        """add a value in for a specific frequency to the temporary csv file
+
+        Args:
+            value (str): level in dBHL at specific frequency
+            frequency (str): frequency where value should be added
+            temp_filename (str): name of temporary csv file
+        """
+        with open(temp_filename, mode='r', newline='') as temp_file:
+            dict_reader = csv.DictReader(temp_file)
+            freq_dict = next(dict_reader)
+            freq_dict[frequency] = value
+            print(freq_dict)
+
+        with open(temp_filename, mode='w', newline='') as temp_file:
+            dict_writer = csv.DictWriter(temp_file, fieldnames=self.freq_bands)
+            dict_writer.writeheader()
+            dict_writer.writerow(freq_dict)
+
 
 
 
@@ -82,14 +125,16 @@ class Familiarization(Procedure):
 
         super().__init__(startlevel, signal_length)      
         self.fails = 0 # number of times familiarization failed
+        self.tempfile = self.create_temp_csv() # create a temporary file to store level at frequencies
 
-
+    def get_temp_csv_filename(self):
+        return self.tempfile
 
     def familiarize(self):
         """main funtion
 
         Returns:
-            boolean: familiarization successfull
+            bool: familiarization successfull
         """
 
         while True:
@@ -125,7 +170,7 @@ class Familiarization(Procedure):
 
             else:
                 print("Familiarization successful!")
-                # TODO write current level in file
+                self.add_to_temp_csv(self.level, '1000', self.tempfile)
                 return True
 
 
