@@ -65,7 +65,7 @@ class App(tb.Window):
         file_menu = tk.Menu(menubar, tearoff=0)
         file_menu.add_command(label="Startseite", command=lambda: self.show_frame(MainMenu))
 
-        # Settings for chaning the theme
+        # Settings for chaning the theme ##i've randomly selected 4 themes (2 dark and 2 lighthttps://ttkbootstrap.readthedocs.io/en/latest/themes/dark/
         ChangeTheme = tk.Menu(file_menu, tearoff=0)
         ChangeTheme.add_command(label="theme 1", command=lambda: self.change_theme("superhero"))
         ChangeTheme.add_command(label="theme 2", command=lambda: self.change_theme("solar"))
@@ -77,12 +77,6 @@ class App(tb.Window):
         file_menu.add_command(label="Exit", command=self.on_closing)
         menubar.add_cascade(label="File", menu=file_menu)
 
-        
-
-        edit_menu = tk.Menu(menubar, tearoff=0)
-        edit_menu.add_command(label="Button1")  # , command=)  
-        edit_menu.add_command(label="Button2")  # , command=)
-        menubar.add_cascade(label="Edit", menu=edit_menu)
 
 
     def change_theme(self, theme_name):
