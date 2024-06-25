@@ -64,15 +64,35 @@ class App(tb.Window):
 
         file_menu = tk.Menu(menubar, tearoff=0)
         file_menu.add_command(label="Startseite", command=lambda: self.show_frame(MainMenu))
-        file_menu.add_command(label="Change theme")  # , command=)  #TODO add change theme feature 
+
+        # Settings for chaning the theme
+        ChangeTheme = tk.Menu(file_menu, tearoff=0)
+        ChangeTheme.add_command(label="theme 1", command=lambda: self.change_theme("superhero"))
+        ChangeTheme.add_command(label="theme 2", command=lambda: self.change_theme("solar"))
+        ChangeTheme.add_command(label="theme 3", command=lambda: self.change_theme("cosmo"))
+        ChangeTheme.add_command(label="theme 4", command=lambda: self.change_theme("sandstone"))
+        file_menu.add_cascade(label="change theme", menu=ChangeTheme)
+
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.on_closing)
         menubar.add_cascade(label="File", menu=file_menu)
+
+        
 
         edit_menu = tk.Menu(menubar, tearoff=0)
         edit_menu.add_command(label="Button1")  # , command=)  
         edit_menu.add_command(label="Button2")  # , command=)
         menubar.add_cascade(label="Edit", menu=edit_menu)
+
+
+    def change_theme(self, theme_name):
+        """Change to the specified theme"""
+        current_theme = self.style.theme_use()
+
+        if current_theme == theme_name:
+            messagebox.showwarning("Warning", "This theme is already in use.")
+        else:
+            self.style.theme_use(theme_name)
 
     def show_frame(self, page):
         """Show a frame for the given page name
