@@ -6,6 +6,7 @@ from .audiogram import create_audiogram #TODO
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from app.instructions import text_Familiarization
 import ttkbootstrap as tb
+from PIL import Image, ImageTk
 
 class App(tb.Window):
     def __init__(self, familiarization_func, program_funcs:dict):
@@ -21,7 +22,8 @@ class App(tb.Window):
         self.title("Sound Player")
         self.geometry("800x800")
         self.minsize(650,650)
-
+        #self.set_icon("app/00_TUBerlin_Logo_rot.jpg") the ttkbootstrap's icon looks ugly #TODO
+        '''
         #this might solve the different GUI on IOS LINUX and WINDOWS problem... #TODO
         self.tk.call('tk', 'scaling', 2.0)  # Adjust for high-DPI displays
         
@@ -30,7 +32,7 @@ class App(tb.Window):
         self.style.configure('TLabel', font=('Arial', 12))
         self.style.configure('TButton', font=('Arial', 12))
         self.style.configure('TCombobox', font=('Arial', 12))
-
+        '''
 
         # Dictionary to store all pages
         self.program_funcs = program_funcs
@@ -96,6 +98,12 @@ class App(tb.Window):
             messagebox.showwarning("Warning", "This theme is already in use.")
         else:
             self.style.theme_use(theme_name)
+
+    def set_icon(self, path):
+        """Set the window icon using Pillow"""
+        img = Image.open(path)
+        photo = ImageTk.PhotoImage(img)
+        self.iconphoto(False, photo)          
 
     def show_frame(self, page):
         """Show a frame for the given page name
