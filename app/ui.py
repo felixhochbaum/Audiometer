@@ -22,9 +22,8 @@ class App(tb.Window):
         self.title("Sound Player")
         self.geometry("800x800")
         self.minsize(650,650)
-        #self.set_icon("app/00_TUBerlin_Logo_rot.jpg") the ttkbootstrap's icon looks ugly #TODO
-        '''
-        #this might solve the different GUI on IOS LINUX and WINDOWS problem... #TODO
+
+        #this might solve the different GUI on macOS LINUX and WINDOWS problem... #TODO
         self.tk.call('tk', 'scaling', 2.0)  # Adjust for high-DPI displays
         
         # Set explicit fonts
@@ -32,7 +31,7 @@ class App(tb.Window):
         self.style.configure('TLabel', font=('Arial', 12))
         self.style.configure('TButton', font=('Arial', 12))
         self.style.configure('TCombobox', font=('Arial', 12))
-        '''
+
 
         # Dictionary to store all pages
         self.program_funcs = program_funcs
