@@ -290,7 +290,7 @@ class StandardProcedure(Procedure):
         answers = []
         tries = 0
 
-        while tries < 10:
+        while tries < 6:
 
             # reduce in 10dB steps until no answer
             while self.tone_heard == True:
@@ -306,7 +306,7 @@ class StandardProcedure(Procedure):
             answers.append(self.level)
             print(f"Try nr {tries}: level: {self.level}")
 
-            if answers.count(self.level) >= 3:
+            if answers.count(self.level) >= 2:
                 if retest == True:
                     if abs(self.level - int(self.get_value_from_csv(str(self.frequency), self.temp_filename, self.side))) > 5:
                         self.add_to_temp_csv(str(self.level), str(self.frequency), self.side, self.temp_filename)
@@ -320,7 +320,7 @@ class StandardProcedure(Procedure):
                 return True
             
             # no three same answers in five tries
-            if tries == 5:
+            if tries == 3:
                 self.level += 10
                 self.play_tone()
                 answers = []
