@@ -6,6 +6,7 @@ from .audiogram import create_audiogram #TODO
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from app.instructions import text_Familiarization
 import ttkbootstrap as tb
+from PIL import Image, ImageTk
 
 class App(tb.Window):
     def __init__(self, familiarization_func, program_funcs:dict):
@@ -19,8 +20,23 @@ class App(tb.Window):
 
         # General settings
         self.title("Sound Player")
-        self.geometry("1000x800")
-        # self.iconbitmap("path..")
+        self.geometry("800x800")
+        self.minsize(650,650)
+        self.attributes('-fullscreen', True)  #for fullscreen mode
+        self.bind("<Escape>", self.exit_fullscreen)
+        
+        #self.set_icon("app/00_TUBerlin_Logo_rot.jpg") change the icon maybe? #TODO
+
+        
+        #this might solve the different GUI on macOS LINUX and WINDOWS problem... #TODO
+        self.tk.call('tk', 'scaling', 2.0)  # Adjust for high-DPI displays
+        '''
+        # Set explicit fonts
+        self.style = ttk.Style()
+        self.style.configure('TLabel', font=('Arial', 12))
+        self.style.configure('TButton', font=('Arial', 12))
+        self.style.configure('TCombobox', font=('Arial', 12))
+        '''
 
         # Dictionary to store all pages
         self.program_funcs = program_funcs
@@ -54,21 +70,47 @@ class App(tb.Window):
         # Override the close button protocol (instead of extra button)
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
     def create_menubar(self):
         menubar = tk.Menu(self)
         self.config(menu=menubar)
 
         file_menu = tk.Menu(menubar, tearoff=0)
         file_menu.add_command(label="Startseite", command=lambda: self.show_frame(MainMenu))
-        file_menu.add_command(label="Button1")  # , command=)
+
+        # Settings for chaning the theme ##i've randomly selected 4 themes (2 dark and 2 lighthttps://ttkbootstrap.readthedocs.io/en/latest/themes/dark/
+        ChangeTheme = tk.Menu(file_menu, tearoff=0)
+        ChangeTheme.add_command(label="theme 1", command=lambda: self.change_theme("superhero"))
+        ChangeTheme.add_command(label="theme 2", command=lambda: self.change_theme("solar"))
+        ChangeTheme.add_command(label="theme 3", command=lambda: self.change_theme("cosmo"))
+        ChangeTheme.add_command(label="theme 4", command=lambda: self.change_theme("sandstone"))
+        file_menu.add_cascade(label="change theme", menu=ChangeTheme)
+
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.on_closing)
         menubar.add_cascade(label="File", menu=file_menu)
 
-        edit_menu = tk.Menu(menubar, tearoff=0)
-        edit_menu.add_command(label="Button1")  # , command=)
-        edit_menu.add_command(label="Button2")  # , command=)
-        menubar.add_cascade(label="Edit", menu=edit_menu)
+
+
+    def change_theme(self, theme_name):
+        """Change to the specified theme"""
+        current_theme = self.style.theme_use()
+
+        if current_theme == theme_name:
+            messagebox.showwarning("Ops..", "This theme is already in use.")
+        else:
+            self.style.theme_use(theme_name)
+
+    def exit_fullscreen(self, event=None):
+        self.attributes('-fullscreen', False)
+
+    def set_icon(self, path):
+        """Set the window icon using Pillow"""
+        img = Image.open(path)
+        photo = ImageTk.PhotoImage(img)
+        self.iconphoto(False, photo)          
 
     def show_frame(self, page):
         """Show a frame for the given page name
@@ -200,7 +242,11 @@ class ProgramPage(ttk.Frame):
         """Creates the widgets for the page
         """
         self.start_button = ttk.Button(self, text="Starte Prozess", command=self.run_program)
-        self.start_button.grid(row=0, column=0, padx=10, pady=10)
+        self.start_button.pack(padx=10, pady=200)
+    
+
+        for widget in self.winfo_children():
+            widget.pack_configure(anchor='center')
 
     def run_program(self):
         """Runs the main program
@@ -259,33 +305,34 @@ class ResultPage(ttk.Frame):
         
         super().__init__(parent)
         self.parent = parent
-        self.create_widgets()
 
-    def create_widgets(self):
-        """Creates the widgets for the view
-        """
-
-        self.info = ttk.Label(self, text="Ergebnisse", font=('Arial',18))
-        self.info.grid(row=0, column=0, padx=10, pady=10)
-
-        self.BackToMainMenu = ttk.Button(self, text="Zurück zur Startseite", command=self.back_to_MainMenu)
-        self.BackToMainMenu.grid(row=11, column=0, padx=10, pady=10)
-
-        # dummy values
         freq = [63, 125, 250, 500, 1000, 2000, 4000, 8000]
         dummy_right = [10, 15, 20, 25, 30, 35, 40, 45]
         dummy_left = [5, 10, 15, 20, 25, 30, 35, 40]
 
-        # audiogram plot
-        fig = create_audiogram(freq, dummy_right, dummy_left, save=False)
+        # Create audiogram plot
+        fig = create_audiogram(freq, dummy_right, dummy_left)
         
-        # Embed the plot in the Tkinter frame
-        canvas = FigureCanvasTkAgg(fig, master=self)
+        # Create widgets
+        self.create_widgets(fig)
+
+    def create_widgets(self,fig):
+        """Creates the widgets for the view`
+        """
+        self.info = ttk.Label(self, text="Ergebnisse", font=('Arial', 18))
+        self.info.pack(padx=10, pady=10)
+
+        # Set the title on the parent window
+        self.parent.title("Audiogram")
+
+        # Display the plot
+        canvas = FigureCanvasTkAgg(fig, self)
         canvas.draw()
-        canvas.get_tk_widget().grid(row=1, column=0, padx=10, pady=10)
-   
-    def show_warning(self):
-            messagebox.showwarning("Warnung", "Funktioniert noch nicht :)")
+        canvas.get_tk_widget().pack(side=tk.TOP, expand=0)
+
+        self.BackToMainMenu = ttk.Button(self, text="Zurück zur Startseite", command=lambda: self.parent.show_frame(MainMenu))
+        self.BackToMainMenu.pack(padx=10, pady=10)
+
     
     def back_to_MainMenu(self):
         self.parent.show_frame(MainMenu)
