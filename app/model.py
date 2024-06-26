@@ -73,10 +73,14 @@ class Procedure():
             time.sleep(sleep_time) # wait before next tone is played. #TODO test times
 
     
-    def create_temp_csv(self):
+    def create_temp_csv(self, id="", **aditional_data):
         """creates a temporary CSV file with the relevant frequency bands as a header
         and NaN in the second and third line as starting value for each band.
         (second line: left ear, third line: right ear)
+        ID and additional data will be stored in subsequent lines in the format: key, value.
+
+        Args:
+            id (string, optional): id to be stored, that will later be used for naming exported csv file
 
         Returns:
             str: name of temporary file
@@ -92,6 +96,14 @@ class Procedure():
             csv_writer.writerow(['NaN' for i in range(len(self.freq_bands))])
             csv_writer.writerow(['NaN' for i in range(len(self.freq_bands))])
 
+            # Write id and additional data
+            if id:
+                csv_writer.writerow(["id", id])
+            if aditional_data:
+                for i in aditional_data:
+                    csv_writer.writerow([i, aditional_data[i]])
+
+
             return temp_file.name
         
         
@@ -104,21 +116,26 @@ class Procedure():
             side (str): specify which ear ('l' or 'r')
             temp_filename (str): name of temporary csv file
         """
+        # Read all rows from the CSV file
         with open(temp_filename, mode='r', newline='') as temp_file:
             dict_reader = csv.DictReader(temp_file)
-            freq_dict_l = next(dict_reader)
-            freq_dict_r = next(dict_reader)
-            if side == 'l':
-                freq_dict_l[frequency] = value
-            elif side == 'r':
-                freq_dict_r[frequency] = value
-            print(freq_dict_l, freq_dict_r)
+            rows = list(dict_reader)
 
+        # Update the relevant row based on the side parameter
+        if side == 'l':
+            rows[0][frequency] = value
+        elif side == 'r':
+            rows[1][frequency] = value
+
+        # Write all rows back to the CSV file
         with open(temp_filename, mode='w', newline='') as temp_file:
             dict_writer = csv.DictWriter(temp_file, fieldnames=self.freq_bands)
             dict_writer.writeheader()
-            dict_writer.writerow(freq_dict_l)
-            dict_writer.writerow(freq_dict_r)
+            dict_writer.writerows(rows)
+
+        print(rows[0], rows[1])
+        for i in rows[2:]:
+            print(i['125'], i['250'])
 
 
     
@@ -146,7 +163,7 @@ class Procedure():
 
 class Familiarization(Procedure):
 
-    def __init__(self, startlevel=40, signal_length=1):
+    def __init__(self, startlevel=40, signal_length=1, id="", **additional_data):
         """familiarization process
 
         Args:
@@ -156,7 +173,7 @@ class Familiarization(Procedure):
 
         super().__init__(startlevel, signal_length)      
         self.fails = 0 # number of times familiarization failed
-        self.tempfile = self.create_temp_csv() # create a temporary file to store level at frequencies
+        self.tempfile = self.create_temp_csv(id=id, **additional_data) # create a temporary file to store level at frequencies
 
     def get_temp_csv_filename(self):
         return self.tempfile

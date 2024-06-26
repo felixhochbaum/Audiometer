@@ -8,14 +8,13 @@ class Controller():
     def __init__(self):
         program_functions = {"Klassisches Audiogramm" : self.start_standard_procedure,
                              "Test" : self.start_test_procedure}
-        self.familiarization = Familiarization()
-        self.test_procedure = TestProcedure()
         self.view = setup_ui(self.start_familiarization, 
                              program_functions) 
     def run_app(self):
         self.view.mainloop()
 
-    def start_familiarization(self):
+    def start_familiarization(self, id="", **additional_data):
+        self.familiarization = Familiarization(id=id, **additional_data)
         return self.familiarization.familiarize()
 
     def start_standard_procedure(self):
@@ -23,4 +22,5 @@ class Controller():
         self.standard_procedure.standard_test()
 
     def start_test_procedure(self):
+        self.test_procedure = TestProcedure()
         self.test_procedure.test_test()
