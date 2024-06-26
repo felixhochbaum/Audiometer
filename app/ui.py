@@ -22,12 +22,15 @@ class App(tb.Window):
         self.title("Sound Player")
         self.geometry("800x800")
         self.minsize(650,650)
+        self.attributes('-fullscreen', True)  #for fullscreen mode
+        self.bind("<Escape>", self.exit_fullscreen)
+        
         #self.set_icon("app/00_TUBerlin_Logo_rot.jpg") change the icon maybe? #TODO
 
-        '''
+        
         #this might solve the different GUI on macOS LINUX and WINDOWS problem... #TODO
         self.tk.call('tk', 'scaling', 2.0)  # Adjust for high-DPI displays
-        
+        '''
         # Set explicit fonts
         self.style = ttk.Style()
         self.style.configure('TLabel', font=('Arial', 12))
@@ -99,6 +102,9 @@ class App(tb.Window):
             messagebox.showwarning("Ops..", "This theme is already in use.")
         else:
             self.style.theme_use(theme_name)
+
+    def exit_fullscreen(self, event=None):
+        self.attributes('-fullscreen', False)
 
     def set_icon(self, path):
         """Set the window icon using Pillow"""
@@ -299,33 +305,34 @@ class ResultPage(ttk.Frame):
         
         super().__init__(parent)
         self.parent = parent
-        self.create_widgets()
 
-    def create_widgets(self):
-        """Creates the widgets for the view
-        """
-
-        self.info = ttk.Label(self, text="Ergebnisse", font=('Arial',18))
-        self.info.pack(padx=10, pady=10)
-
-        # dummy values
         freq = [63, 125, 250, 500, 1000, 2000, 4000, 8000]
         dummy_right = [10, 15, 20, 25, 30, 35, 40, 45]
         dummy_left = [5, 10, 15, 20, 25, 30, 35, 40]
 
-        # audiogram plot
-        fig = create_audiogram(freq, dummy_right, dummy_left, save=False)
+        # Create audiogram plot
+        fig = create_audiogram(freq, dummy_right, dummy_left)
         
-        # Embed the plot in the Tkinter frame
-        canvas = FigureCanvasTkAgg(fig, master=self)
-        canvas.draw()
-        canvas.get_tk_widget().pack(padx=10, pady=10)
+        # Create widgets
+        self.create_widgets(fig)
 
-        self.BackToMainMenu = ttk.Button(self, text="Zurück zur Startseite", command=self.back_to_MainMenu)
+    def create_widgets(self,fig):
+        """Creates the widgets for the view`
+        """
+        self.info = ttk.Label(self, text="Ergebnisse", font=('Arial', 18))
+        self.info.pack(padx=10, pady=10)
+
+        # Set the title on the parent window
+        self.parent.title("Audiogram")
+
+        # Display the plot
+        canvas = FigureCanvasTkAgg(fig, self)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tk.TOP, expand=0)
+
+        self.BackToMainMenu = ttk.Button(self, text="Zurück zur Startseite", command=lambda: self.parent.show_frame(MainMenu))
         self.BackToMainMenu.pack(padx=10, pady=10)
 
-    def show_warning(self):
-            messagebox.showwarning("Warnung", "Funktioniert noch nicht :)")
     
     def back_to_MainMenu(self):
         self.parent.show_frame(MainMenu)
