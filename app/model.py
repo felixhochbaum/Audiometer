@@ -68,8 +68,9 @@ class Procedure():
         self.ap.stop()
         if self.tone_heard == False:
             print("Tone not heard :(")
-        sleep_time = abs(random.gauss(2, 1.2)) # non negative random number
-        time.sleep(sleep_time) # wait before next tone is played. #TODO test times
+        else:
+            sleep_time = random.uniform(1, 2.5) # random wait time vetween 1 and 2.5
+            time.sleep(sleep_time) # wait before next tone is played. #TODO test times
 
     
     def create_temp_csv(self):
