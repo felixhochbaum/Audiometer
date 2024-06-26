@@ -51,6 +51,9 @@ def create_audiogram(freqs, right_values, left_values, save=True):
     ax.grid(True, which='both', linestyle='--', linewidth=0.5)  # Grid for better readability
     ax.legend(loc='upper right')
     
+    #if save:
+        #plt.savefig("audiogram.png")  # Save the figure as an image file
+    
     return fig
 
 #Beispielwerte
