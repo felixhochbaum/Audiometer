@@ -41,6 +41,7 @@ class App(tb.Window):
         # Dictionary to store all pages
         self.program_funcs = program_funcs
         self.frames = {}
+        self.bineural_test = False
 
         # Pages, where the user can interact
         for F in (MainMenu, FamiliarizationPage, ProgramPage, ResultPage):
@@ -150,9 +151,9 @@ class MainMenu(ttk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
-        self.selected_option = None  # Instance variable to store selected option
         self.button_width = 25
         self.start_button = None
+        self.bi_var = tk.BooleanVar()
         self.create_widgets()
 
     def create_widgets(self):
@@ -166,11 +167,13 @@ class MainMenu(ttk.Frame):
         self.dropdown.pack(pady=10)
         self.dropdown.bind("<<ComboboxSelected>>", self.on_option_selected)
 
-        for widget in self.winfo_children():
-            widget.pack_configure(anchor='center')
+        self.bi_button = ttk.Checkbutton(self, 
+                                         text="Auch binaurale Testung durchführen", 
+                                         variable=self.bi_var)
+        self.bi_button.pack(pady=10)
 
     def on_option_selected(self, event):
-        self.selected_option = self.dropdown.get() 
+        self.selected_option = self.dropdown.get()
         self.show_start_button()
 
     def show_start_button(self):
@@ -182,7 +185,11 @@ class MainMenu(ttk.Frame):
             self.start_button.pack(pady=10)
 
     def run_familiarization(self):
-        self.parent.frames[FamiliarizationPage].selected_option = self.selected_option 
+        self.parent.bineural_test = self.bi_var.get()
+
+        # WORKAROUND: Set the selected option in all pages
+        self.parent.frames[ProgramPage].bineural_test = self.parent.bineural_test
+        self.parent.frames[ResultPage].bineural_test = self.parent.bineural_test
         self.parent.show_frame(FamiliarizationPage)
 
 
@@ -202,7 +209,7 @@ class FamiliarizationPage(ttk.Frame):
         """Creates the widgets for the page
         """
         button_width = 25 
-       
+
         self.label = ttk.Label(self, text=text_Familiarization, font=('Arial', 16))
         self.label.pack(padx=10, pady=10)
         self.play_button = ttk.Button(self, 
@@ -244,7 +251,6 @@ class ProgramPage(ttk.Frame):
         self.start_button = ttk.Button(self, text="Starte Prozess", command=self.run_program)
         self.start_button.pack(padx=10, pady=200)
     
-
         for widget in self.winfo_children():
             widget.pack_configure(anchor='center')
 
