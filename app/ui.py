@@ -154,6 +154,7 @@ class MainMenu(ttk.Frame):
         self.button_width = 25
         self.start_button = None
         self.bi_var = tk.BooleanVar()
+        self.selected_option = None
         self.create_widgets()
 
     def create_widgets(self):
@@ -185,11 +186,6 @@ class MainMenu(ttk.Frame):
             self.start_button.pack(pady=10)
 
     def run_familiarization(self):
-        self.parent.bineural_test = self.bi_var.get()
-
-        # WORKAROUND: Set the selected option in all pages
-        self.parent.frames[ProgramPage].bineural_test = self.parent.bineural_test
-        self.parent.frames[ResultPage].bineural_test = self.parent.bineural_test
         self.parent.show_frame(FamiliarizationPage)
 
 
@@ -259,7 +255,7 @@ class ProgramPage(ttk.Frame):
         """
         self.selected_option = self.parent.frames[MainMenu].selected_option
         self.parent.show_frame(self.selected_option)
-        self.parent.wait_for_process(self.parent.frames[self.selected_option].program,
+        self.parent.wait_for_process(lambda: self.parent.frames[self.selected_option].program(self.parent.frames[MainMenu].bi_var.get()),
                                      lambda: self.parent.show_frame(ResultPage))
 
 class DuringFamiliarizationView(ttk.Frame):
@@ -271,7 +267,7 @@ class DuringFamiliarizationView(ttk.Frame):
             familiarization_func (function): function to be called for familiarization"""
         super().__init__(parent)
         self.parent = parent
-        self.program = familiarization_func  # Hinweis: hier läuft gerade die Dummy Eingewöhnung
+        self.program = familiarization_func 
         self.text = "Eingewöhnung läuft..."
         self.create_widgets()
 
@@ -292,7 +288,7 @@ class DuringProcedureView(ttk.Frame):
         """
         super().__init__(parent)
         self.parent = parent
-        self.program = program_func  # Hinweis: hier läuft gerade die Dummy Procedure
+        self.program = program_func 
         self.text = text
         self.create_widgets()
 
@@ -312,9 +308,9 @@ class ResultPage(ttk.Frame):
         super().__init__(parent)
         self.parent = parent
 
-        freq = [63, 125, 250, 500, 1000, 2000, 4000, 8000]
-        dummy_right = [10, 15, 20, 25, 30, 35, 40, 45]
-        dummy_left = [5, 10, 15, 20, 25, 30, 35, 40]
+        freq = [125, 250, 500, 1000, 2000, 4000, 8000]
+        dummy_right = [15, 20, 25, 30, 35, 40, 45]
+        dummy_left = [10, 15, 20, 25, 30, 35, 40]
 
         # Create audiogram plot
         fig = create_audiogram(freq, dummy_right, dummy_left)

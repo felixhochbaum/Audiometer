@@ -9,7 +9,7 @@ import csv
 
 class Procedure():
 
-    def __init__(self, startlevel, signal_length):
+    def __init__(self, startlevel, signal_length, bineural=False):
         """The parent class for the familiarization, the main procedure and the short version
 
         Args:
@@ -44,8 +44,6 @@ class Procedure():
             self.tone_heard = True
             print("Tone heard!")
         
-        
-
 
     def play_tone(self):
         """set tone_heard to False, play beep, then wait max 4s for keypress.
@@ -190,25 +188,25 @@ class Familiarization(Procedure):
             self.tone_heard = True
 
             # first loop (always -20dBHL)
-            while self.tone_heard == True:
+            while self.tone_heard:
                 self.play_tone()
                 
-                if self.tone_heard == True:
+                if self.tone_heard:
                     self.level -= 20
                 else:
                     self.level += 10
             
             # second loop (always +10dBHL)
-            while self.tone_heard == False:
+            while not self.tone_heard:
                 self.play_tone()
 
-                if self.tone_heard == False:
+                if not self.tone_heard:
                     self.level += 10
 
             # replay tone with same level
             self.play_tone()
 
-            if self.tone_heard == False:
+            if not self.tone_heard:
                 self.fails += 1
                 if self.fails >= 2:
                     print("Familiarization unsuccessful. Please read rules and start again.")
@@ -247,8 +245,14 @@ class StandardProcedure(Procedure):
 
         self.side = 'l'
         success_l = self.standard_test_one_ear()
+        
         self.side = 'r'
         success_r = self.standard_test_one_ear()
+        
+        if self.parent.bineural:
+            self.side = 'lr'
+            success_lr = self.standard_test_one_ear()
+        
         if success_l and success_r:
             return True
         else:
@@ -272,7 +276,7 @@ class StandardProcedure(Procedure):
         for f in self.freq_order:
             print(f"Retest at frequeny {f} Hz")
             s = self.standard_test_one_freq(f, retest=True)
-            if s == True:
+            if s:
                 break
 
         if all(success):
@@ -298,9 +302,9 @@ class StandardProcedure(Procedure):
         self.level = self.startlevel
 
         # Step 1 (raise tone in 5 dB steps until it is heard)
-        while self.tone_heard == False:
+        while not self.tone_heard:
             self.play_tone()
-            if self.tone_heard == False:
+            if not self.tone_heard:
                 self.level += 5
 
         # Step 2
@@ -310,12 +314,12 @@ class StandardProcedure(Procedure):
         while tries < 6:
 
             # reduce in 10dB steps until no answer
-            while self.tone_heard == True:
+            while not self.tone_heard:
                 self.level -= 10
                 self.play_tone()
 
             # raise in 5 dB steps until answer
-            while self.tone_heard == False:
+            while not self.tone_heard:
                 self.level += 5
                 self.play_tone()
 
