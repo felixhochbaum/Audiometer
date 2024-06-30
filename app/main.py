@@ -18,15 +18,10 @@ class Controller():
         self.familiarization = Familiarization(id=id, **additional_data)
         return self.familiarization.familiarize()
 
-    def start_standard_procedure(self, bineural_test=False, **additional_data):
-        self.standard_procedure = StandardProcedure(self.familiarization.get_temp_csv_filename(), 
-                                                    bineural_test, 
-                                                    **additional_data)
-        self.standard_procedure.standard_test()
+    def start_standard_procedure(self, bineural=False, **additional_data):
+        self.standard_procedure = StandardProcedure(self.familiarization.get_temp_csv_filename(), **additional_data)
+        self.standard_procedure.standard_test(bineural)
 
-    def start_screen_procedure(self, bineural_test=False, **additional_data):
-        self.screen_procedure = ScreeningProcedure(self.familiarization.get_temp_csv_filename(),  
-                                                   bineural_test, 
-                                                   **additional_data)
-        
-        self.screen_procedure.screen_test()
+    def start_screen_procedure(self, bineural=False, **additional_data):
+        self.screen_procedure = ScreeningProcedure(self.familiarization.get_temp_csv_filename(), **additional_data)
+        self.screen_procedure.screen_test(bineural)

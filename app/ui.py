@@ -19,13 +19,13 @@ class App(tb.Window):
         """
         super().__init__(themename="superhero")  # Set/change the theme Link: https://ttkbootstrap.readthedocs.io/en/latest/themes/dark/
 
-        # General settings
+        # General theme settings
         self.title("Sound Player")
         self.geometry("800x800")
         self.minsize(650,650)
         self.attributes('-fullscreen', True)  #for fullscreen mode
         self.bind("<Escape>", self.exit_fullscreen)
-        
+
         #self.set_icon("app/00_TUBerlin_Logo_rot.jpg") change the icon maybe? #TODO
         
         #this might solve the different GUI on macOS LINUX and WINDOWS problem... #TODO
