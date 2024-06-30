@@ -28,4 +28,5 @@ class Controller():
         self.screen_procedure = ScreeningProcedure(self.familiarization.get_temp_csv_filename(),  
                                                    bineural_test, 
                                                    **additional_data)
+        
         self.screen_procedure.screen_test()

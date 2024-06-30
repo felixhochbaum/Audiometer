@@ -240,6 +240,7 @@ class StandardProcedure(Procedure):
         Returns:
             bool: test successful
         """
+        success_lr = True
 
         self.side = 'l'
         success_l = self.standard_test_one_ear()
@@ -251,7 +252,7 @@ class StandardProcedure(Procedure):
             self.side = 'lr'
             success_lr = self.standard_test_one_ear()
         
-        if success_l and success_r:
+        if success_l and success_r and success_lr:
             return True
         else:
             return False
@@ -349,7 +350,7 @@ class StandardProcedure(Procedure):
 
         
 class ScreeningProcedure(Procedure):
-    def __init__(self, signal_length=1, id="", **additional_data):
+    def __init__(self, signal_length=1, id="", bineural=False, **additional_data):
         """short screening process to check if subject can hear specific frequencies at certain levels
 
         Args:
@@ -357,32 +358,75 @@ class ScreeningProcedure(Procedure):
         """
         super().__init__(startlevel=0, signal_length=signal_length)
         self.tempfile = self.create_temp_csv(id=id, **additional_data)
-        self.freq_levels = {
-            '125': 30,
-            '250': 25,
-            '500': 20,
-            '1000': 15,
-            '2000': 10,
-            '4000': 10,
-            '8000': 20
-        }
+        self.bineural = bineural
+        #TODO
+        self.freq_order = [1000, 2000]#, 4000, 8000, 500, 250, 125]
+        self.freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
+
     
     def screen_test(self):
-        """main function for screening
+        """main functions
 
         Returns:
-            dict: results of screening with frequencies as keys and whether the tone was heard (True/False)
+            bool: test successful
         """
-        results = {}
-        
-        for freq, level in self.freq_levels.items():
-            self.level = level
-            self.frequency = int(freq)
-            self.tone_heard = False
-            self.play_tone()
-            results[freq] = self.tone_heard
-            self.add_to_temp_csv(self.level if self.tone_heard else "NaN", freq, 'l', self.tempfile)
-            print(f"Frequency {freq} Hz at {level} dBHL {'heard' if self.tone_heard else 'not heard'}")
-        
-        return results
+        success_lr = True
 
+        self.side = 'l'
+        success_l = self.screen_one_ear()
+        
+        self.side = 'r'
+        success_r = self.screen_one_ear()
+        
+        if self.bineural:
+            self.side = 'lr'
+            success_lr = self.screen_one_ear()
+        
+        if success_l and success_r and success_lr:
+            return True
+        else:
+            return False
+
+    def screen_one_freq(self, freq):
+        """screening for one frequency
+
+        Args:
+            freq (int): frequency to be tested
+            level (int): level at which the frequency is tested
+
+        Returns:
+            bool: tone heard
+        """
+        self.frequency = freq
+        self.level = self.freq_levels[freq]
+        self.tone_heard = False
+        
+        for i in range(2): #Test twice maybe?
+            self.play_tone()
+            if self.tone_heard:
+                return True
+            
+        return self.tone_heard
+
+
+    def screen_one_ear(self):
+        success = []
+        # test every frequency
+        for f in self.freq_order:
+            print(f"Testing frequeny {f} Hz")
+            s = self.screen_one_freq(f)
+            success.append(s)
+
+        # retest if not heard maybe??
+        for i, (s, f) in enumerate(zip(success, self.freq_order)):
+            if not s:
+                print(f"Retest at frequeny {f} Hz")
+                s_new = self.screen_one_freq(f)
+                if s_new:
+                    success[i] = s_new
+
+        if all(success):
+            return True
+        
+        else:
+            return False
