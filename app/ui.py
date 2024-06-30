@@ -9,6 +9,7 @@ import ttkbootstrap as tb
 from PIL import Image, ImageTk
 
 class App(tb.Window):
+
     def __init__(self, familiarization_func, program_funcs:dict):
         """Main application window. Contains all pages and controls the flow of the program.
 
@@ -26,7 +27,6 @@ class App(tb.Window):
         self.bind("<Escape>", self.exit_fullscreen)
         
         #self.set_icon("app/00_TUBerlin_Logo_rot.jpg") change the icon maybe? #TODO
-
         
         #this might solve the different GUI on macOS LINUX and WINDOWS problem... #TODO
         self.tk.call('tk', 'scaling', 2.0)  # Adjust for high-DPI displays
@@ -68,7 +68,7 @@ class App(tb.Window):
         # Create menubar
         self.create_menubar()
 
-        # Override the close button protocol (instead of extra button)
+        # Override the close button protocol
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.grid_rowconfigure(0, weight=1)
@@ -92,8 +92,6 @@ class App(tb.Window):
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.on_closing)
         menubar.add_cascade(label="File", menu=file_menu)
-
-
 
     def change_theme(self, theme_name):
         """Change to the specified theme"""
@@ -153,7 +151,7 @@ class MainMenu(ttk.Frame):
         self.parent = parent
         self.button_width = 25
         self.start_button = None
-        self.bi_var = tk.BooleanVar()
+        self.bineural_test = tk.BooleanVar()
         self.selected_option = None
         self.create_widgets()
 
@@ -168,9 +166,10 @@ class MainMenu(ttk.Frame):
         self.dropdown.pack(pady=10)
         self.dropdown.bind("<<ComboboxSelected>>", self.on_option_selected)
 
+        #TODO nur wenn sinnvoll anzeigen
         self.bi_button = ttk.Checkbutton(self, 
                                          text="Auch binaurale Testung durchführen", 
-                                         variable=self.bi_var)
+                                         variable=self.bineural_test)
         self.bi_button.pack(pady=10)
 
     def on_option_selected(self, event):
@@ -189,8 +188,8 @@ class MainMenu(ttk.Frame):
         self.parent.show_frame(FamiliarizationPage)
 
 
-
 class FamiliarizationPage(ttk.Frame):
+
     def __init__(self, parent):
         """Page for starting the familiarization process
 
@@ -229,7 +228,9 @@ class FamiliarizationPage(ttk.Frame):
         self.parent.wait_for_process(self.parent.frames[DuringFamiliarizationView].program, 
                                      lambda: self.parent.show_frame(ProgramPage))
 
+
 class ProgramPage(ttk.Frame):
+
     def __init__(self, parent):
         """Page for starting the main program
 
@@ -254,11 +255,14 @@ class ProgramPage(ttk.Frame):
         """Runs the main program
         """
         self.selected_option = self.parent.frames[MainMenu].selected_option
+        self.bineural_test = self.parent.frames[MainMenu].bineural_test.get()
         self.parent.show_frame(self.selected_option)
-        self.parent.wait_for_process(lambda: self.parent.frames[self.selected_option].program(self.parent.frames[MainMenu].bi_var.get()),
+        self.parent.wait_for_process(lambda: self.parent.frames[self.selected_option].program(self.bineural_test),
                                      lambda: self.parent.show_frame(ResultPage))
 
+
 class DuringFamiliarizationView(ttk.Frame):
+    
     def __init__(self, parent, familiarization_func):
         """View during familiarization process
         
@@ -277,7 +281,9 @@ class DuringFamiliarizationView(ttk.Frame):
         self.info = ttk.Label(self, text=self.text)
         self.info.grid(row=0, column=0, padx=10, pady=10)
 
+
 class DuringProcedureView(ttk.Frame):
+
     def __init__(self, parent, program_func, text):
         """View during main program
 
@@ -299,6 +305,7 @@ class DuringProcedureView(ttk.Frame):
         self.info.grid(row=0, column=0, padx=10, pady=10)
 
 class ResultPage(ttk.Frame):
+
     def __init__(self, parent):
         """Page for showing the results of the program
 
@@ -334,7 +341,6 @@ class ResultPage(ttk.Frame):
 
         self.BackToMainMenu = ttk.Button(self, text="Zurück zur Startseite", command=lambda: self.parent.show_frame(MainMenu))
         self.BackToMainMenu.pack(padx=10, pady=10)
-
     
     def back_to_MainMenu(self):
         self.parent.show_frame(MainMenu)

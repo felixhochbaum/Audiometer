@@ -1,5 +1,4 @@
 from .audio_player import AudioPlayer
-
 from pynput import keyboard
 import time
 import random
@@ -15,11 +14,13 @@ class Procedure():
         Args:
             startlevel (float): starting level of procedure in dBHL
             signal_length (float): length of played signals in seconds
+            bineural (bool): whether to perform a binaural test
         """
         self.ap = AudioPlayer()
         self.startlevel = startlevel
         self.level = startlevel
         self.signal_length = signal_length
+        self.bineural = bineural
         self.frequency = 1000
         self.zero_dbhl = 0.00002 # zero_dbhl in absolute numbers. Needs to be calibrated!
         self.tone_heard = False
@@ -101,7 +102,6 @@ class Procedure():
                 for i in aditional_data:
                     csv_writer.writerow([i, aditional_data[i]])
 
-
             return temp_file.name
         
         
@@ -136,7 +136,6 @@ class Procedure():
             print(i['125'], i['250'])
 
 
-    
     def get_value_from_csv(self, frequency, temp_filename, side='l'):
         """get the value at a specific frequency from the temporary csv file
 
@@ -157,8 +156,6 @@ class Procedure():
 
 
 
-
-
 class Familiarization(Procedure):
 
     def __init__(self, startlevel=40, signal_length=1, id="", **additional_data):
@@ -173,8 +170,10 @@ class Familiarization(Procedure):
         self.fails = 0 # number of times familiarization failed
         self.tempfile = self.create_temp_csv(id=id, **additional_data) # create a temporary file to store level at frequencies
 
+
     def get_temp_csv_filename(self):
         return self.tempfile
+
 
     def familiarize(self):
         """main funtion
@@ -182,9 +181,7 @@ class Familiarization(Procedure):
         Returns:
             bool: familiarization successfull
         """
-
         while True:
-
             self.tone_heard = True
 
             # first loop (always -20dBHL)
@@ -198,8 +195,8 @@ class Familiarization(Procedure):
             
             # second loop (always +10dBHL)
             while not self.tone_heard:
-                self.play_tone()
 
+                self.play_tone()
                 if not self.tone_heard:
                     self.level += 10
 
@@ -221,26 +218,27 @@ class Familiarization(Procedure):
 
 
 
-
 class StandardProcedure(Procedure):
 
-    def __init__(self, temp_filename, signal_length=1):
+    def __init__(self, temp_filename, signal_length=1, bineural=False):
         """standard audiometer process (rising level)
 
         Args:
             temp_filename (str): name of temporary csv file where starting level is stored and future values will be stored
             signal_length (int, optional): length of played signal in seconds. Defaults to 1.
+            bineural (bool): whether to perform a binaural test
         """
         startlevel = int(self.get_value_from_csv('1000', temp_filename)) - 10 # 10 dB under level from familiarization
-        super().__init__(startlevel, signal_length)
+        super().__init__(startlevel, signal_length, bineural)
         self.temp_filename = temp_filename
         self.freq_order = [1000, 2000, 4000, 8000, 500, 250, 125] # order in which frequencies are tested
 
+
     def standard_test(self):
-        """main funtion
+        """main function
 
         Returns:
-            bool: test successfull
+            bool: test successful
         """
 
         self.side = 'l'
@@ -249,7 +247,7 @@ class StandardProcedure(Procedure):
         self.side = 'r'
         success_r = self.standard_test_one_ear()
         
-        if self.parent.bineural:
+        if self.bineural:
             self.side = 'lr'
             success_lr = self.standard_test_one_ear()
         
@@ -350,8 +348,41 @@ class StandardProcedure(Procedure):
         return False
 
         
+class ScreeningProcedure(Procedure):
+    def __init__(self, signal_length=1, id="", **additional_data):
+        """short screening process to check if subject can hear specific frequencies at certain levels
 
+        Args:
+            signal_length (int, optional): length of played signals in seconds. Defaults to 1.
+        """
+        super().__init__(startlevel=0, signal_length=signal_length)
+        self.tempfile = self.create_temp_csv(id=id, **additional_data)
+        self.freq_levels = {
+            '125': 30,
+            '250': 25,
+            '500': 20,
+            '1000': 15,
+            '2000': 10,
+            '4000': 10,
+            '8000': 20
+        }
+    
+    def screen_test(self):
+        """main function for screening
 
+        Returns:
+            dict: results of screening with frequencies as keys and whether the tone was heard (True/False)
+        """
+        results = {}
         
-                
+        for freq, level in self.freq_levels.items():
+            self.level = level
+            self.frequency = int(freq)
+            self.tone_heard = False
+            self.play_tone()
+            results[freq] = self.tone_heard
+            self.add_to_temp_csv(self.level if self.tone_heard else "NaN", freq, 'l', self.tempfile)
+            print(f"Frequency {freq} Hz at {level} dBHL {'heard' if self.tone_heard else 'not heard'}")
+        
+        return results
 

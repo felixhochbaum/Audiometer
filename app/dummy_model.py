@@ -3,7 +3,7 @@ import numpy as np
 
 class Familiarization():
 
-    def __init__(self):
+    def __init__(self, startlevel=40, signal_length=1, id="", **additional_datas):
         """Dummy Familiarization class
         """
         self.level = 10
