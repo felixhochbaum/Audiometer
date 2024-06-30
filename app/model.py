@@ -52,7 +52,7 @@ class Procedure():
         Then wait for around about 2s (randomized).
         """
         self.tone_heard = False
-        print("playing tone..")
+        print(self.frequency, "Hz - playing tone at", self.level, "dBHL.")
         self.ap.play_beep(self.frequency, self.dbhl_to_volume(self.level), self.signal_length, self.side)
         listener = keyboard.Listener(on_press=self.key_press, on_release=None)
         listener.start()
@@ -63,7 +63,6 @@ class Procedure():
             time.sleep(step_size / 1000)
             current_wait_time += step_size
         listener.stop()
-        print("listener stopped.")
         self.ap.stop()
         if self.tone_heard == False:
             print("Tone not heard :(")
