@@ -243,7 +243,7 @@ class StandardProcedure(Procedure):
         self.side = 'r'
         success_r = self.standard_test_one_ear()
         
-        if self.bineural:
+        if bineural:
             self.side = 'lr'
             success_lr = self.standard_test_one_ear()
         
@@ -370,7 +370,7 @@ class ScreeningProcedure(Procedure):
         self.side = 'r'
         success_r = self.screen_one_ear()
         
-        if self.bineural:
+        if bineural:
             self.side = 'lr'
             success_lr = self.screen_one_ear()
          
