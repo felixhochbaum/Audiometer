@@ -145,6 +145,7 @@ class MainMenu(ttk.Frame):
         self.start_button = None
         self.binaural_test = tk.BooleanVar()
         self.selected_option = None
+        self.patient_number = ""
         self.create_widgets()
 
     def create_widgets(self):
@@ -193,8 +194,8 @@ class MainMenu(ttk.Frame):
             self.start_button.pack(pady=10)
 
     def run_familiarization(self):
-        patient_number = self.patient_number_entry.get()
-        if not patient_number:
+        self.patient_number = self.patient_number_entry.get()
+        if not self.patient_number:
             messagebox.showwarning("Warnung", "Bitte geben Sie eine Probandennummer ein.")
             return
         self.parent.show_frame(FamiliarizationPage)
@@ -237,7 +238,7 @@ class FamiliarizationPage(ttk.Frame):
         """Runs the familiarization process
         """
         self.parent.show_frame(DuringFamiliarizationView)
-        self.parent.wait_for_process(self.parent.frames[DuringFamiliarizationView].program, 
+        self.parent.wait_for_process(lambda: self.parent.frames[DuringFamiliarizationView].program(id=self.parent.frames[MainMenu].patient_number), 
                                      lambda: self.parent.show_frame(ProgramPage))
 
 
