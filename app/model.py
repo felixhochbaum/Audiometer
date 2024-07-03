@@ -174,7 +174,7 @@ class Procedure():
         now = datetime.now()
         date_str = now.strftime("%Y%m%d_%H%M%S")
         try:
-            id = self.rows[2]['250']
+            id = rows[2]['250']
         except:
             id = False
 
