@@ -10,8 +10,11 @@ nav:
   - User Guide:
       - Introduction: user_guide/intro.md
       - Installation: user_guide/installation.md
+      - Hardware Requirements: user_guide/hardware.md
   - Reference Manual:
+      - audio_player: api/audio_player.md
+      - audiogram: api/audiogram.md
+      - main: api/main.md
       - model: api/model.md
       - ui: api/ui.md
-      - main: api/main.md
   - About: about.md
