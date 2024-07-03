@@ -228,13 +228,13 @@ class StandardProcedure(Procedure):
         self.freq_order = [1000]#, 2000, 4000, 8000, 500, 250, 125] # order in which frequencies are tested
 
 
-    def standard_test(self, bineural=False, **additional_data):
+    def standard_test(self, binaural=False, **additional_data):
         """Main function
 
         Returns:
             bool: test successful
         """
-        print("Binneural: ", bineural)  
+        print("Binneural: ", binaural)  
         success_lr = True
 
         self.side = 'l'
@@ -243,7 +243,7 @@ class StandardProcedure(Procedure):
         self.side = 'r'
         success_r = self.standard_test_one_ear()
         
-        if bineural:
+        if binaural:
             self.side = 'lr'
             success_lr = self.standard_test_one_ear()
         
@@ -343,25 +343,26 @@ class StandardProcedure(Procedure):
 
         
 class ScreeningProcedure(Procedure):
-    def __init__(self, signal_length=1, id="", **additional_data):
+    def __init__(self,  temp_filename, signal_length=1):
         """short screening process to check if subject can hear specific frequencies at certain levels
 
         Args:
             signal_length (int, optional): length of played signals in seconds. Defaults to 1.
         """
         super().__init__(startlevel=0, signal_length=signal_length)
-        self.tempfile = self.create_temp_csv(id=id, **additional_data)
-        #TODO
+        self.temp_filename = temp_filename
         self.freq_order = [1000, 2000]#, 4000, 8000, 500, 250, 125]
+        #TODO das als default, aber  variabel in der GUI
         self.freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
-
     
-    def screen_test(self, bineural=False, **additional_data):
+    def screen_test(self, binaural=False, **additional_data):
         """main functions
 
         Returns:
             bool: test successful
         """
+        #TODO klären ob die andere Eingewöhnung okay ist
+
         success_lr = True
 
         self.side = 'l'
@@ -370,11 +371,9 @@ class ScreeningProcedure(Procedure):
         self.side = 'r'
         success_r = self.screen_one_ear()
         
-        if bineural:
+        if binaural:
             self.side = 'lr'
             success_lr = self.screen_one_ear()
-         
-        #TODO retest?
 
         if success_l and success_r and success_lr:
             return True
@@ -390,14 +389,6 @@ class ScreeningProcedure(Procedure):
             s = self.screen_one_freq(f)
             success.append(s)
 
-        # retest if not heard maybe??
-        for i, (s, f) in enumerate(zip(success, self.freq_order)):
-            if not s:
-                print(f"Retest at frequeny {f} Hz")
-                s_new = self.screen_one_freq(f)
-                if s_new:
-                    success[i] = s_new
-
         if all(success):
             return True
         
@@ -405,7 +396,7 @@ class ScreeningProcedure(Procedure):
             return False
 
 
-    def screen_one_freq(self, freq, retest=False):
+    def screen_one_freq(self, freq):
         """screening for one frequency
 
         Args:
@@ -418,16 +409,20 @@ class ScreeningProcedure(Procedure):
         self.frequency = freq
         self.level = self.freq_levels[freq]
         self.tone_heard = False
-
-        if retest:
-            self.play_tone()
+        self.num_heard = 0
         
-        else:
-            for i in range(2): #Test twice maybe?
-                self.play_tone()
-                if self.tone_heard:
-                    return True
+        for i in range(3):
+            self.play_tone()
             
+            if self.tone_heard:
+                self.num_heard += 1
+
+            if self.num_heard >= 2:
+                self.add_to_temp_csv(str(self.level), str(self.frequency), self.side, self.temp_filename)
+                return True
+        
         return self.tone_heard
+    
+
 
 

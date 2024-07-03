@@ -41,7 +41,7 @@ class App(tb.Window):
         # Dictionary to store all pages
         self.program_funcs = program_funcs
         self.frames = {}
-        self.bineural_test = False
+        self.binaural_test = False
 
         # Pages, where the user can interact
         for F in (MainMenu, FamiliarizationPage, ProgramPage, ResultPage):
@@ -151,7 +151,7 @@ class MainMenu(ttk.Frame):
         self.parent = parent
         self.button_width = 25
         self.start_button = None
-        self.bineural_test = tk.BooleanVar()
+        self.binaural_test = tk.BooleanVar()
         self.selected_option = None
         self.create_widgets()
 
@@ -169,7 +169,7 @@ class MainMenu(ttk.Frame):
         #TODO nur wenn sinnvoll anzeigen
         self.bi_button = ttk.Checkbutton(self, 
                                          text="Auch binaurale Testung durchführen", 
-                                         variable=self.bineural_test)
+                                         variable=self.binaural_test)
         self.bi_button.pack(pady=10)
 
     def on_option_selected(self, event):
@@ -255,9 +255,9 @@ class ProgramPage(ttk.Frame):
         """Runs the main program
         """
         self.selected_option = self.parent.frames[MainMenu].selected_option
-        self.bineural_test = self.parent.frames[MainMenu].bineural_test.get()
+        self.binaural_test = self.parent.frames[MainMenu].binaural_test.get()
         self.parent.show_frame(self.selected_option)
-        self.parent.wait_for_process(lambda: self.parent.frames[self.selected_option].program(self.bineural_test),
+        self.parent.wait_for_process(lambda: self.parent.frames[self.selected_option].program(self.binaural_test),
                                      lambda: self.parent.show_frame(ResultPage))
 
 
