@@ -121,6 +121,9 @@ class Procedure():
             rows[0][frequency] = value
         elif side == 'r':
             rows[1][frequency] = value
+        else:
+            rows[0][frequency] = value
+            rows[1][frequency] = value
 
         # Write all rows back to the CSV file
         with open(temp_filename, mode='w', newline='') as temp_file:
