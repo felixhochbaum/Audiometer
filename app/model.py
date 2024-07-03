@@ -159,6 +159,26 @@ class Procedure():
             return freq_dict[frequency]
         
 
+    def create_final_csv(self, temp_filename):
+        """makes a permanent csv file from the temporary file
+
+        Args:
+            temp_filename (str): name of temporary csv file
+        """
+        with open(temp_filename, mode='r', newline='') as temp_file:
+            dict_reader = csv.DictReader(temp_file)
+            rows = list(dict_reader)
+
+        final_file_name = "test.csv"
+
+        with open(final_file_name, mode='x', newline='') as final_file:
+            dict_writer = csv.DictWriter(final_file, fieldnames=self.freq_bands)
+            dict_writer.writeheader()
+            dict_writer.writerows(rows)
+        
+        print("Datei gespeicher als " + final_file_name)
+        
+
 
 
 class Familiarization(Procedure):
@@ -255,12 +275,14 @@ class StandardProcedure(Procedure):
             success_l = self.standard_test_one_ear()
 
             if self.test_mode == True and self.jump_to_end == True:
+                self.create_final_csv(self.temp_filename)
                 return True
             
             self.side = 'r'
             success_r = self.standard_test_one_ear()
 
             if success_l and success_r:
+                self.create_final_csv(self.temp_filename)
                 return True
         
         if binaural:
@@ -268,9 +290,11 @@ class StandardProcedure(Procedure):
             success_lr = self.standard_test_one_ear()
 
             if self.test_mode == True and self.jump_to_end == True:
+                self.create_final_csv(self.temp_filename)
                 return True
             
             if success_lr:
+                self.create_final_csv(self.temp_filename)
                 return True
 
         return False
@@ -402,6 +426,7 @@ class ScreeningProcedure(Procedure):
             success_r = self.screen_one_ear()
 
             if success_l and success_r:
+                self.create_final_csv(self.temp_filename)
                 return True
         
         if binaural:
@@ -409,6 +434,7 @@ class ScreeningProcedure(Procedure):
             success_lr = self.screen_one_ear()
 
             if success_lr:
+                self.create_final_csv(self.temp_filename)
                 return True
 
         return False
