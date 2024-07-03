@@ -4,6 +4,7 @@ import time
 import random
 import tempfile as tfile
 import csv
+from datetime import datetime
 
 
 class Procedure():
@@ -168,7 +169,8 @@ class Procedure():
         with open(temp_filename, mode='r', newline='') as temp_file:
             dict_reader = csv.DictReader(temp_file)
             rows = list(dict_reader)
-
+        current_datetime = datetime.now()
+        
         final_file_name = "test.csv"
 
         with open(final_file_name, mode='x', newline='') as final_file:
