@@ -17,7 +17,7 @@ class App(tb.Window):
             familiarization_func (function): function to be called for familiarization
             *program_funcs (function): function(s) to be called for the main program
         """
-        super().__init__(themename="superhero")  # Set/change the theme Link: https://ttkbootstrap.readthedocs.io/en/latest/themes/dark/
+        super().__init__(themename="solar")  # Set/change the theme Link: https://ttkbootstrap.readthedocs.io/en/latest/themes/dark/
 
         # General theme settings
         self.title("Sound Player")
@@ -30,14 +30,7 @@ class App(tb.Window):
         
         #this might solve the different GUI on macOS LINUX and WINDOWS problem... #TODO
         self.tk.call('tk', 'scaling', 2.0)  # Adjust for high-DPI displays
-        '''
-        # Set explicit fonts
-        self.style = ttk.Style()
-        self.style.configure('TLabel', font=('Arial', 12))
-        self.style.configure('TButton', font=('Arial', 12))
-        self.style.configure('TCombobox', font=('Arial', 12))
-        '''
-
+        
         # Dictionary to store all pages
         self.program_funcs = program_funcs
         self.frames = {}
@@ -81,12 +74,11 @@ class App(tb.Window):
         file_menu = tk.Menu(menubar, tearoff=0)
         file_menu.add_command(label="Startseite", command=lambda: self.show_frame(MainMenu))
 
-        # Settings for chaning the theme ##i've randomly selected 4 themes (2 dark and 2 lighthttps://ttkbootstrap.readthedocs.io/en/latest/themes/dark/
+        # Settings for chaning the theme Link: lighthttps://ttkbootstrap.readthedocs.io/en/latest/themes/dark/
         ChangeTheme = tk.Menu(file_menu, tearoff=0)
-        ChangeTheme.add_command(label="theme 1", command=lambda: self.change_theme("superhero"))
-        ChangeTheme.add_command(label="theme 2", command=lambda: self.change_theme("solar"))
-        ChangeTheme.add_command(label="theme 3", command=lambda: self.change_theme("cosmo"))
-        ChangeTheme.add_command(label="theme 4", command=lambda: self.change_theme("sandstone"))
+        
+        ChangeTheme.add_command(label="light", command=lambda: self.change_theme("sandstone"))
+        ChangeTheme.add_command(label="dark", command=lambda: self.change_theme("solar"))
         file_menu.add_cascade(label="change theme", menu=ChangeTheme)
 
         file_menu.add_separator()
@@ -98,7 +90,7 @@ class App(tb.Window):
         current_theme = self.style.theme_use()
 
         if current_theme == theme_name:
-            messagebox.showwarning("Ops..", "This theme is already in use.")
+            messagebox.showwarning("Ops..", "Dieses Theme wird bereits verwendet.")
         else:
             self.style.theme_use(theme_name)
 
