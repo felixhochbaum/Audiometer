@@ -5,6 +5,7 @@ import random
 import tempfile as tfile
 import csv
 from datetime import datetime
+from .audiogram import create_audiogram
 
 
 class Procedure():
@@ -190,6 +191,35 @@ class Procedure():
             dict_writer.writerows(rows)
         
         print("Datei gespeicher als " + final_filename)
+
+
+    def create_final_audiogram(self, temp_filename):
+        """Creates audiogram from temporary csv file
+
+        Args:
+            temp_filename (str): name of temporary csv file
+
+        Returns:
+            fig: audiogramm as matplotlib figure
+        """
+        freqs = [int(x) for x in self.freq_bands]
+
+        if temp_filename == None:
+            audiogram = create_audiogram([], [], [])
+
+        else:
+            # read temp file
+            with open(temp_filename, mode='r', newline='') as temp_file:
+                dict_reader = csv.DictReader(temp_file)
+                rows = list(dict_reader)
+
+            
+            left_levels = [int(x) for x in self.rows[0]]
+            right_levels = [int(x) for x in self.rows[1]]
+
+            audiogram = create_audiogram(freqs, left_levels, right_levels)
+
+        return audiogram  
 
 
 class Familiarization(Procedure):
