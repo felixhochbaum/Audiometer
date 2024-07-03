@@ -6,3 +6,6 @@ Zunächst sounddevice installieren
 
 
 `run_app.py` ausführen, um die App zu starten.
+
+
+[Link zur Doku](https://satur42.github.io/Audiometer/)
