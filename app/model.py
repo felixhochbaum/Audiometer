@@ -153,9 +153,27 @@ class Procedure():
             if side == 'r': # go to next line if right side
                 freq_dict = next(dict_reader)    
             return freq_dict[frequency]
+        
+    '''
+    def generate_csv_name(self):
+        """Generates the CSV file name based on user information
 
+        Returns:
+            str: generated CSV file name
+        """
+        now = datetime.datetime.now()
+        date_str = now.strftime("%Y%m%d_%H%M%S")
 
+        patient_number = self.user_info.get("patient_number", "Unknown")
+        first_name = self.user_info.get("first_name", "")
+        last_name = self.user_info.get("last_name", "")
+        #gender = self.user_info.get("gender", "")
 
+        name_parts = [patient_number, first_name, last_name, date_str]
+        filename = "_".join(filter(None, name_parts)) + ".csv"
+
+        return filename
+    '''
 class Familiarization(Procedure):
 
     def __init__(self, startlevel=40, signal_length=1, id="", **additional_data):
