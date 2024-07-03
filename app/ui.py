@@ -156,6 +156,22 @@ class MainMenu(ttk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
+
+        self.patient_number_label = ttk.Label(self, text="Probandennummer:",font=('Arial', 12))
+        self.patient_number_label.pack(padx=10, pady=10)
+        self.patient_number_entry = ttk.Entry(self,width=self.button_width)
+        self.patient_number_entry.pack(padx=10, pady=10)
+
+        self.first_name_label = ttk.Label(self, text="Vorname (Optional):",font=('Arial', 12))
+        self.first_name_label.pack(padx=10, pady=10)
+        self.first_name_entry = ttk.Entry(self, width=self.button_width)
+        self.first_name_entry.pack(padx=10, pady=10)
+
+        self.last_name_label = ttk.Label(self, text="Nachname (Optional):",font=('Arial', 12))
+        self.last_name_label.pack(padx=10, pady=10)
+        self.last_name_entry = ttk.Entry(self,width=self.button_width)
+        self.last_name_entry.pack(padx=10, pady=10)
+
         self.label = ttk.Label(self, text="\nBitte wählen Sie ein Programm", font=('Arial', 16))
         self.label.pack(pady=10)
 
@@ -185,6 +201,10 @@ class MainMenu(ttk.Frame):
             self.start_button.pack(pady=10)
 
     def run_familiarization(self):
+        patient_number = self.patient_number_entry.get()
+        if not patient_number:
+            messagebox.showwarning("Warnung", "Bitte geben Sie eine Probandennummer ein.")
+            return
         self.parent.show_frame(FamiliarizationPage)
 
 

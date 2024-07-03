@@ -190,8 +190,6 @@ class Procedure():
             dict_writer.writerows(rows)
         
         print("Datei gespeicher als " + final_filename)
-        
-
 
 
 class Familiarization(Procedure):
