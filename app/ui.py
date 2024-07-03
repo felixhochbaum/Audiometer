@@ -7,6 +7,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from app.instructions import text_Familiarization
 import ttkbootstrap as tb
 from PIL import Image, ImageTk
+from tkcalendar import DateEntry
+from datetime import datetime
 
 class App(tb.Window):
 
@@ -152,18 +154,20 @@ class MainMenu(ttk.Frame):
 
         self.patient_number_label = ttk.Label(self, text="Probandennummer:",font=('Arial', 12))
         self.patient_number_label.pack(padx=10, pady=10)
-        self.patient_number_entry = ttk.Entry(self,width=self.button_width)
+        self.patient_number_entry = ttk.Entry(self,width=self.button_width+1)
         self.patient_number_entry.pack(padx=10, pady=10)
 
-        self.first_name_label = ttk.Label(self, text="Vorname (Optional):",font=('Arial', 12))
-        self.first_name_label.pack(padx=10, pady=10)
-        self.first_name_entry = ttk.Entry(self, width=self.button_width)
-        self.first_name_entry.pack(padx=10, pady=10)
-
-        self.last_name_label = ttk.Label(self, text="Nachname (Optional):",font=('Arial', 12))
-        self.last_name_label.pack(padx=10, pady=10)
-        self.last_name_entry = ttk.Entry(self,width=self.button_width)
-        self.last_name_entry.pack(padx=10, pady=10)
+        self.gender_label = ttk.Label(self, text="Geschlecht (Optional):", font=('Arial', 12))
+        self.gender_label.pack(padx=10, pady=10)
+        self.gender_dropdown = ttk.Combobox(self, values=["Männlich", "Weiblich"], state="readonly", width=self.button_width - 1)
+        self.gender_dropdown.set("Geschlecht...")
+        self.gender_dropdown.pack(padx=10, pady=10)
+        ''' # doesn't work yet
+        self.birthday_label = ttk.Label(self, text="Geburstag (Optional):", font=('Arial', 12))
+        self.birthday_label.pack(padx=10, pady=10)
+        self.birthday_entry = DateEntry(self, date_pattern='dd.mm.yyyy', width=24, background='darkblue',
+                                        foreground='white', borderwidth=2, maxdate=datetime.today())
+        '''
 
         self.label = ttk.Label(self, text="\nBitte wählen Sie ein Programm", font=('Arial', 16))
         self.label.pack(pady=10)
