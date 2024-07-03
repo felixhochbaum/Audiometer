@@ -166,19 +166,30 @@ class Procedure():
         Args:
             temp_filename (str): name of temporary csv file
         """
+        # read temp file
         with open(temp_filename, mode='r', newline='') as temp_file:
             dict_reader = csv.DictReader(temp_file)
             rows = list(dict_reader)
-        current_datetime = datetime.now()
-        
-        final_file_name = "test.csv"
+        # get date and time    
+        now = datetime.now()
+        date_str = now.strftime("%Y%m%d_%H%M%S")
+        try:
+            id = self.rows[2]['250']
+        except:
+            id = False
 
-        with open(final_file_name, mode='x', newline='') as final_file:
+        if id:
+            final_filename = id + "_audiogramm_" + date_str + ".csv"
+        else:
+            final_filename = "missingID_audiogramm_" + date_str + ".csv"
+
+
+        with open(final_filename, mode='x', newline='') as final_file:
             dict_writer = csv.DictWriter(final_file, fieldnames=self.freq_bands)
             dict_writer.writeheader()
             dict_writer.writerows(rows)
         
-        print("Datei gespeicher als " + final_file_name)
+        print("Datei gespeicher als " + final_filename)
         
 
 
