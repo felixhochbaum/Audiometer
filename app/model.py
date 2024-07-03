@@ -24,6 +24,8 @@ class Procedure():
         self.tone_heard = False
         self.freq_bands = ['125', '250', '500', '1000', '2000', '4000', '8000']
         self.side = 'l'
+        self.test_mode = True
+        self.jump_to_end = False
 
 
     def dbhl_to_volume(self, dbhl):
@@ -42,6 +44,8 @@ class Procedure():
         if key == keyboard.Key.space:
             self.tone_heard = True
             print("Tone heard!")
+        elif self.test_mode and key == keyboard.Key.right:
+            self.jump_to_end = True
         
 
     def play_tone(self):
@@ -153,6 +157,7 @@ class Procedure():
             if side == 'r': # go to next line if right side
                 freq_dict = next(dict_reader)    
             return freq_dict[frequency]
+        
 
 
 
@@ -186,6 +191,11 @@ class Familiarization(Procedure):
             # first loop (always -20dBHL)
             while self.tone_heard:
                 self.play_tone()
+
+                if self.jump_to_end == True:
+                    for f in self.freq_bands:
+                        self.add_to_temp_csv(20, f, 'lr', self.get_temp_csv_filename())
+                    return True
                 
                 if self.tone_heard:
                     self.level -= 20
@@ -213,6 +223,8 @@ class Familiarization(Procedure):
                 print("Familiarization successful!")
                 self.add_to_temp_csv(self.level, '1000', 'l', self.tempfile)
                 return True
+            
+
 
 
 
@@ -237,9 +249,13 @@ class StandardProcedure(Procedure):
         Returns:
             bool: test successful
         """
+
         if not binaural:
             self.side = 'l'
             success_l = self.standard_test_one_ear()
+
+            if self.test_mode == True and self.jump_to_end == True:
+                return True
             
             self.side = 'r'
             success_r = self.standard_test_one_ear()
@@ -250,6 +266,10 @@ class StandardProcedure(Procedure):
         if binaural:
             self.side = 'lr'
             success_lr = self.standard_test_one_ear()
+
+            if self.test_mode == True and self.jump_to_end == True:
+                return True
+            
             if success_lr:
                 return True
 
@@ -267,6 +287,10 @@ class StandardProcedure(Procedure):
         for f in self.freq_order:
             print(f"Testing frequency {f} Hz")
             s = self.standard_test_one_freq(f)
+
+            if self.test_mode == True and self.jump_to_end == True:
+                return True
+            
             success.append(s)
 
         # retest 1000 Hz (and more frequencies if discrepancy is too high)
@@ -300,6 +324,11 @@ class StandardProcedure(Procedure):
         # Step 1 (raise tone in 5 dB steps until it is heard)
         while not self.tone_heard:
             self.play_tone()
+
+            if self.test_mode == True and self.jump_to_end == True:
+                return True
+
+
             if not self.tone_heard:
                 self.level += 5
 
