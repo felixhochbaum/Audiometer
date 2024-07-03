@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def create_audiogram(freqs, right_values, left_values, save=True):
+def create_audiogram(freqs, right_values, left_values, bi_values=None, save=False):
     """Erstellt ein Audiogramm basierend auf den gegebenen Frequenzen und Hörschwellenwerten.
 
     Args:
@@ -32,6 +32,8 @@ def create_audiogram(freqs, right_values, left_values, save=True):
     # Plot der Hörschwellen
     ax.plot(np.log2(freqs), right_values, marker='o', linestyle='-', color='firebrick', label='rechtes Ohr')
     ax.plot(np.log2(freqs), left_values, marker='x', linestyle='-', color='dodgerblue', label='linkes Ohr')
+    if bi_values is not None:
+        ax.plot(np.log2(freqs), bi_values, marker='^', linestyle='-', color='darkgoldenrod', label='binauraler Hörtest')
 
     # Achsne invertieren und beschriften
     ax.invert_yaxis()  
@@ -51,8 +53,8 @@ def create_audiogram(freqs, right_values, left_values, save=True):
     ax.grid(True, which='both', linestyle='--', linewidth=0.5)  # Grid for better readability
     ax.legend(loc='upper right')
     
-    #if save:
-        #plt.savefig("audiogram.png")  # Save the figure as an image file
+    # if save:
+    #     plt.savefig("audiogram.png")  # Save the figure as an image file
     
     return fig
 
