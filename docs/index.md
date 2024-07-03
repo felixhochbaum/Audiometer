@@ -9,4 +9,7 @@ Welcome to the Audiometer documentation! Here you will find all the information 
   - [Installation](user_guide/installation.md)
   - [Usage](user_guide/usage.md)
 - [API Reference](api_reference.md)
+  - [main](user_guide/main.md)
+  - [model](user_guide/model.md)
+  - [ui](user_guide/ui.md)
 - [About](about.md)

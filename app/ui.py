@@ -168,7 +168,7 @@ class MainMenu(ttk.Frame):
 
         #TODO nur wenn sinnvoll anzeigen
         self.bi_button = ttk.Checkbutton(self, 
-                                         text="Auch binaurale Testung durchführen", 
+                                         text="Binaurale Testung", 
                                          variable=self.binaural_test)
         self.bi_button.pack(pady=10)
 

@@ -234,23 +234,23 @@ class StandardProcedure(Procedure):
         Returns:
             bool: test successful
         """
-        print("Binneural: ", binaural)  
-        success_lr = True
+        if not binaural:
+            self.side = 'l'
+            success_l = self.standard_test_one_ear()
+            
+            self.side = 'r'
+            success_r = self.standard_test_one_ear()
 
-        self.side = 'l'
-        success_l = self.standard_test_one_ear()
-        
-        self.side = 'r'
-        success_r = self.standard_test_one_ear()
+            if success_l and success_r:
+                return True
         
         if binaural:
             self.side = 'lr'
             success_lr = self.standard_test_one_ear()
-        
-        if success_l and success_r and success_lr:
-            return True
-        else:
-            return False
+            if success_lr:
+                return True
+
+        return False
 
         
     def standard_test_one_ear(self):
@@ -352,6 +352,7 @@ class ScreeningProcedure(Procedure):
         super().__init__(startlevel=0, signal_length=signal_length)
         self.temp_filename = temp_filename
         self.freq_order = [1000, 2000]#, 4000, 8000, 500, 250, 125]
+        
         #TODO das als default, aber  variabel in der GUI
         self.freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
     
@@ -361,24 +362,24 @@ class ScreeningProcedure(Procedure):
         Returns:
             bool: test successful
         """
-        #TODO klären ob die andere Eingewöhnung okay ist
+        if not binaural:
+            self.side = 'l'
+            success_l = self.screen_one_ear()
+            
+            self.side = 'r'
+            success_r = self.screen_one_ear()
 
-        success_lr = True
-
-        self.side = 'l'
-        success_l = self.screen_one_ear()
-        
-        self.side = 'r'
-        success_r = self.screen_one_ear()
+            if success_l and success_r:
+                return True
         
         if binaural:
             self.side = 'lr'
             success_lr = self.screen_one_ear()
 
-        if success_l and success_r and success_lr:
-            return True
-        else:
-            return False
+            if success_lr:
+                return True
+
+        return False
 
 
     def screen_one_ear(self):
