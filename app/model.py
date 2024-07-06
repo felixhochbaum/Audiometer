@@ -5,6 +5,7 @@ import tempfile as tfile
 import csv
 from datetime import datetime
 import os
+import numpy as np
 
 from .audio_player import AudioPlayer
 from .audiogram import create_audiogram
@@ -89,9 +90,16 @@ class Procedure():
         try:
             with open(file_name, mode='r') as file:
                 reader = csv.DictReader(file)
-                calibration_str_values = next(reader)
-                # convert dictionary to int:float
-                calibration_values = {int(k): float(v) for k, v in calibration_str_values.items()}
+                calibration_str_values_l = next(reader)
+                calibration_str_values_r = next(reader)
+                # convert dictionary to int:float and put into extra dictionary for left and right side
+                calibration_values = {}
+                calibration_values['l'] = {int(k): float(v) for k, v in calibration_str_values_l.items()}
+                calibration_values['r'] = {int(k): float(v) for k, v in calibration_str_values_r.items()}
+                # if both sides are used, calculate average between both sides
+                calibration_values['lr'] = {}
+                for k, v in calibration_values['l']:
+                    calibration_values['lr'][k] = 10 * np.log10((10 ** (v / 10) + 10 ** (calibration_values['r'][k] / 10)) / 2)
         
         except Exception as e:
             print(f"Error reading the file: {e}")
@@ -114,11 +122,11 @@ class Procedure():
         """
         if self.use_calibration:
             # add RETSPL and values from calibration file at that frequency
-            dbspl = dbhl + self.retspl[self.frequency] + self.calibration[self.frequency] 
+            dbspl = dbhl + self.retspl[self.frequency] + self.calibration[self.side][self.frequency] 
         else:
             # only add RETSPL
             dbspl = dbhl + self.retspl[self.frequency] 
-            
+
         return self.zero_dbhl * 10 ** (dbspl / 10) # calculate from dB to absolute numbers using the reference point self.zero_dbhl
     
 

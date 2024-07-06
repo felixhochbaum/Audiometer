@@ -147,6 +147,7 @@ class MainMenu(ttk.Frame):
         self.button_width = 25
         self.start_button = None
         self.binaural_test = tk.BooleanVar()
+        self.use_calibration = tk.BooleanVar(value=True)
         self.selected_option = None
         self.patient_number = ""
         self.create_widgets()
@@ -185,6 +186,11 @@ class MainMenu(ttk.Frame):
                                          text="Binaurale Testung", 
                                          variable=self.binaural_test)
         self.bi_button.pack(pady=10)
+
+        self.cal_button = ttk.Checkbutton(self, 
+                                         text="Werte aus letzter Kalibrierung verwenden", 
+                                         variable=self.use_calibration,)
+        self.cal_button.pack(pady=10)
 
     def on_option_selected(self, event):
         self.selected_option = self.dropdown.get()
@@ -242,8 +248,9 @@ class FamiliarizationPage(ttk.Frame):
     def run_familiarization(self):
         """Runs the familiarization process
         """
+        self.use_calibration = self.parent.frames[MainMenu].use_calibration.get()
         self.parent.show_frame(DuringFamiliarizationView)
-        self.parent.wait_for_process(lambda: self.parent.frames[DuringFamiliarizationView].program(id=self.parent.frames[MainMenu].patient_number), 
+        self.parent.wait_for_process(lambda: self.parent.frames[DuringFamiliarizationView].program(id=self.parent.frames[MainMenu].patient_number, calibrate=self.use_calibration), 
                                      lambda: self.parent.show_frame(ProgramPage))
 
 
@@ -274,8 +281,9 @@ class ProgramPage(ttk.Frame):
         """
         self.selected_option = self.parent.frames[MainMenu].selected_option
         self.binaural_test = self.parent.frames[MainMenu].binaural_test.get()
+        self.use_calibration = self.parent.frames[MainMenu].use_calibration.get()
         self.parent.show_frame(self.selected_option)
-        self.parent.wait_for_process(lambda: self.parent.frames[self.selected_option].program(self.binaural_test),
+        self.parent.wait_for_process(lambda: self.parent.frames[self.selected_option].program(self.binaural_test, calibrate=self.use_calibration),
                                      lambda: self.parent.show_frame(ResultPage))
 
 

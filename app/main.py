@@ -17,8 +17,8 @@ class Controller():
     def run_app(self):
         self.view.mainloop()
 
-    def start_familiarization(self, id="", **additional_data):
-        self.familiarization = Familiarization(id=id, **additional_data)
+    def start_familiarization(self, id="", headphone="Sennheiser_HDA200", calibrate=True, **additional_data):
+        self.familiarization = Familiarization(id=id, headphone_name=headphone, calibrate=calibrate, **additional_data)
         return self.familiarization.familiarize()
     
     def create_audiogram(self):
@@ -31,12 +31,12 @@ class Controller():
             self.screen_procedure = ScreeningProcedure("")
             return self.screen_procedure.create_final_audiogram(None)
 
-    def start_standard_procedure(self, binaural=False, **additional_data):
+    def start_standard_procedure(self, binaural=False, headphone="Sennheiser_HDA200", calibrate=True, **additional_data):
         self.selected_program = "standard"
-        self.standard_procedure = StandardProcedure(self.familiarization.get_temp_csv_filename(), **additional_data)
+        self.standard_procedure = StandardProcedure(self.familiarization.get_temp_csv_filename(), headphone_name=headphone, calibrate=calibrate, **additional_data)
         self.standard_procedure.standard_test(binaural)
 
-    def start_screen_procedure(self, binaural=False, **additional_data):
+    def start_screen_procedure(self, binaural=False, headphone="Sennheiser_HDA200", calibrate=True, **additional_data):
         self.selected_program = "screening"
-        self.screen_procedure = ScreeningProcedure(self.familiarization.get_temp_csv_filename(), **additional_data)
+        self.screen_procedure = ScreeningProcedure(self.familiarization.get_temp_csv_filename(), headphone_name=headphone, calibrate=calibrate, **additional_data)
         self.screen_procedure.screen_test(binaural)
