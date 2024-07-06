@@ -3,7 +3,7 @@ import tkinter.ttk as ttk
 import threading
 from tkinter import messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from app.instructions import text_Familiarization
+from app.instructions import *
 import ttkbootstrap as tb
 from PIL import Image, ImageTk
 from tkcalendar import DateEntry
@@ -41,7 +41,7 @@ class App(tb.Window):
         self.binaural_test = False
 
         # Pages, where the user can interact
-        for F in (MainMenu, FamiliarizationPage, ProgramPage, ResultPage):
+        for F in (MainMenu, FamiliarizationPage, ProgramPage, ResultPage, CalibrationPage):
             frame = F(self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -191,7 +191,7 @@ class MainMenu(ttk.Frame):
         # Use calibration button
         self.cal_button = ttk.Checkbutton(self, 
                                          text="Werte aus letzter Kalibrierung verwenden", 
-                                         variable=self.use_calibration,)
+                                         variable=self.use_calibration)
         self.cal_button.pack(pady=10, side="bottom")
 
         # Headphone selection
@@ -229,6 +229,16 @@ class MainMenu(ttk.Frame):
     def on_option_selected(self, event):
         self.selected_option = self.dropdown.get()
         self.show_start_button()
+        if self.selected_option == "Kalibrierung":
+            self.cal_button.config(state=tk.DISABLED)
+            self.bi_button.config(state=tk.DISABLED)
+            self.gender_dropdown.config(state=tk.DISABLED)
+            self.patient_number_entry.config(state=tk.DISABLED)
+        else:
+            self.cal_button.config(state=tk.NORMAL)
+            self.bi_button.config(state=tk.NORMAL)
+            self.gender_dropdown.config(state=tk.NORMAL)
+            self.patient_number_entry.config(state=tk.NORMAL)    
 
     def show_start_button(self):
         if self.start_button is None:
@@ -239,11 +249,14 @@ class MainMenu(ttk.Frame):
             self.start_button.pack(pady=10)
 
     def run_familiarization(self):
-        self.patient_number = self.patient_number_entry.get()
-        if not self.patient_number:
-            messagebox.showwarning("Warnung", "Bitte geben Sie eine Probandennummer ein.")
-            return
-        self.parent.show_frame(FamiliarizationPage)
+        if self.selected_option != "Kalibrierung":
+            self.patient_number = self.patient_number_entry.get()
+            if not self.patient_number:
+                messagebox.showwarning("Warnung", "Bitte geben Sie eine Probandennummer ein.")
+                return
+            self.parent.show_frame(FamiliarizationPage)
+        else:
+            self.parent.show_frame(CalibrationPage)
 
 
 class FamiliarizationPage(ttk.Frame):
@@ -401,6 +414,64 @@ class ResultPage(ttk.Frame):
     def back_to_MainMenu(self):
         self.parent.show_frame(MainMenu)
 
+
+class CalibrationPage(ttk.Frame):
+
+    def __init__(self, parent):
+        """Page for calibrating the audiometer
+
+        Args:
+            parent (App): parent application
+        """
+        super().__init__(parent)
+        self.parent = parent
+        self.create_widgets()
+
+    def create_widgets(self):
+        """Creates the widgets for the page
+        """
+        button_width = 25 
+
+        self.intro = ttk.Label(self, text=text_calibration, font=('Arial', 16))
+        self.intro.pack(padx=10, pady=10)
+        self.level_label = ttk.Label(self, text="Wert in dBHL, bei dem kalibriert werden soll:", font=('Arial', 16))
+        self.level_label.pack(padx=10, pady=10)
+        self.level_entry_var = tk.StringVar()
+        self.level_entry_var.set("60")
+        self.level_entry = ttk.Entry(self,width=button_width-10, textvariable=self.level_entry_var)
+        self.level_entry.pack(padx=10, pady=10)
+        self.next_button = ttk.Button(self, 
+                                      text="Nächste Frequenz", 
+                                      command=self.next_frequency, 
+                                      width=button_width)
+        self.next_button.pack(padx=10, pady=10)
+        self.stop_button = ttk.Button(self, 
+                                         text="Wiedergabe stoppen", 
+                                         command=self.stop_playing, 
+                                         width=button_width)
+        self.stop_button.pack(padx=10, pady=10)
+
+        self.spacer_frame = tk.Frame(self, width=20, height=150)
+        self.spacer_frame.pack()
+
+        self.current_freq = ttk.Label(self, text="Aktuelle Frequenz:", font=('Arial', 22))
+        self.current_freq.pack(padx=10, pady=10)
+        self.level_expected_label = ttk.Label(self, text="Schalldruckpegel in dB soll:", font=('Arial', 22))
+        self.level_expected_label.pack(padx=10, pady=10)
+        self.level_expected_label = ttk.Label(self, text="Gemessener Schalldruckpegel in dB:", font=('Arial', 22))
+        self.level_expected_label.pack(padx=10, pady=10)
+        self.level_measured_entry = ttk.Entry(self,width=button_width-10, font=('Arial', 22), state=tk.DISABLED)
+        self.level_measured_entry.pack(padx=10, pady=10)
+
+
+        for widget in self.winfo_children():
+            widget.pack_configure(anchor='center')
+
+    def next_frequency(self):
+        pass
+
+    def stop_playing(self):
+        pass
 
 def setup_ui(startfunc, endfunc, programfuncs):
     app = App(startfunc, endfunc, programfuncs)

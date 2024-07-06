@@ -7,3 +7,5 @@ Diese Testungen gehen nicht in die späteren Ergebnisse ein und dienen lediglich
 Sie werden Tonabfolgen mit unterschiedlichen Lautstärken und Frequenzen hören.
 Bitte drücken Sie jedes Mal, wenn Sie einen Ton wahrnehmen, unverzüglich die Leertaste. 
 Beachten Sie, dass Sie vom Programm keinerlei Feedback erhalten werden – das ist normal."""
+
+text_calibration = """So geht's."""

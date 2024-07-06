@@ -5,7 +5,8 @@ class Controller():
 
     def __init__(self):
         program_functions = {"Klassisches Audiogramm" : self.start_standard_procedure,
-                             "Kurzes Screening" : self.start_screen_procedure}
+                             "Kurzes Screening" : self.start_screen_procedure,
+                             "Kalibrierung" : self.start_calibration}
         
         self.selected_program = ""
 
@@ -40,3 +41,11 @@ class Controller():
         self.selected_program = "screening"
         self.screen_procedure = ScreeningProcedure(self.familiarization.get_temp_csv_filename(), headphone_name=headphone, calibrate=calibrate, **additional_data)
         self.screen_procedure.screen_test(binaural)
+
+    def start_calibration(self, level, headphone="Sennheiser_HDA200"):
+        self.selected_program = "Calibration"
+        self.calibration = Calibration(startlevel=level, headphone_name=headphone)
+
+    def calibration_next_freq(self, level):
+        if self.selected_program != "Calibration":
+            self.start_calibration()

@@ -612,5 +612,84 @@ class ScreeningProcedure(Procedure):
         return self.tone_heard
     
 
+class Calibration(Procedure):
 
+    def __init__(self, startlevel=60, signal_length=10, headphone_name="Sennheiser_HDA200", **additional_data):
+        """Process for calibrating system
+
+        Args:
+            startlevel (int, optional): starting level of procedure in dBHL. Defaults to 60.
+            signal_length (int, optional): length of played signals in seconds. Defaults to 10.
+        """
+        super().__init__(startlevel, signal_length, headphone_name=headphone_name, calibrate=False)      
+        self.tempfile = self.create_temp_csv(id="", **additional_data) # create a temporary file to store level at frequencies
+        self.generator = self.get_next_freq()
+        self.dbspl = self.level + self.retspl[self.frequency]
+
+    def get_next_freq(self):
+        """Generator that goes through all frequencies twice.
+        Changes self.side to 'r' after going through all frequencies the first time.
+
+        Yields:
+            int: frequency
+        """
+        self.side = 'l'
+        frequency = 125
+        while frequency <= 8000:
+            yield frequency
+            frequency *= 2
+
+        self.side = 'r'
+        while frequency <= 8000:
+            yield frequency
+            frequency *= 2
+
+    def play_one_freq(self):
+        """Get the next frequency and play it
+
+        Returns:
+            bool: False if no more frequencies left
+        """
+        self.ap.stop()
+        try:
+            self.frequency = next(self.generator)
+        except:
+            return False
+        
+        self.dbspl = self.level + self.retspl[self.frequency]
+        print(f"Side: {self.side} at {self.frequency} Hz: The SPL value should be {self.dbspl} dB.")
+        self.ap.play_beep(self.frequency, self.dbhl_to_volume(self.level), self.signal_length, self.side)
+        if self.frequency >= 8000 and self.side == 'r':
+            return False
+        else:
+            return True
+
+    def set_calibration_value(self, measured_value):
+        value = measured_value - self.dbspl
+        self.add_to_temp_csv(value, self.frequency, self.side, self.tempfile)
+
+
+    def finish_calibration(self):
+        """makes a permanent csv file from the temporary file that overwrites calibration.csv
+
+        Args:
+            temp_filename (str): name of temporary csv file
+        """
+        # read temp file
+        with open(self.tempfile, mode='r', newline='') as temp_file:
+            dict_reader = csv.DictReader(temp_file)
+            rows = list(dict_reader)
+
+        filename = "calibration.csv"
+
+        with open(filename, mode='w', newline='') as final_file:
+            dict_writer = csv.DictWriter(final_file, fieldnames=self.freq_bands)
+            dict_writer.writeheader()
+            dict_writer.writerows(rows)
+        
+        print("Datei gespeicher als " + filename)
+        
+
+    def stop_playing(self):
+        self.ap.stop()
 
