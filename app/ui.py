@@ -9,6 +9,8 @@ import ttkbootstrap as tb
 from PIL import Image, ImageTk
 from tkcalendar import DateEntry
 from datetime import datetime
+import os
+import csv
 
 class App(tb.Window):
 
@@ -187,10 +189,44 @@ class MainMenu(ttk.Frame):
                                          variable=self.binaural_test)
         self.bi_button.pack(pady=10)
 
+        # Headphone selection
+
+        self.headphone_label = ttk.Label(self, text="Kopfhörer:", font=('Arial', 12))
+        self.headphone_label.pack(padx=10, pady=10)
+        self.headphone_dropdown = ttk.Combobox(self, values=self.get_headphone_options(), state="readonly", width=self.button_width - 1)
+        self.headphone_dropdown.set("Sennheiser_HDA200")
+        self.headphone_dropdown.pack(padx=10, pady=10)
+
+        # Use calibration button
         self.cal_button = ttk.Checkbutton(self, 
                                          text="Werte aus letzter Kalibrierung verwenden", 
                                          variable=self.use_calibration,)
         self.cal_button.pack(pady=10)
+
+
+    def get_headphone_options(self):
+
+        file_name = 'retspl.csv'
+        
+        # Check if the CSV file exists
+        if not os.path.isfile(file_name):
+            print(f"File '{file_name}' not found.")
+            return
+        
+        headphone_options = []
+
+        try:
+            with open(file_name, mode='r') as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    headphone_options.append(row['headphone_model'])
+                    headphone_options = list(set(headphone_options))
+            return headphone_options
+        except Exception as e:
+            print(f"Error reading the file: {e}")
+            return
+        
+
 
     def on_option_selected(self, event):
         self.selected_option = self.dropdown.get()
