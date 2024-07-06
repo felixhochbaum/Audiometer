@@ -12,7 +12,7 @@ from datetime import datetime
 
 class App(tb.Window):
 
-    def __init__(self, familiarization_func, program_funcs:dict):
+    def __init__(self, familiarization_func, audiogram_func, program_funcs:dict):
         """Main application window. Contains all pages and controls the flow of the program.
 
         Args:
@@ -27,6 +27,7 @@ class App(tb.Window):
         self.minsize(650,650)
         self.attributes('-fullscreen', True)  #for fullscreen mode
         self.bind("<Escape>", self.exit_fullscreen)
+        self.audiogram_func = audiogram_func
 
         #self.set_icon("app/00_TUBerlin_Logo_rot.jpg") change the icon maybe? #TODO
         
@@ -332,12 +333,8 @@ class ResultPage(ttk.Frame):
         super().__init__(parent)
         self.parent = parent
 
-        freq = [125, 250, 500, 1000, 2000, 4000, 8000]
-        dummy_right = [15, 20, 25, 30, 35, 40, 45]
-        dummy_left = [10, 15, 20, 25, 30, 35, 40]
-
         # Create audiogram plot
-        fig = create_audiogram(freq, dummy_right, dummy_left)
+        fig = self.parent.audiogram_func()
         
         # Create widgets
         self.create_widgets(fig)
@@ -363,6 +360,6 @@ class ResultPage(ttk.Frame):
         self.parent.show_frame(MainMenu)
 
 
-def setup_ui(startfunc, programfuncs):
-    app = App(startfunc, programfuncs)
+def setup_ui(startfunc, endfunc, programfuncs):
+    app = App(startfunc, endfunc, programfuncs)
     return app
