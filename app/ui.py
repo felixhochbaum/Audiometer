@@ -450,6 +450,11 @@ class CalibrationPage(ttk.Frame):
                                          command=self.stop_playing, 
                                          width=button_width)
         self.stop_button.pack(padx=10, pady=10)
+        self.repeat_button = ttk.Button(self, 
+                                         text="Erneut wiedergeben", 
+                                         command=self.repeat_frequency, 
+                                         width=button_width)
+        self.repeat_button.pack(padx=10, pady=10)
 
         self.spacer_frame = tk.Frame(self, width=20, height=150)
         self.spacer_frame.pack()
@@ -468,6 +473,9 @@ class CalibrationPage(ttk.Frame):
             widget.pack_configure(anchor='center')
 
     def next_frequency(self):
+        pass
+
+    def repeat_frequency(self):
         pass
 
     def stop_playing(self):
