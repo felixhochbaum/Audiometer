@@ -1,16 +1,18 @@
-from .audio_player import AudioPlayer
 from pynput import keyboard
 import time
 import random
 import tempfile as tfile
 import csv
 from datetime import datetime
+import os
+
+from .audio_player import AudioPlayer
 from .audiogram import create_audiogram
 
 
 class Procedure():
 
-    def __init__(self, startlevel, signal_length):
+    def __init__(self, startlevel, signal_length, headphone_name="Sennheiser_HDA200"):
         """The parent class for the familiarization, the main procedure, and the short version
 
         Args:
@@ -29,6 +31,76 @@ class Procedure():
         self.test_mode = True
         self.jump_to_end = False
 
+        self.retspl = self.get_retspl_values(headphone_name)
+        self.calibration = self.get_calibration_values()
+
+
+    def get_retspl_values(self, headphone_name):
+        """Read the correct retspl values from the retspl.csv file
+
+        Args:
+            headphone_name (str): exact name of headphone as it appears in csv file
+
+        Returns:
+            dict of int:float : retspl values for each frequency band from 125 Hz to 8000 Hz
+        """
+        file_name = 'retspl.csv'
+        
+        # Check if the CSV file exists
+        if not os.path.isfile(file_name):
+            print(f"File '{file_name}' not found.")
+            return
+        
+        retspl_values = {}
+        
+        try:
+            with open(file_name, mode='r') as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    if row['headphone_model'] == headphone_name:
+                        retspl_values[int(row['frequency'])] = float(row['retspl'])
+        except Exception as e:
+            print(f"Error reading the file: {e}")
+            return
+        
+        # Check if the headphone model was found
+        if not retspl_values:
+            print(f"Headphone model '{headphone_name}' not found.")
+            return
+        
+        print(retspl_values)
+        return retspl_values
+    
+
+    def get_calibration_values(self):
+        """Read the correct calibration values from the calibration.csv file
+
+        Returns:
+            dict of int:float : calibration values for each frequency band from 125 Hz to 8000 Hz
+        """
+        file_name = 'calibration.csv'
+        
+        # Check if the CSV file exists
+        if not os.path.isfile(file_name):
+            print(f"File '{file_name}' not found.")
+            return
+        
+        try:
+            with open(file_name, mode='r') as file:
+                reader = csv.DictReader(file)
+                calibration_str_values = next(reader)
+                # convert dictionary to int:float
+                calibration_values = {int(k): float(v) for k, v in calibration_str_values.items()}
+        
+        except Exception as e:
+            print(f"Error reading the file: {e}")
+            return
+        
+        
+        print(calibration_values)
+        return calibration_values
+
+
 
     def dbhl_to_volume(self, dbhl):
         """Calculate dBHL into absolute numbers
@@ -39,7 +111,9 @@ class Procedure():
         Returns:
             float: value in absolute numbers
         """
-        return self.zero_dbhl * 10 ** (dbhl / 10)
+
+        dbspl = dbhl + self.retspl[self.frequency] + self.calibration[self.frequency] # add RETSPL and values from calibration file at that frequency
+        return self.zero_dbhl * 10 ** (dbspl / 10) # calculate from dB to absolute numbers using the reference point self.zero_dbhl
     
 
     def key_press(self, key):
@@ -224,14 +298,14 @@ class Procedure():
 
 class Familiarization(Procedure):
 
-    def __init__(self, startlevel=40, signal_length=1, id="", **additional_data):
+    def __init__(self, startlevel=40, signal_length=1, headphone_name="Sennheiser_HDA200", id="", **additional_data):
         """Familiarization process
 
         Args:
             startlevel (int, optional): starting level of procedure in dBHL. Defaults to 40.
             signal_length (int, optional): length of played signals in seconds. Defaults to 1.
         """
-        super().__init__(startlevel, signal_length)      
+        super().__init__(startlevel, signal_length, headphone_name=headphone_name)      
         self.fails = 0 # number of times familiarization failed
         self.tempfile = self.create_temp_csv(id=id, **additional_data) # create a temporary file to store level at frequencies
 
@@ -291,7 +365,7 @@ class Familiarization(Procedure):
 
 class StandardProcedure(Procedure):
 
-    def __init__(self, temp_filename, signal_length=1):
+    def __init__(self, temp_filename, signal_length=1, headphone_name="Sennheiser_HDA200"):
         """Standard audiometer process (rising level)
 
         Args:
@@ -299,7 +373,7 @@ class StandardProcedure(Procedure):
             signal_length (int, optional): length of played signal in seconds. Defaults to 1.
         """
         startlevel = int(self.get_value_from_csv('1000', temp_filename)) - 10 # 10 dB under level from familiarization
-        super().__init__(startlevel, signal_length)
+        super().__init__(startlevel, signal_length, headphone_name=headphone_name)
         self.temp_filename = temp_filename
         self.freq_order = [1000]#, 2000, 4000, 8000, 500, 250, 125] # order in which frequencies are tested
 
@@ -440,13 +514,13 @@ class StandardProcedure(Procedure):
 
         
 class ScreeningProcedure(Procedure):
-    def __init__(self,  temp_filename, signal_length=1):
+    def __init__(self,  temp_filename, signal_length=1, headphone_name="Sennheiser_HDA200"):
         """short screening process to check if subject can hear specific frequencies at certain levels
 
         Args:
             signal_length (int, optional): length of played signals in seconds. Defaults to 1.
         """
-        super().__init__(startlevel=0, signal_length=signal_length)
+        super().__init__(startlevel=0, signal_length=signal_length, headphone_name=headphone_name)
         self.temp_filename = temp_filename
         self.freq_order = [1000, 2000]#, 4000, 8000, 500, 250, 125]
         
