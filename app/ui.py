@@ -2,7 +2,6 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import threading
 from tkinter import messagebox
-from .audiogram import create_audiogram #TODO
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from app.instructions import text_Familiarization
 import ttkbootstrap as tb
@@ -189,19 +188,18 @@ class MainMenu(ttk.Frame):
                                          variable=self.binaural_test)
         self.bi_button.pack(pady=10)
 
-        # Headphone selection
-
-        self.headphone_label = ttk.Label(self, text="Kopfhörer:", font=('Arial', 12))
-        self.headphone_label.pack(padx=10, pady=10)
-        self.headphone_dropdown = ttk.Combobox(self, values=self.get_headphone_options(), state="readonly", width=self.button_width - 1)
-        self.headphone_dropdown.set("Sennheiser_HDA200")
-        self.headphone_dropdown.pack(padx=10, pady=10)
-
         # Use calibration button
         self.cal_button = ttk.Checkbutton(self, 
                                          text="Werte aus letzter Kalibrierung verwenden", 
                                          variable=self.use_calibration,)
-        self.cal_button.pack(pady=10)
+        self.cal_button.pack(pady=10, side="bottom")
+
+        # Headphone selection
+        self.headphone_dropdown = ttk.Combobox(self, values=self.get_headphone_options(), state="readonly", width=self.button_width - 1)
+        self.headphone_dropdown.set("Sennheiser_HDA200")
+        self.headphone_dropdown.pack(padx=10, pady=10, side="bottom")
+        self.headphone_label = ttk.Label(self, text="Kopfhörer:", font=('Arial', 12))
+        self.headphone_label.pack(padx=10, pady=10, side="bottom")
 
 
     def get_headphone_options(self):
