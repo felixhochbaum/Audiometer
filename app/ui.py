@@ -160,7 +160,7 @@ class MainMenu(ttk.Frame):
 
         self.gender_label = ttk.Label(self, text="Geschlecht (Optional):", font=('Arial', 12))
         self.gender_label.pack(padx=10, pady=10)
-        self.gender_dropdown = ttk.Combobox(self, values=["Männlich", "Weiblich"], state="readonly", width=self.button_width - 1)
+        self.gender_dropdown = ttk.Combobox(self, values=["Männlich", "Weiblich", "Divers", "Keine Angabe"], state="readonly", width=self.button_width - 1)
         self.gender_dropdown.set("Geschlecht...")
         self.gender_dropdown.pack(padx=10, pady=10)
         ''' # doesn't work yet
