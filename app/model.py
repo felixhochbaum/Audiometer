@@ -12,7 +12,7 @@ from .audiogram import create_audiogram
 
 class Procedure():
 
-    def __init__(self, startlevel, signal_length, headphone_name="Sennheiser_HDA200"):
+    def __init__(self, startlevel, signal_length, headphone_name="Sennheiser_HDA200", calibrate=True):
         """The parent class for the familiarization, the main procedure, and the short version
 
         Args:
@@ -28,8 +28,9 @@ class Procedure():
         self.tone_heard = False
         self.freq_bands = ['125', '250', '500', '1000', '2000', '4000', '8000']
         self.side = 'l'
-        self.test_mode = True
+        self.test_mode = True # TODO turn off for delivery
         self.jump_to_end = False
+        self.use_calibration = calibrate
 
         self.retspl = self.get_retspl_values(headphone_name)
         self.calibration = self.get_calibration_values()
@@ -111,8 +112,13 @@ class Procedure():
         Returns:
             float: value in absolute numbers
         """
-
-        dbspl = dbhl + self.retspl[self.frequency] + self.calibration[self.frequency] # add RETSPL and values from calibration file at that frequency
+        if self.use_calibration:
+            # add RETSPL and values from calibration file at that frequency
+            dbspl = dbhl + self.retspl[self.frequency] + self.calibration[self.frequency] 
+        else:
+            # only add RETSPL
+            dbspl = dbhl + self.retspl[self.frequency] 
+            
         return self.zero_dbhl * 10 ** (dbspl / 10) # calculate from dB to absolute numbers using the reference point self.zero_dbhl
     
 
@@ -298,14 +304,14 @@ class Procedure():
 
 class Familiarization(Procedure):
 
-    def __init__(self, startlevel=40, signal_length=1, headphone_name="Sennheiser_HDA200", id="", **additional_data):
+    def __init__(self, startlevel=40, signal_length=1, headphone_name="Sennheiser_HDA200", calibrate=True, id="", **additional_data):
         """Familiarization process
 
         Args:
             startlevel (int, optional): starting level of procedure in dBHL. Defaults to 40.
             signal_length (int, optional): length of played signals in seconds. Defaults to 1.
         """
-        super().__init__(startlevel, signal_length, headphone_name=headphone_name)      
+        super().__init__(startlevel, signal_length, headphone_name=headphone_name, calibrate=calibrate)      
         self.fails = 0 # number of times familiarization failed
         self.tempfile = self.create_temp_csv(id=id, **additional_data) # create a temporary file to store level at frequencies
 
@@ -365,7 +371,7 @@ class Familiarization(Procedure):
 
 class StandardProcedure(Procedure):
 
-    def __init__(self, temp_filename, signal_length=1, headphone_name="Sennheiser_HDA200"):
+    def __init__(self, temp_filename, signal_length=1, headphone_name="Sennheiser_HDA200", calibrate=True):
         """Standard audiometer process (rising level)
 
         Args:
@@ -373,7 +379,7 @@ class StandardProcedure(Procedure):
             signal_length (int, optional): length of played signal in seconds. Defaults to 1.
         """
         startlevel = int(self.get_value_from_csv('1000', temp_filename)) - 10 # 10 dB under level from familiarization
-        super().__init__(startlevel, signal_length, headphone_name=headphone_name)
+        super().__init__(startlevel, signal_length, headphone_name=headphone_name, calibrate=calibrate)
         self.temp_filename = temp_filename
         self.freq_order = [1000]#, 2000, 4000, 8000, 500, 250, 125] # order in which frequencies are tested
 
@@ -514,13 +520,13 @@ class StandardProcedure(Procedure):
 
         
 class ScreeningProcedure(Procedure):
-    def __init__(self,  temp_filename, signal_length=1, headphone_name="Sennheiser_HDA200"):
+    def __init__(self,  temp_filename, signal_length=1, headphone_name="Sennheiser_HDA200", calibrate=True):
         """short screening process to check if subject can hear specific frequencies at certain levels
 
         Args:
             signal_length (int, optional): length of played signals in seconds. Defaults to 1.
         """
-        super().__init__(startlevel=0, signal_length=signal_length, headphone_name=headphone_name)
+        super().__init__(startlevel=0, signal_length=signal_length, headphone_name=headphone_name, calibrate=calibrate)
         self.temp_filename = temp_filename
         self.freq_order = [1000, 2000]#, 4000, 8000, 500, 250, 125]
         
