@@ -98,8 +98,8 @@ class Procedure():
                 calibration_values['r'] = {int(k): float(v) for k, v in calibration_str_values_r.items()}
                 # if both sides are used, calculate average between both sides
                 calibration_values['lr'] = {}
-                for k, v in calibration_values['l']:
-                    calibration_values['lr'][k] = 10 * np.log10((10 ** (v / 10) + 10 ** (calibration_values['r'][k] / 10)) / 2)
+                for k, v in calibration_values['l'].items():
+                    calibration_values['lr'][k] = (10 * np.log10((10 ** (v / 10) + 10 ** (calibration_values['r'][k] / 10)) / 2))
         
         except Exception as e:
             print(f"Error reading the file: {e}")
@@ -639,6 +639,7 @@ class Calibration(Procedure):
             yield frequency
             frequency *= 2
 
+        frequency = 125
         self.side = 'r'
         while frequency <= 8000:
             yield frequency
@@ -649,24 +650,40 @@ class Calibration(Procedure):
 
         Returns:
             bool: False if no more frequencies left
+            int: current frequency
+            float: expected SPL value in dB
         """
         self.ap.stop()
         try:
             self.frequency = next(self.generator)
         except:
-            return False
+            return False, self.frequency, self.dbspl
         
         self.dbspl = self.level + self.retspl[self.frequency]
-        print(f"Side: {self.side} at {self.frequency} Hz: The SPL value should be {self.dbspl} dB.")
+        print(f"Side {self.side} at {self.frequency} Hz: The SPL value should be {self.dbspl} dB.")
         self.ap.play_beep(self.frequency, self.dbhl_to_volume(self.level), self.signal_length, self.side)
         if self.frequency >= 8000 and self.side == 'r':
-            return False
+            return False, self.frequency, self.dbspl
         else:
-            return True
+            return True, self.frequency, self.dbspl
+        
+    def repeat_freq(self):
+        """repeats the last played frequency
+        """
+        self.ap.stop()
+        print(f" Repeating side {self.side} at {self.frequency} Hz: The SPL value should be {self.dbspl} dB.")
+        self.ap.play_beep(self.frequency, self.dbhl_to_volume(self.level), self.signal_length, self.side)
+
+
 
     def set_calibration_value(self, measured_value):
+        """Rights the given calibration value into temporary csv file
+
+        Args:
+            measured_value (float): measured SPL value in dB
+        """
         value = measured_value - self.dbspl
-        self.add_to_temp_csv(value, self.frequency, self.side, self.tempfile)
+        self.add_to_temp_csv(str(value), str(self.frequency), self.side, self.tempfile)
 
 
     def finish_calibration(self):
@@ -675,6 +692,7 @@ class Calibration(Procedure):
         Args:
             temp_filename (str): name of temporary csv file
         """
+        self.ap.stop()
         # read temp file
         with open(self.tempfile, mode='r', newline='') as temp_file:
             dict_reader = csv.DictReader(temp_file)

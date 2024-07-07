@@ -13,12 +13,15 @@ import csv
 
 class App(tb.Window):
 
-    def __init__(self, familiarization_func, audiogram_func, program_funcs:dict):
+    def __init__(self, familiarization_func, audiogram_func, program_funcs:dict, calibration_funcs:list):
         """Main application window. Contains all pages and controls the flow of the program.
 
         Args:
             familiarization_func (function): function to be called for familiarization
-            *program_funcs (function): function(s) to be called for the main program
+            audiogram_func (function): function to be called for creating audiogram
+            program_funcs (dict of str:function): function(s) to be called for the main program
+            calibration_funcs (list function): list of function(s) for calibration in this order: start, next, repeat, stop, set_level
+
         """
         super().__init__(themename="solar")  # Set/change the theme Link: https://ttkbootstrap.readthedocs.io/en/latest/themes/dark/
 
@@ -28,6 +31,7 @@ class App(tb.Window):
         self.minsize(650,650)
         self.attributes('-fullscreen', True)  #for fullscreen mode
         self.bind("<Escape>", self.exit_fullscreen)
+
         self.audiogram_func = audiogram_func
 
         #self.set_icon("app/00_TUBerlin_Logo_rot.jpg") change the icon maybe? #TODO
@@ -41,10 +45,15 @@ class App(tb.Window):
         self.binaural_test = False
 
         # Pages, where the user can interact
-        for F in (MainMenu, FamiliarizationPage, ProgramPage, ResultPage, CalibrationPage):
+        for F in (MainMenu, FamiliarizationPage, ProgramPage, ResultPage):
             frame = F(self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
+        
+        # Calibration separately to give it its functions
+        frame = CalibrationPage(self, calibration_funcs)
+        self.frames[CalibrationPage] = frame
+        frame.grid(row=0, column=0, sticky="nsew")
 
         # View during familiarization
         frame = DuringFamiliarizationView(self, familiarization_func)
@@ -208,7 +217,7 @@ class MainMenu(ttk.Frame):
         
         # Check if the CSV file exists
         if not os.path.isfile(file_name):
-            print(f"File '{file_name}' not found.")
+            messagebox.showwarning("Warnung", f'Die Datei "{file_name}" konnte nicht gefunden werden.')
             return
         
         headphone_options = []
@@ -221,7 +230,7 @@ class MainMenu(ttk.Frame):
                     headphone_options = list(set(headphone_options))
             return headphone_options
         except Exception as e:
-            print(f"Error reading the file: {e}")
+            messagebox.showwarning("Warnung", f'Fehler beim Lesen der Datei "{file_name}": {e}')
             return
         
 
@@ -417,7 +426,7 @@ class ResultPage(ttk.Frame):
 
 class CalibrationPage(ttk.Frame):
 
-    def __init__(self, parent):
+    def __init__(self, parent, calibration_funcs):
         """Page for calibrating the audiometer
 
         Args:
@@ -425,6 +434,11 @@ class CalibrationPage(ttk.Frame):
         """
         super().__init__(parent)
         self.parent = parent
+        self.cal_start = calibration_funcs[0]
+        self.cal_next = calibration_funcs[1]
+        self.cal_repeat = calibration_funcs[2]
+        self.cal_stop = calibration_funcs[3]
+        self.cal_setlevel = calibration_funcs[4]
         self.create_widgets()
 
     def create_widgets(self):
@@ -437,50 +451,114 @@ class CalibrationPage(ttk.Frame):
         self.level_label = ttk.Label(self, text="Wert in dBHL, bei dem kalibriert werden soll:", font=('Arial', 16))
         self.level_label.pack(padx=10, pady=10)
         self.level_entry_var = tk.StringVar()
-        self.level_entry_var.set("60")
+        self.level_entry_var.set("10")
         self.level_entry = ttk.Entry(self,width=button_width-10, textvariable=self.level_entry_var)
         self.level_entry.pack(padx=10, pady=10)
+        self.start_button = ttk.Button(self, 
+                                      text="Kalibrierung starten", 
+                                      command=self.start_calibration, 
+                                      width=button_width)
+        self.start_button.pack(padx=10, pady=10)
         self.next_button = ttk.Button(self, 
                                       text="Nächste Frequenz", 
                                       command=self.next_frequency, 
-                                      width=button_width)
+                                      width=button_width,
+                                      state=tk.DISABLED)
         self.next_button.pack(padx=10, pady=10)
-        self.stop_button = ttk.Button(self, 
-                                         text="Wiedergabe stoppen", 
-                                         command=self.stop_playing, 
-                                         width=button_width)
-        self.stop_button.pack(padx=10, pady=10)
         self.repeat_button = ttk.Button(self, 
                                          text="Erneut wiedergeben", 
                                          command=self.repeat_frequency, 
-                                         width=button_width)
+                                         width=button_width,
+                                         state=tk.DISABLED)
         self.repeat_button.pack(padx=10, pady=10)
+        self.stop_button = ttk.Button(self, 
+                                         text="Wiedergabe stoppen", 
+                                         command=self.stop_playing, 
+                                         width=button_width,
+                                         state=tk.DISABLED)
+        self.stop_button.pack(padx=10, pady=10)
+        self.back_button = ttk.Button(self, 
+                                         text="Zurück zum Hauptmenü", 
+                                         command=lambda: self.parent.show_frame(MainMenu), 
+                                         width=button_width) # TODO Kalibrierung resetten, damit man sie dann wieder von vorne anfangen kann
+        self.back_button.pack(padx=10, pady=20)
+        
 
-        self.spacer_frame = tk.Frame(self, width=20, height=150)
+        self.spacer_frame = tk.Frame(self, width=20, height=80)
         self.spacer_frame.pack()
 
-        self.current_freq = ttk.Label(self, text="Aktuelle Frequenz:", font=('Arial', 22))
+        self.current_freq_var = tk.StringVar(value="Aktuelle Frequenz:")
+        self.current_freq = ttk.Label(self, textvariable=self.current_freq_var, font=('Arial', 22))
         self.current_freq.pack(padx=10, pady=10)
-        self.level_expected_label = ttk.Label(self, text="Schalldruckpegel in dB soll:", font=('Arial', 22))
+        self.level_expected_var = tk.StringVar(value="Schalldruckpegel (soll):")
+        self.level_expected_label = ttk.Label(self, textvariable=self.level_expected_var, font=('Arial', 22))
         self.level_expected_label.pack(padx=10, pady=10)
-        self.level_expected_label = ttk.Label(self, text="Gemessener Schalldruckpegel in dB:", font=('Arial', 22))
-        self.level_expected_label.pack(padx=10, pady=10)
-        self.level_measured_entry = ttk.Entry(self,width=button_width-10, font=('Arial', 22), state=tk.DISABLED)
+        self.level_measured_label = ttk.Label(self, text="Gemessener Schalldruckpegel in dB:", font=('Arial', 22))
+        self.level_measured_label.pack(padx=10, pady=10)
+        self.level_measured_var = tk.StringVar()
+        self.level_measured_entry = ttk.Entry(self, width=button_width-10, 
+                                              font=('Arial', 22), state=tk.DISABLED,
+                                              textvariable=self.level_measured_var)
         self.level_measured_entry.pack(padx=10, pady=10)
 
 
         for widget in self.winfo_children():
             widget.pack_configure(anchor='center')
 
+    def start_calibration(self):
+        try:
+            current_freq, current_spl = self.cal_start(float(self.level_entry_var.get()))
+        except:
+            messagebox.showwarning("Warnung", 'Bitte geben Sie eine Zahl ein.')
+            return
+        
+        self.start_button.config(state=tk.DISABLED)
+        self.next_button.config(state=tk.NORMAL)
+        self.repeat_button.config(state=tk.NORMAL)
+        self.stop_button.config(state=tk.NORMAL)
+        self.level_measured_entry.config(state=tk.NORMAL)
+
+        self.current_freq_var.set("Aktuelle Frequenz: " + str(current_freq) + " Hz")
+        self.level_expected_var.set("Schalldruckpegel (soll): " + str(current_spl) + " dB") 
+        
+
     def next_frequency(self):
-        pass
+        finished = False
+        try:
+            if self.level_measured_var.get() != "":
+                self.cal_setlevel(float(self.level_measured_var.get()))
+            else:
+                messagebox.showwarning("Warnung", 'Bitte geben Sie bei "gemessener Schalldruckpegel" eine Zahl ein.')
+                return    
+        except ValueError:
+            messagebox.showwarning("Warnung", 'Bitte geben Sie bei "gemessener Schalldruck" eine Zahl ein.')
+            return
+        self.level_measured_var.set("")
+        more_freqs, current_freq, current_spl = self.cal_next()
+        # Change Button when last frequency
+        if not more_freqs:
+
+            # Grey put all buttons when finished
+            if finished:
+                self.next_button.config(state=tk.DISABLED)
+                self.repeat_button.config(state=tk.DISABLED)
+                self.stop_button.config(state=tk.DISABLED)
+                self.level_measured_entry.config(state=tk.DISABLED)
+                return
+            
+            self.next_button.config(text="Kalibrierung abschließen")
+            finished = True
+
+
+        self.current_freq_var.set("Aktuelle Frequenz: " + str(current_freq) + " Hz")
+        self.level_expected_var.set("Schalldruckpegel (soll): " + str(current_spl) + " dB")    
 
     def repeat_frequency(self):
-        pass
+        self.cal_repeat()
 
     def stop_playing(self):
-        pass
+        self.cal_stop()
 
-def setup_ui(startfunc, endfunc, programfuncs):
-    app = App(startfunc, endfunc, programfuncs)
+def setup_ui(startfunc, endfunc, programfuncs, calibrationfuncs):
+    app = App(startfunc, endfunc, programfuncs, calibrationfuncs)
     return app

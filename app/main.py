@@ -9,11 +9,12 @@ class Controller():
                              "Kalibrierung" : self.start_calibration}
         
         self.selected_program = ""
-
+        self.calibration_funcs = [self.start_calibration, self.calibration_next_freq, self.calibration_repeat_freq, self.stop_sound, self.calibration_set_level]
         self.view = setup_ui(self.start_familiarization, self.create_audiogram, 
-                             program_functions)
+                             program_functions, self.calibration_funcs)
 
-         
+        # helper variable for calibration
+        self.button_changed = False
         
     def run_app(self):
         self.view.mainloop()
@@ -43,9 +44,27 @@ class Controller():
         self.screen_procedure.screen_test(binaural)
 
     def start_calibration(self, level, headphone="Sennheiser_HDA200"):
-        self.selected_program = "Calibration"
+        self.selected_program = "calibration"
         self.calibration = Calibration(startlevel=level, headphone_name=headphone)
+        _, current_freq, current_spl = self.calibration_next_freq()
+        return current_freq, current_spl
 
-    def calibration_next_freq(self, level):
-        if self.selected_program != "Calibration":
-            self.start_calibration()
+    def calibration_next_freq(self):
+        more_freqs, current_freq, current_spl = self.calibration.play_one_freq()
+        if more_freqs:
+            return True, current_freq, current_spl
+        elif self.button_changed == False:
+            self.button_changed = True
+            return False, current_freq, current_spl
+        else:
+            self.calibration.finish_calibration()
+            return False, current_freq, current_spl
+
+    def calibration_repeat_freq(self):
+        self.calibration.repeat_freq()
+
+    def calibration_set_level(self, spl):
+        self.calibration.set_calibration_value(spl)
+
+    def stop_sound(self):
+        self.calibration.stop_playing()
