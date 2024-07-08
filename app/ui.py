@@ -380,7 +380,7 @@ class ProgramPage(ttk.Frame):
         self.parent.show_frame(self.selected_option)
 
         self.parent.wait_for_process(lambda: self.parent.frames[self.selected_option].program(self.binaural_test, calibrate=self.use_calibration),
-                                     lambda: self.parent.show_frame(ResultPage))
+                                     self.show_results)
 
 
     def show_results(self):
