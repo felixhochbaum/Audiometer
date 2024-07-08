@@ -161,7 +161,7 @@ class App(tb.Window):
         if messagebox.askyesno(title="Quit", message="Möchten Sie wirklich das Programm beenden?"):
             self.destroy()
 
-    def get_image_files_in_path(self, directory, image_extensions=[".png", ".jpg", ".jpeg", ".gif", ".bmp"]):
+    def get_images_in_path(self, directory, image_extensions=[".png", ".jpg", ".jpeg", ".gif", ".bmp"]):
         """
         Get a list of image files in the specified directory.
 
@@ -283,11 +283,11 @@ class MainMenu(ttk.Frame):
         if self.start_button is None:
             self.start_button = ttk.Button(self,
                                            text="Test starten",
-                                           command=self.run_familiarization,
+                                           command=self.go_to_next_page,
                                            width=self.button_width)
             self.start_button.pack(pady=10)
 
-    def run_familiarization(self):
+    def go_to_next_page(self):
         if self.selected_option == "Kalibrierung":
             self.parent.show_frame(CalibrationPage)
             
@@ -298,7 +298,7 @@ class MainMenu(ttk.Frame):
                 return
 
             patient_folder = os.path.join(self.parent.save_path, self.patient_number)
-            pics = self.parent.get_image_files_in_path(patient_folder)
+            pics = self.parent.get_images_in_path(patient_folder)
             if pics:
                 if messagebox.askyesno("Proband vorhanden", "Für diese Probandennummer gibt es bereits Ergebnisse. Möchten Sie diese anzeigen?"):
                     results_page = self.parent.frames[ResultPage]
@@ -446,7 +446,6 @@ class ResultPage(ttk.Frame):
         super().__init__(parent)
         self.parent = parent
 
-        # Create widgets
         self.create_widgets()
 
     def create_widgets(self):
@@ -473,7 +472,7 @@ class ResultPage(ttk.Frame):
 
         # TODO das muss viel schöner angezeigt werden, mittig, groß, Datum und Uhrzeit etc. ...
         
-        pics = self.parent.get_image_files_in_path(folder_path)
+        pics = self.parent.get_images_in_path(folder_path)
         if pics:
             for file in pics:
                 img = Image.open(file)
