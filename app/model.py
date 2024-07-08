@@ -91,10 +91,12 @@ class Procedure:
                 reader = csv.DictReader(file)
                 calibration_str_values_l = next(reader)
                 calibration_str_values_r = next(reader)
+                
                 # convert dictionary to int:float and put into extra dictionary for left and right side
                 calibration_values = {}
                 calibration_values['l'] = {int(k): float(v) for k, v in calibration_str_values_l.items()}
                 calibration_values['r'] = {int(k): float(v) for k, v in calibration_str_values_r.items()}
+                
                 # if both sides are used, calculate average between both sides
                 calibration_values['lr'] = {}
                 for k, v in calibration_values['l'].items():
@@ -104,10 +106,8 @@ class Procedure:
             print(f"Error reading the file: {e}")
             return
         
-        
         print(calibration_values)
         return calibration_values
-
 
 
     def dbhl_to_volume(self, dbhl):
@@ -225,6 +225,7 @@ class Procedure:
             dict_writer.writerows(rows)
 
         print(rows[0], rows[1])
+        
         for row in rows[2:]:
             print(row['125'], row['250'])
 
@@ -258,6 +259,7 @@ class Procedure:
         with open(temp_filename, mode='r', newline='') as temp_file:
             dict_reader = csv.DictReader(temp_file)
             rows = list(dict_reader)
+        
         # get date and time    
         now = datetime.now()
         date_str = now.strftime("%Y%m%d_%H%M%S")
@@ -278,8 +280,8 @@ class Procedure:
             dict_writer.writeheader()
             dict_writer.writerows(rows)
         
-        print("Datei gespeichert als " + final_filename)
         return final_filename
+
 
     def create_final_audiogram(self, filename, binaural=False):
         """Creates audiogram from temporary csv file
@@ -295,15 +297,15 @@ class Procedure:
 
         if filename is None:
             print("No temporary file found. Please start a procedure first.")
-            return
+            return False
 
         # read temp file
         with open(filename, mode='r', newline='') as temp_file:
             dict_reader = csv.DictReader(temp_file)
             rows = list(dict_reader)
 
-        left_levels = [int(rows[0][freq]) for freq in self.freq_bands]
-        right_levels = [int(rows[1][freq]) for freq in self.freq_bands]
+        left_levels = [self.parse_dbhl_value(rows[0][freq]) for freq in self.freq_bands]
+        right_levels = [self.parse_dbhl_value(rows[1][freq]) for freq in self.freq_bands]
 
         # Extract the subject ID from the filename
         subject_id = os.path.basename(filename).split('_')[0]
@@ -315,9 +317,23 @@ class Procedure:
 
         # Generate the audiogram filename
         audiogram_filename = os.path.join(folder_name, f"{os.path.splitext(os.path.basename(filename))[0]}.png")
-
         create_audiogram(freqs, left_levels, right_levels, binaural=binaural, save=True, name=audiogram_filename)
 
+    def parse_dbhl_value(self, value):
+        """Parses the dBHL value from the CSV file.
+
+        Args:
+            value (str): The value from the CSV file.
+
+        Returns:
+            int or None: The parsed value or None if 'NH'.
+        """
+        if value == 'NH':
+            return None
+        try:
+            return int(value)
+        except ValueError:
+            return None
 
 
 
@@ -563,41 +579,30 @@ class ScreeningProcedure(Procedure):
         """
         if not binaural:
             self.side = 'l'
-            success_l = self.screen_one_ear()
+            self.screen_one_ear()
             
             self.side = 'r'
-            success_r = self.screen_one_ear()
+            self.screen_one_ear()
 
-            if success_l and success_r:
-                final_filename = self.create_final_csv(self.temp_filename)
-                self.create_final_audiogram(final_filename, binaural)
-                return True
+            final_filename = self.create_final_csv(self.temp_filename)
+            self.create_final_audiogram(final_filename, binaural)
+            return True
         
         if binaural:
             self.side = 'lr'
-            success_lr = self.screen_one_ear()
+            self.screen_one_ear()
 
-            if success_lr:
-                final_filename = self.create_final_csv(self.temp_filename)
-                self.create_final_audiogram(final_filename, binaural)
-                return True
-
-        return False
+        final_filename = self.create_final_csv(self.temp_filename)
+        self.create_final_audiogram(final_filename, binaural)
 
 
     def screen_one_ear(self):
         success = []
-        # test every frequency
+
         for f in self.freq_order:
             print(f"Testing frequeny {f} Hz")
             s = self.screen_one_freq(f)
             success.append(s)
-
-        if all(success):
-            return True
-        
-        else:
-            return False
 
 
     def screen_one_freq(self, freq):
@@ -605,7 +610,6 @@ class ScreeningProcedure(Procedure):
 
         Args:
             freq (int): frequency to be tested
-            level (int): level at which the frequency is tested
 
         Returns:
             bool: tone heard
@@ -614,18 +618,27 @@ class ScreeningProcedure(Procedure):
         self.level = self.freq_levels[freq]
         self.tone_heard = False
         self.num_heard = 0
-        
-        for i in range(3):
+
+        for i in range(2):
             self.play_tone()
-            
+
             if self.tone_heard:
                 self.num_heard += 1
 
-            if self.num_heard >= 2:
-                self.add_to_temp_csv(str(self.level), str(self.frequency), self.side, self.temp_filename)
-                return True
+        if self.num_heard == 1:
+            self.play_tone()
+
+            if self.tone_heard:
+                self.num_heard += 1
         
-        return self.tone_heard
+        if self.num_heard >= 2:
+            self.add_to_temp_csv(str(self.level), str(self.frequency), self.side, self.temp_filename)
+            return
+ 
+        self.add_to_temp_csv('NH', str(self.frequency), self.side, self.temp_filename)
+
+
+
 
 class Calibration(Procedure):
 
@@ -671,6 +684,7 @@ class Calibration(Procedure):
             float: expected SPL value in dB
         """
         self.ap.stop()
+        
         try:
             self.frequency = next(self.generator)
         except:
@@ -725,5 +739,6 @@ class Calibration(Procedure):
         
         print("Datei gespeicher als " + filename)
         
+
     def stop_playing(self):
         self.ap.stop()
