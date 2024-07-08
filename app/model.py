@@ -121,7 +121,7 @@ class Procedure:
         """
         if self.use_calibration:
             # add RETSPL and values from calibration file at that frequency
-            dbspl = dbhl + self.retspl[self.frequency] + self.calibration[self.side][self.frequency] 
+            dbspl = dbhl + self.retspl[self.frequency] - self.calibration[self.side][self.frequency] 
         else:
             # only add RETSPL
             dbspl = dbhl + self.retspl[self.frequency] 
@@ -540,6 +540,7 @@ class StandardProcedure(Procedure):
 
         
 class ScreeningProcedure(Procedure):
+
     def __init__(self,  temp_filename, signal_length=1, headphone_name="Sennheiser_HDA200", calibrate=True):
         """short screening process to check if subject can hear specific frequencies at certain levels
 
@@ -550,9 +551,10 @@ class ScreeningProcedure(Procedure):
         self.temp_filename = temp_filename
         self.freq_order = [1000, 2000, 4000, 8000, 500, 250, 125]
         
-        #TODO das als default, aber  variabel in der GUI
+        #TODO das als default, aber  variabel in der GUI?
         self.freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
     
+
     def screen_test(self, binaural=False, **additional_data):
         """main functions
 
@@ -639,6 +641,7 @@ class Calibration(Procedure):
         self.generator = self.get_next_freq()
         self.dbspl = self.level + self.retspl[self.frequency]
 
+
     def get_next_freq(self):
         """Generator that goes through all frequencies twice.
         Changes self.side to 'r' after going through all frequencies the first time.
@@ -657,6 +660,7 @@ class Calibration(Procedure):
         while frequency <= 8000:
             yield frequency
             frequency *= 2
+
 
     def play_one_freq(self):
         """Get the next frequency and play it
@@ -680,13 +684,13 @@ class Calibration(Procedure):
         else:
             return True, self.frequency, self.dbspl
         
+
     def repeat_freq(self):
         """repeats the last played frequency
         """
         self.ap.stop()
         print(f" Repeating side {self.side} at {self.frequency} Hz: The SPL value should be {self.dbspl} dB.")
         self.ap.play_beep(self.frequency, self.dbhl_to_volume(self.level), self.signal_length, self.side)
-
 
 
     def set_calibration_value(self, measured_value):
@@ -705,6 +709,7 @@ class Calibration(Procedure):
         Args:
             temp_filename (str): name of temporary csv file
         """
+        #TODO csv name
         self.ap.stop()
         # read temp file
         with open(self.tempfile, mode='r', newline='') as temp_file:
@@ -720,7 +725,5 @@ class Calibration(Procedure):
         
         print("Datei gespeicher als " + filename)
         
-
     def stop_playing(self):
         self.ap.stop()
-
