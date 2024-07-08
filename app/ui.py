@@ -103,7 +103,7 @@ class App(tb.Window):
         current_theme = self.style.theme_use()
 
         if current_theme == theme_name:
-            messagebox.showwarning("Ops..", "Dieses Theme wird bereits verwendet.")
+            messagebox.showwarning("Oops..", "Dieses Theme wird bereits verwendet.")
         else:
             self.style.theme_use(theme_name)
 
@@ -538,12 +538,13 @@ class CalibrationPage(ttk.Frame):
         # Change Button when last frequency
         if not more_freqs:
 
-            # Grey put all buttons when finished
+            # Grey out all buttons when finished
             if finished:
                 self.next_button.config(state=tk.DISABLED)
                 self.repeat_button.config(state=tk.DISABLED)
                 self.stop_button.config(state=tk.DISABLED)
                 self.level_measured_entry.config(state=tk.DISABLED)
+                messagebox.showwarning("Kalibrierung abgeschlossen.", "Die Kalibrierung wurde erfolgreich abgeschlossen. Datei gespeichert als calibration.csv")
                 return
             
             self.next_button.config(text="Kalibrierung abschließen")
