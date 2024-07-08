@@ -137,7 +137,9 @@ class App(tb.Window):
             process (function): function to be called
             callback (function): function to be called when process is done
         """
-        threading.Thread(target=self.run_process, args=(process, callback)).start()
+        t = threading.Thread(target=self.run_process, args=(process, callback))
+        t.daemon = True
+        t.start()
 
     def run_process(self, process, callback):
         """Runs a process and calls a callback function when the process is done
