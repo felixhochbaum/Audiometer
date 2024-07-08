@@ -8,30 +8,19 @@ class Controller():
                              "Kurzes Screening" : self.start_screen_procedure,
                              "Kalibrierung" : self.start_calibration}
         
-        self.selected_program = ""
         self.calibration_funcs = [self.start_calibration, self.calibration_next_freq, self.calibration_repeat_freq, self.stop_sound, self.calibration_set_level]
-        self.view = setup_ui(self.start_familiarization, self.create_audiogram, 
+        self.view = setup_ui(self.start_familiarization, 
                              program_functions, self.calibration_funcs)
 
         # helper variable for calibration
         self.button_changed = False
-        
+
     def run_app(self):
         self.view.mainloop()
 
     def start_familiarization(self, id="", headphone="Sennheiser_HDA200", calibrate=True, **additional_data):
         self.familiarization = Familiarization(id=id, headphone_name=headphone, calibrate=calibrate, **additional_data)
         return self.familiarization.familiarize()
-    
-    def create_audiogram(self):
-        if self.selected_program == "standard":
-            return self.standard_procedure.create_final_audiogram(self.familiarization.get_temp_csv_filename()) 
-        elif self.selected_program == "screening":
-            return self.screen_procedure.create_final_audiogram(self.familiarization.get_temp_csv_filename())
-        else:
-            print("There was an error, no process selected.")
-            self.screen_procedure = ScreeningProcedure("")
-            return self.screen_procedure.create_final_audiogram(None)
 
     def start_standard_procedure(self, binaural=False, headphone="Sennheiser_HDA200", calibrate=True, **additional_data):
         self.selected_program = "standard"

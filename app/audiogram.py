@@ -1,20 +1,22 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-
-def create_audiogram(freqs, right_values, left_values, bi_values=None, save=False):
-    """Erstellt ein Audiogramm basierend auf den gegebenen Frequenzen und Hörschwellenwerten.
+def create_audiogram(freqs, left_values=None, right_values=None, binaural=False, save=False, name="audiogram.png"):
+    """Erstellt ein Audiogramm basierend auf den gegebenen Frequenzen und Hörschwellenwerten mit benutzerdefinierten x-Achsen-Beschriftungen.
 
     Args:
         freqs (list of int): Eine Liste von Frequenzen in Hertz.
         right_values (list of int): Eine Liste von Hörschwellen in dB HL vom rechten Ohr.
         left_values (list of int): Eine Liste von Hörschwellen in dB HL vom linken Ohr
-            
+        save (bool): Ob das Diagramm gespeichert werden soll
+        name (str): Der Name der Datei, wenn das Diagramm gespeichert werden soll
     """
+    print("Creating audiogram with frequencies:", freqs)
+    print("Left ear values:", left_values)
+    print("Right ear values:", right_values)
 
-    #TODO save figure
-    fig, ax = plt.subplots(figsize=(5, 4))
-    
+    fig, ax = plt.subplots(figsize=(10, 6))  # Größeres Diagramm
+
     # Bereichsfarben hinzufügen
     ax.axhspan(-10, 20, facecolor='lightgreen', alpha=0.3)
     ax.axhspan(20, 40, facecolor='lightskyblue', alpha=0.3)
@@ -23,46 +25,56 @@ def create_audiogram(freqs, right_values, left_values, bi_values=None, save=Fals
     ax.axhspan(90, 120, facecolor='red', alpha=0.3)
 
     # Text für die Hörgrade direkt neben die y-Achse setzen
-    ax.text(52, 15, 'Normalhörigkeit', ha='left', va='center', fontsize=8, color='black')
-    ax.text(52, 35, 'Leichte Schwerhörigkeit', ha='left', va='center', fontsize=8)
-    ax.text(52, 65, 'Mittlere Schwerhörigkeit', ha='left', va='center', fontsize=8)
-    ax.text(52, 85, 'Schwere Schwerhörigkeit', ha='left', va='center', fontsize=8)
-    ax.text(52, 115, 'Hochgradige Schwerhörigkeit', ha='left', va='center', fontsize=8)
+    ax.text(8, 15, 'Normalhörigkeit', ha='left', va='center', fontsize=10, color='black')
+    ax.text(8, 30, 'Leichte Schwerhörigkeit', ha='left', va='center', fontsize=10)
+    ax.text(8, 55, 'Mittlere Schwerhörigkeit', ha='left', va='center', fontsize=10)
+    ax.text(8, 80, 'Schwere Schwerhörigkeit', ha='left', va='center', fontsize=10)
+    ax.text(8, 105, 'Hochgradige Schwerhörigkeit', ha='left', va='center', fontsize=10)
 
     # Plot der Hörschwellen
-    ax.plot(np.log2(freqs), right_values, marker='o', linestyle='-', color='firebrick', label='rechtes Ohr')
-    ax.plot(np.log2(freqs), left_values, marker='x', linestyle='-', color='dodgerblue', label='linkes Ohr')
-    if bi_values is not None:
-        ax.plot(np.log2(freqs), bi_values, marker='^', linestyle='-', color='darkgoldenrod', label='binauraler Hörtest')
+    if binaural:
+        ax.plot(range(len(freqs)), left_values, marker='o', markersize=10, linestyle='-', color='black', markerfacecolor='none')
+        ax.plot(range(len(freqs)), left_values, marker='x', markersize=8, linestyle='None', color='black')
+    
+    else: 
+        if right_values:
+            ax.plot(range(len(freqs)), right_values, markersize=12, marker='o', linestyle='-', linewidth=2, color='firebrick', label='rechtes Ohr', markerfacecolor='white')
 
-    # Achsne invertieren und beschriften
+        if left_values:
+            ax.plot(range(len(freqs)), np.array(left_values)+0.4,  markersize=12, marker='x', linestyle='-', linewidth=2, color='dodgerblue', label='linkes Ohr')
+
+    # Achse invertieren und beschriften
     ax.invert_yaxis()  
-    ax.set_title('Audiogramm')
-    ax.set_xlabel('Frequenzen (Hz)')
-    ax.set_ylabel('Hörschwelle (dB HL)')
+    ax.set_title('Audiogramm', fontsize=16)
+    ax.set_xlabel('Frequenzen (Hz)', fontsize=14)
+    ax.set_ylabel('Hörschwelle (dB HL)', fontsize=14)
     ax.set_ylim(120, -10)
 
     # Benutzerdefinierte x-Achsen-Ticks
-    x_ticks = np.log2(freqs)
-    x_labels = [f"{int(freq)}" for freq in freqs]
-    ax.set_xticks(x_ticks)
-    ax.set_xticklabels(x_labels)
-
+    ax.set_xticks(range(len(freqs)))  # Setze die Ticks auf gleichmäßige Abstände
+    ax.set_xticklabels([f"{int(freq)}" for freq in freqs], fontsize=12)  # Benutzerdefinierte Beschriftungen
 
     ax.set_yticks(np.arange(0, 121, 10))
+    ax.set_yticklabels(np.arange(0, 121, 10), fontsize=12)
     ax.grid(True, which='both', linestyle='--', linewidth=0.5)  # Grid for better readability
-    ax.legend(loc='upper right')
     
-    # if save:
-    #     plt.savefig("audiogram.png")  # Save the figure as an image file
+    if not binaural:
+        ax.legend(loc='upper right', fontsize=12)
+
+    if save:
+        plt.savefig(name)
+        print(f"Saved audiogram as {name}")
+        return name
     
+    print("Displaying audiogram")
     return fig
 
-#Beispielwerte
-#freq = [63, 125, 250, 500, 1000, 2000, 4000, 8000]
-#dummy_right = [10, 15, 20, 25, 30, 35, 40, 45]
-#dummy_left = [5, 10, 15, 20, 25, 30, 35, 40]
-# # Audiogramm erstellen
-#create_audiogram(freq, dummy_right, dummy_left)
-#plt.show()
 
+#Test	
+freqs = [125, 250, 500, 1000, 2000, 4000, 8000]
+left_values = [10, 10, 10, 10, 10, 10, 10]
+#right_values = [20, 20, 20, 20, 20, 20, 20]
+right_values = [10, 10, 10, 10, 10, 10, 10]
+
+fig = create_audiogram(freqs, left_values, right_values, binaural=True, save=False)
+plt.show()
