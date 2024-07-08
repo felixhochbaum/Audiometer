@@ -6,13 +6,8 @@ class Controller():
     def __init__(self):
         program_functions = {"Klassisches Audiogramm" : self.start_standard_procedure,
                              "Kurzes Screening" : self.start_screen_procedure}
-        
-        self.selected_program = ""
 
-        self.view = setup_ui(self.start_familiarization, self.create_audiogram, 
-                             program_functions)
-
-         
+        self.view = setup_ui(self.start_familiarization, program_functions)
         
     def run_app(self):
         self.view.mainloop()
@@ -21,15 +16,6 @@ class Controller():
         self.familiarization = Familiarization(id=id, **additional_data)
         return self.familiarization.familiarize()
     
-    def create_audiogram(self):
-        if self.selected_program == "standard":
-            return self.standard_procedure.create_final_audiogram(self.familiarization.get_temp_csv_filename()) 
-        elif self.selected_program == "screening":
-            return self.screen_procedure.create_final_audiogram(self.familiarization.get_temp_csv_filename())
-        else:
-            print("There was an error, no process selected.")
-            self.screen_procedure = ScreeningProcedure("")
-            return self.screen_procedure.create_final_audiogram(None)
 
     def start_standard_procedure(self, binaural=False, **additional_data):
         self.selected_program = "standard"

@@ -1,14 +1,15 @@
-from .audio_player import AudioPlayer
-from pynput import keyboard
-import time
-import random
-import tempfile as tfile
-import csv
+import os
 from datetime import datetime
+import csv
+import random
+import time
+from pynput import keyboard
+import tempfile as tfile
+from .audio_player import AudioPlayer
 from .audiogram import create_audiogram
 
 
-class Procedure():
+class Procedure:
 
     def __init__(self, startlevel, signal_length):
         """The parent class for the familiarization, the main procedure, and the short version
@@ -177,49 +178,61 @@ class Procedure():
         try:
             id = rows[2]['250']
         except:
-            id = False
+            id = "missingID"
 
-        if id:
-            final_filename = id + "_audiogramm_" + date_str + ".csv"
-        else:
-            final_filename = "missingID_audiogramm_" + date_str + ".csv"
+        # Create folder for the subject
+        folder_name = f"{id}"
+        if not os.path.exists(folder_name):
+            os.makedirs(folder_name)
 
+        final_filename = os.path.join(folder_name, f"{id}_audiogramm_{date_str}.csv")
 
         with open(final_filename, mode='x', newline='') as final_file:
             dict_writer = csv.DictWriter(final_file, fieldnames=self.freq_bands)
             dict_writer.writeheader()
             dict_writer.writerows(rows)
         
-        print("Datei gespeicher als " + final_filename)
+        print("Datei gespeichert als " + final_filename)
+        return final_filename
 
-
-    def create_final_audiogram(self, temp_filename):
+    def create_final_audiogram(self, filename, binaural=False):
         """Creates audiogram from temporary csv file
 
         Args:
             temp_filename (str): name of temporary csv file
+            binaural (bool): if the test is binaural
 
         Returns:
             fig: audiogramm as matplotlib figure
         """
         freqs = [int(x) for x in self.freq_bands]
 
-        if temp_filename == None:
-            audiogram = create_audiogram([], [], [])
+        if filename is None:
+            print("No temporary file found. Please start a procedure first.")
+            return
 
-        else:
-            # read temp file
-            with open(temp_filename, mode='r', newline='') as temp_file:
-                dict_reader = csv.DictReader(temp_file)
-                rows = list(dict_reader)
+        # read temp file
+        with open(filename, mode='r', newline='') as temp_file:
+            dict_reader = csv.DictReader(temp_file)
+            rows = list(dict_reader)
 
-            
-            left_levels = [int(x) for x in self.rows[0]]
-            right_levels = [int(x) for x in self.rows[1]]
+        left_levels = [int(rows[0][freq]) for freq in self.freq_bands]
+        right_levels = [int(rows[1][freq]) for freq in self.freq_bands]
 
-            audiogram = create_audiogram(freqs, left_levels, right_levels)
+        # Extract the subject ID from the filename
+        subject_id = os.path.basename(filename).split('_')[0]
+        # Create the folder name
+        folder_name = subject_id
+        # Ensure the folder exists
+        if not os.path.exists(folder_name):
+            os.makedirs(folder_name)
 
-        return audiogram  
+        # Generate the audiogram filename
+        audiogram_filename = os.path.join(folder_name, f"{os.path.splitext(os.path.basename(filename))[0]}.png")
+
+        create_audiogram(freqs, left_levels, right_levels, binaural=binaural, save=True, name=audiogram_filename)
+
+
 
 
 class Familiarization(Procedure):
@@ -286,9 +299,6 @@ class Familiarization(Procedure):
                 return True
             
 
-
-
-
 class StandardProcedure(Procedure):
 
     def __init__(self, temp_filename, signal_length=1):
@@ -301,7 +311,7 @@ class StandardProcedure(Procedure):
         startlevel = int(self.get_value_from_csv('1000', temp_filename)) - 10 # 10 dB under level from familiarization
         super().__init__(startlevel, signal_length)
         self.temp_filename = temp_filename
-        self.freq_order = [1000]#, 2000, 4000, 8000, 500, 250, 125] # order in which frequencies are tested
+        self.freq_order = [1000, 2000]#, 4000, 8000, 500, 250, 125] # order in which frequencies are tested
 
 
     def standard_test(self, binaural=False, **additional_data):
@@ -323,7 +333,8 @@ class StandardProcedure(Procedure):
             success_r = self.standard_test_one_ear()
 
             if success_l and success_r:
-                self.create_final_csv(self.temp_filename)
+                final_filename = self.create_final_csv(self.temp_filename)
+                self.create_final_audiogram(final_filename, binaural)
                 return True
         
         if binaural:
@@ -331,11 +342,13 @@ class StandardProcedure(Procedure):
             success_lr = self.standard_test_one_ear()
 
             if self.test_mode == True and self.jump_to_end == True:
-                self.create_final_csv(self.temp_filename)
+                final_filename = self.create_final_csv(self.temp_filename)
+                self.create_final_audiogram(final_filename, binaural)
                 return True
             
             if success_lr:
-                self.create_final_csv(self.temp_filename)
+                final_filename = self.create_final_csv(self.temp_filename)
+                self.create_final_audiogram(final_filename, binaural)
                 return True
 
         return False
@@ -448,7 +461,7 @@ class ScreeningProcedure(Procedure):
         """
         super().__init__(startlevel=0, signal_length=signal_length)
         self.temp_filename = temp_filename
-        self.freq_order = [1000, 2000]#, 4000, 8000, 500, 250, 125]
+        self.freq_order = [1000, 2000, 4000, 8000, 500, 250, 125]
         
         #TODO das als default, aber  variabel in der GUI
         self.freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
@@ -467,7 +480,8 @@ class ScreeningProcedure(Procedure):
             success_r = self.screen_one_ear()
 
             if success_l and success_r:
-                self.create_final_csv(self.temp_filename)
+                final_filename = self.create_final_csv(self.temp_filename)
+                self.create_final_audiogram(final_filename, binaural)
                 return True
         
         if binaural:
@@ -475,7 +489,8 @@ class ScreeningProcedure(Procedure):
             success_lr = self.screen_one_ear()
 
             if success_lr:
-                self.create_final_csv(self.temp_filename)
+                final_filename = self.create_final_csv(self.temp_filename)
+                self.create_final_audiogram(final_filename, binaural)
                 return True
 
         return False
@@ -523,6 +538,3 @@ class ScreeningProcedure(Procedure):
         
         return self.tone_heard
     
-
-
-

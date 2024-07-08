@@ -1,37 +1,41 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 import threading
-from tkinter import messagebox
-from .audiogram import create_audiogram #TODO
+from tkinter import messagebox, filedialog
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from app.instructions import text_Familiarization
 import ttkbootstrap as tb
 from PIL import Image, ImageTk
 from tkcalendar import DateEntry
 from datetime import datetime
+import os
+
 
 class App(tb.Window):
 
-    def __init__(self, familiarization_func, audiogram_func, program_funcs:dict):
+    def __init__(self, familiarization_func, program_funcs:dict):
         """Main application window. Contains all pages and controls the flow of the program.
 
         Args:
             familiarization_func (function): function to be called for familiarization
             *program_funcs (function): function(s) to be called for the main program
         """
-        super().__init__(themename="solar")  # Set/change the theme Link: https://ttkbootstrap.readthedocs.io/en/latest/themes/dark/
+        super().__init__(themename="sandstone")
 
         # General theme settings
         self.title("Sound Player")
         self.geometry("800x800")
         self.minsize(650,650)
-        self.attributes('-fullscreen', True)  #for fullscreen mode
+        self.attributes('-fullscreen', True)
         self.bind("<Escape>", self.exit_fullscreen)
-        self.audiogram_func = audiogram_func
+
+        self.save_path = os.path.join(os.getcwd(), "default_save_folder")
+
+        # Ensure the default save path exists
+        os.makedirs(self.save_path, exist_ok=True)
 
         #self.set_icon("app/00_TUBerlin_Logo_rot.jpg") change the icon maybe? #TODO
         
-        #this might solve the different GUI on macOS LINUX and WINDOWS problem... #TODO
         self.tk.call('tk', 'scaling', 2.0)  # Adjust for high-DPI displays
         
         # Dictionary to store all pages
@@ -39,7 +43,7 @@ class App(tb.Window):
         self.frames = {}
         self.binaural_test = False
 
-        # Pages, where the user can interact
+        # Interactive Pages
         for F in (MainMenu, FamiliarizationPage, ProgramPage, ResultPage):
             frame = F(self)
             self.frames[F] = frame
@@ -71,22 +75,24 @@ class App(tb.Window):
         self.grid_columnconfigure(0, weight=1)
 
     def create_menubar(self):
+        """Create a menubar with options for changing the theme and exiting the program"""
         menubar = tk.Menu(self)
         self.config(menu=menubar)
 
         file_menu = tk.Menu(menubar, tearoff=0)
         file_menu.add_command(label="Startseite", command=lambda: self.show_frame(MainMenu))
+        file_menu.add_command(label="Speicherort ändern", command=self.change_save_path)
 
-        # Settings for chaning the theme Link: lighthttps://ttkbootstrap.readthedocs.io/en/latest/themes/dark/
+        # Settings for changing the theme Link: lighthttps://ttkbootstrap.readthedocs.io/en/latest/themes/dark/
         ChangeTheme = tk.Menu(file_menu, tearoff=0)
         
         ChangeTheme.add_command(label="light", command=lambda: self.change_theme("sandstone"))
         ChangeTheme.add_command(label="dark", command=lambda: self.change_theme("solar"))
-        file_menu.add_cascade(label="change theme", menu=ChangeTheme)
+        file_menu.add_cascade(label="Theme ändern", menu=ChangeTheme)
 
         file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=self.on_closing)
-        menubar.add_cascade(label="File", menu=file_menu)
+        file_menu.add_command(label="Programm beenden", command=self.on_closing)
+        menubar.add_cascade(label="Einstellungen", menu=file_menu)
 
     def change_theme(self, theme_name):
         """Change to the specified theme"""
@@ -98,6 +104,7 @@ class App(tb.Window):
             self.style.theme_use(theme_name)
 
     def exit_fullscreen(self, event=None):
+        """Exit fullscreen mode"""
         self.attributes('-fullscreen', False)
 
     def set_icon(self, path):
@@ -134,9 +141,34 @@ class App(tb.Window):
         process()
         self.after(0, callback)
 
+    def change_save_path(self):
+        """Ask the user to select a folder to save the files"""
+        new_path = filedialog.askdirectory(title="Select Folder to Save Files")
+        if new_path:
+            self.save_path = new_path
+            messagebox.showinfo("Speicherort geändert", f"Neuer Speicherort: {self.save_path}")
+
     def on_closing(self):
+        """Ask for confirmation before closing the program"""
         if messagebox.askyesno(title="Quit", message="Möchten Sie wirklich das Programm beenden?"):
             self.destroy()
+
+    def get_image_files_in_path(self, directory, image_extensions=[".png", ".jpg", ".jpeg", ".gif", ".bmp"]):
+        """
+        Get a list of image files in the specified directory.
+
+        Args:
+        directory (str): The path to the directory to check.
+        image_extensions (list): List of image file extensions to check for.
+
+        Returns:
+        list: List of image file paths if any image files are found, False otherwise.
+        """
+        if not os.path.exists(directory):
+            return False
+
+        image_files = [os.path.join(directory, file) for file in os.listdir(directory) if any(file.lower().endswith(ext) for ext in image_extensions)]
+        return image_files if image_files else False
 
 
 class MainMenu(ttk.Frame):
@@ -152,7 +184,8 @@ class MainMenu(ttk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-
+        """Creates the widgets for the page
+        """
         self.patient_number_label = ttk.Label(self, text="Probandennummer:",font=('Arial', 12))
         self.patient_number_label.pack(padx=10, pady=10)
         self.patient_number_entry = ttk.Entry(self,width=self.button_width+1)
@@ -180,11 +213,10 @@ class MainMenu(ttk.Frame):
         self.dropdown.pack(pady=10)
         self.dropdown.bind("<<ComboboxSelected>>", self.on_option_selected)
 
-        #TODO nur wenn sinnvoll anzeigen
-        self.bi_button = ttk.Checkbutton(self, 
+        self.binaural_button = ttk.Checkbutton(self, 
                                          text="Binaurale Testung", 
                                          variable=self.binaural_test)
-        self.bi_button.pack(pady=10)
+        self.binaural_button.pack(pady=10)
 
     def on_option_selected(self, event):
         self.selected_option = self.dropdown.get()
@@ -203,6 +235,16 @@ class MainMenu(ttk.Frame):
         if not self.patient_number:
             messagebox.showwarning("Warnung", "Bitte geben Sie eine Probandennummer ein.")
             return
+
+        patient_folder = os.path.join(self.parent.save_path, self.patient_number)
+        pics = self.parent.get_image_files_in_path(patient_folder)
+        if pics:
+            if messagebox.askyesno("Proband vorhanden", "Für diese Probandennummer gibt es bereits Ergebnisse. Möchten Sie diese anzeigen?"):
+                results_page = self.parent.frames[ResultPage]
+                results_page.display_images(self.patient_number)
+                self.parent.show_frame(ResultPage)
+                return
+
         self.parent.show_frame(FamiliarizationPage)
 
 
@@ -261,8 +303,7 @@ class ProgramPage(ttk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        """Creates the widgets for the page
-        """
+        """Creates the widgets for the page"""
         self.start_button = ttk.Button(self, text="Starte Prozess", command=self.run_program)
         self.start_button.pack(padx=10, pady=200)
     
@@ -270,13 +311,19 @@ class ProgramPage(ttk.Frame):
             widget.pack_configure(anchor='center')
 
     def run_program(self):
-        """Runs the main program
-        """
+        """Runs the main program"""
         self.selected_option = self.parent.frames[MainMenu].selected_option
         self.binaural_test = self.parent.frames[MainMenu].binaural_test.get()
         self.parent.show_frame(self.selected_option)
         self.parent.wait_for_process(lambda: self.parent.frames[self.selected_option].program(self.binaural_test),
-                                     lambda: self.parent.show_frame(ResultPage))
+                                     self.show_results)
+
+    def show_results(self):
+        """Show the results page with the images"""
+        patient_number = self.parent.frames[MainMenu].patient_number
+        results_page = self.parent.frames[ResultPage]
+        results_page.display_images(patient_number)
+        self.parent.show_frame(ResultPage)
 
 
 class DuringFamiliarizationView(ttk.Frame):
@@ -322,6 +369,7 @@ class DuringProcedureView(ttk.Frame):
         self.info = ttk.Label(self, text=self.text)
         self.info.grid(row=0, column=0, padx=10, pady=10)
 
+
 class ResultPage(ttk.Frame):
 
     def __init__(self, parent):
@@ -333,33 +381,48 @@ class ResultPage(ttk.Frame):
         super().__init__(parent)
         self.parent = parent
 
-        # Create audiogram plot
-        fig = self.parent.audiogram_func()
-        
         # Create widgets
-        self.create_widgets(fig)
+        self.create_widgets()
 
-    def create_widgets(self,fig):
-        """Creates the widgets for the view`
-        """
+    def create_widgets(self):
+        """Creates the widgets for the view"""
         self.info = ttk.Label(self, text="Ergebnisse", font=('Arial', 18))
         self.info.pack(padx=10, pady=10)
 
         # Set the title on the parent window
         self.parent.title("Audiogram")
 
-        # Display the plot
-        canvas = FigureCanvasTkAgg(fig, self)
-        canvas.draw()
-        canvas.get_tk_widget().pack(side=tk.TOP, expand=0)
+        # Create a frame for the images
+        self.image_frame = ttk.Frame(self)
+        self.image_frame.pack(fill="both", expand=True)
 
+        # Button to go back to the main menu
         self.BackToMainMenu = ttk.Button(self, text="Zurück zur Startseite", command=lambda: self.parent.show_frame(MainMenu))
         self.BackToMainMenu.pack(padx=10, pady=10)
-    
+
+    def display_images(self, folder_name):
+        """Display all images in the given folder"""
+        folder_path = os.path.join(self.parent.save_path, folder_name)
+        for widget in self.image_frame.winfo_children():
+            widget.destroy()
+
+        # TODO das muss viel schöner angezeigt werden, mittig, groß, Datum und Uhrzeit etc. ...
+        
+        pics = self.parent.get_image_files_in_path(folder_path)
+        if pics:
+            for file in pics:
+                img = Image.open(file)
+                #img = img.resize((400, 300), Image.LANCZOS)
+                photo = ImageTk.PhotoImage(img)
+
+                label = ttk.Label(self.image_frame, image=photo)
+                label.image = photo
+                label.pack(padx=10, pady=10, side="left")
+
     def back_to_MainMenu(self):
         self.parent.show_frame(MainMenu)
 
 
-def setup_ui(startfunc, endfunc, programfuncs):
-    app = App(startfunc, endfunc, programfuncs)
+def setup_ui(startfunc, programfuncs):
+    app = App(startfunc, programfuncs)
     return app
