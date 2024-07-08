@@ -69,12 +69,3 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
     print("Displaying audiogram")
     return fig
 
-
-#Test	
-freqs = [125, 250, 500, 1000, 2000, 4000, 8000]
-left_values = [10, 10, 10, 10, 10, 10, 10]
-#right_values = [20, 20, 20, 20, 20, 20, 20]
-right_values = [10, 10, 10, 10, 10, 10, 10]
-
-fig = create_audiogram(freqs, left_values, right_values, binaural=True, save=False)
-plt.show()
