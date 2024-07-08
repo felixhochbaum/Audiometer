@@ -1,16 +1,19 @@
-from .audio_player import AudioPlayer
 from pynput import keyboard
 import time
 import random
 import tempfile as tfile
 import csv
 from datetime import datetime
+import os
+import numpy as np
+
+from .audio_player import AudioPlayer
 from .audiogram import create_audiogram
 
 
 class Procedure():
 
-    def __init__(self, startlevel, signal_length):
+    def __init__(self, startlevel, signal_length, headphone_name="Sennheiser_HDA200", calibrate=True):
         """The parent class for the familiarization, the main procedure, and the short version
 
         Args:
@@ -26,8 +29,86 @@ class Procedure():
         self.tone_heard = False
         self.freq_bands = ['125', '250', '500', '1000', '2000', '4000', '8000']
         self.side = 'l'
-        self.test_mode = True
+        self.test_mode = True # TODO turn off for delivery
         self.jump_to_end = False
+        self.use_calibration = calibrate
+
+        self.retspl = self.get_retspl_values(headphone_name)
+        self.calibration = self.get_calibration_values()
+
+
+    def get_retspl_values(self, headphone_name):
+        """Read the correct retspl values from the retspl.csv file
+
+        Args:
+            headphone_name (str): exact name of headphone as it appears in csv file
+
+        Returns:
+            dict of int:float : retspl values for each frequency band from 125 Hz to 8000 Hz
+        """
+        file_name = 'retspl.csv'
+        
+        # Check if the CSV file exists
+        if not os.path.isfile(file_name):
+            print(f"File '{file_name}' not found.")
+            return
+        
+        retspl_values = {}
+        
+        try:
+            with open(file_name, mode='r') as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    if row['headphone_model'] == headphone_name:
+                        retspl_values[int(row['frequency'])] = float(row['retspl'])
+        except Exception as e:
+            print(f"Error reading the file: {e}")
+            return
+        
+        # Check if the headphone model was found
+        if not retspl_values:
+            print(f"Headphone model '{headphone_name}' not found.")
+            return
+        
+        print(retspl_values)
+        return retspl_values
+    
+
+    def get_calibration_values(self):
+        """Read the correct calibration values from the calibration.csv file
+
+        Returns:
+            dict of int:float : calibration values for each frequency band from 125 Hz to 8000 Hz
+        """
+        file_name = 'calibration.csv'
+        
+        # Check if the CSV file exists
+        if not os.path.isfile(file_name):
+            print(f"File '{file_name}' not found.")
+            return
+        
+        try:
+            with open(file_name, mode='r') as file:
+                reader = csv.DictReader(file)
+                calibration_str_values_l = next(reader)
+                calibration_str_values_r = next(reader)
+                # convert dictionary to int:float and put into extra dictionary for left and right side
+                calibration_values = {}
+                calibration_values['l'] = {int(k): float(v) for k, v in calibration_str_values_l.items()}
+                calibration_values['r'] = {int(k): float(v) for k, v in calibration_str_values_r.items()}
+                # if both sides are used, calculate average between both sides
+                calibration_values['lr'] = {}
+                for k, v in calibration_values['l'].items():
+                    calibration_values['lr'][k] = (10 * np.log10((10 ** (v / 10) + 10 ** (calibration_values['r'][k] / 10)) / 2))
+        
+        except Exception as e:
+            print(f"Error reading the file: {e}")
+            return
+        
+        
+        print(calibration_values)
+        return calibration_values
+
 
 
     def dbhl_to_volume(self, dbhl):
@@ -39,7 +120,14 @@ class Procedure():
         Returns:
             float: value in absolute numbers
         """
-        return self.zero_dbhl * 10 ** (dbhl / 10)
+        if self.use_calibration:
+            # add RETSPL and values from calibration file at that frequency
+            dbspl = dbhl + self.retspl[self.frequency] + self.calibration[self.side][self.frequency] 
+        else:
+            # only add RETSPL
+            dbspl = dbhl + self.retspl[self.frequency] 
+
+        return self.zero_dbhl * 10 ** (dbspl / 10) # calculate from dB to absolute numbers using the reference point self.zero_dbhl
     
 
     def key_press(self, key):
@@ -224,14 +312,14 @@ class Procedure():
 
 class Familiarization(Procedure):
 
-    def __init__(self, startlevel=40, signal_length=1, id="", **additional_data):
+    def __init__(self, startlevel=40, signal_length=1, headphone_name="Sennheiser_HDA200", calibrate=True, id="", **additional_data):
         """Familiarization process
 
         Args:
             startlevel (int, optional): starting level of procedure in dBHL. Defaults to 40.
             signal_length (int, optional): length of played signals in seconds. Defaults to 1.
         """
-        super().__init__(startlevel, signal_length)      
+        super().__init__(startlevel, signal_length, headphone_name=headphone_name, calibrate=calibrate)      
         self.fails = 0 # number of times familiarization failed
         self.tempfile = self.create_temp_csv(id=id, **additional_data) # create a temporary file to store level at frequencies
 
@@ -291,7 +379,7 @@ class Familiarization(Procedure):
 
 class StandardProcedure(Procedure):
 
-    def __init__(self, temp_filename, signal_length=1):
+    def __init__(self, temp_filename, signal_length=1, headphone_name="Sennheiser_HDA200", calibrate=True):
         """Standard audiometer process (rising level)
 
         Args:
@@ -299,7 +387,7 @@ class StandardProcedure(Procedure):
             signal_length (int, optional): length of played signal in seconds. Defaults to 1.
         """
         startlevel = int(self.get_value_from_csv('1000', temp_filename)) - 10 # 10 dB under level from familiarization
-        super().__init__(startlevel, signal_length)
+        super().__init__(startlevel, signal_length, headphone_name=headphone_name, calibrate=calibrate)
         self.temp_filename = temp_filename
         self.freq_order = [1000]#, 2000, 4000, 8000, 500, 250, 125] # order in which frequencies are tested
 
@@ -440,13 +528,13 @@ class StandardProcedure(Procedure):
 
         
 class ScreeningProcedure(Procedure):
-    def __init__(self,  temp_filename, signal_length=1):
+    def __init__(self,  temp_filename, signal_length=1, headphone_name="Sennheiser_HDA200", calibrate=True):
         """short screening process to check if subject can hear specific frequencies at certain levels
 
         Args:
             signal_length (int, optional): length of played signals in seconds. Defaults to 1.
         """
-        super().__init__(startlevel=0, signal_length=signal_length)
+        super().__init__(startlevel=0, signal_length=signal_length, headphone_name=headphone_name, calibrate=calibrate)
         self.temp_filename = temp_filename
         self.freq_order = [1000, 2000]#, 4000, 8000, 500, 250, 125]
         
@@ -524,5 +612,102 @@ class ScreeningProcedure(Procedure):
         return self.tone_heard
     
 
+class Calibration(Procedure):
 
+    def __init__(self, startlevel=60, signal_length=10, headphone_name="Sennheiser_HDA200", **additional_data):
+        """Process for calibrating system
+
+        Args:
+            startlevel (int, optional): starting level of procedure in dBHL. Defaults to 60.
+            signal_length (int, optional): length of played signals in seconds. Defaults to 10.
+        """
+        super().__init__(startlevel, signal_length, headphone_name=headphone_name, calibrate=False)      
+        self.tempfile = self.create_temp_csv(id="", **additional_data) # create a temporary file to store level at frequencies
+        self.generator = self.get_next_freq()
+        self.dbspl = self.level + self.retspl[self.frequency]
+
+    def get_next_freq(self):
+        """Generator that goes through all frequencies twice.
+        Changes self.side to 'r' after going through all frequencies the first time.
+
+        Yields:
+            int: frequency
+        """
+        self.side = 'l'
+        frequency = 125
+        while frequency <= 8000:
+            yield frequency
+            frequency *= 2
+
+        frequency = 125
+        self.side = 'r'
+        while frequency <= 8000:
+            yield frequency
+            frequency *= 2
+
+    def play_one_freq(self):
+        """Get the next frequency and play it
+
+        Returns:
+            bool: False if no more frequencies left
+            int: current frequency
+            float: expected SPL value in dB
+        """
+        self.ap.stop()
+        try:
+            self.frequency = next(self.generator)
+        except:
+            return False, self.frequency, self.dbspl
+        
+        self.dbspl = self.level + self.retspl[self.frequency]
+        print(f"Side {self.side} at {self.frequency} Hz: The SPL value should be {self.dbspl} dB.")
+        self.ap.play_beep(self.frequency, self.dbhl_to_volume(self.level), self.signal_length, self.side)
+        if self.frequency >= 8000 and self.side == 'r':
+            return False, self.frequency, self.dbspl
+        else:
+            return True, self.frequency, self.dbspl
+        
+    def repeat_freq(self):
+        """repeats the last played frequency
+        """
+        self.ap.stop()
+        print(f" Repeating side {self.side} at {self.frequency} Hz: The SPL value should be {self.dbspl} dB.")
+        self.ap.play_beep(self.frequency, self.dbhl_to_volume(self.level), self.signal_length, self.side)
+
+
+
+    def set_calibration_value(self, measured_value):
+        """Rights the given calibration value into temporary csv file
+
+        Args:
+            measured_value (float): measured SPL value in dB
+        """
+        value = measured_value - self.dbspl
+        self.add_to_temp_csv(str(value), str(self.frequency), self.side, self.tempfile)
+
+
+    def finish_calibration(self):
+        """makes a permanent csv file from the temporary file that overwrites calibration.csv
+
+        Args:
+            temp_filename (str): name of temporary csv file
+        """
+        self.ap.stop()
+        # read temp file
+        with open(self.tempfile, mode='r', newline='') as temp_file:
+            dict_reader = csv.DictReader(temp_file)
+            rows = list(dict_reader)
+
+        filename = "calibration.csv"
+
+        with open(filename, mode='w', newline='') as final_file:
+            dict_writer = csv.DictWriter(final_file, fieldnames=self.freq_bands)
+            dict_writer.writeheader()
+            dict_writer.writerows(rows)
+        
+        print("Datei gespeicher als " + filename)
+        
+
+    def stop_playing(self):
+        self.ap.stop()
 
