@@ -1,16 +1,17 @@
 from .audio_player import AudioPlayer
-
 from pynput import keyboard
 import time
 import random
 import tempfile as tfile
 import csv
+from datetime import datetime
+from .audiogram import create_audiogram
 
 
 class Procedure():
 
     def __init__(self, startlevel, signal_length):
-        """The parent class for the familiarization, the main procedure and the short version
+        """The parent class for the familiarization, the main procedure, and the short version
 
         Args:
             startlevel (float): starting level of procedure in dBHL
@@ -24,11 +25,13 @@ class Procedure():
         self.zero_dbhl = 0.00002 # zero_dbhl in absolute numbers. Needs to be calibrated!
         self.tone_heard = False
         self.freq_bands = ['125', '250', '500', '1000', '2000', '4000', '8000']
-        self.side = 'lr'
+        self.side = 'l'
+        self.test_mode = True
+        self.jump_to_end = False
 
 
     def dbhl_to_volume(self, dbhl):
-        """calculate dBHL into absolute numbers
+        """Calculate dBHL into absolute numbers
 
         Args:
             dbhl (float): value in dBHL
@@ -43,38 +46,37 @@ class Procedure():
         if key == keyboard.Key.space:
             self.tone_heard = True
             print("Tone heard!")
+        elif self.test_mode and key == keyboard.Key.right:
+            self.jump_to_end = True
         
-        
-
 
     def play_tone(self):
-        """set tone_heard to False, play beep, then wait max 4s for keypress.
+        """Set tone_heard to False, play beep, then wait max 4s for keypress.
         If key is pressed, set tone_heard to True.
         Then wait for around about 2s (randomized).
         """
         self.tone_heard = False
-        print("playing tone..")
+        print(self.frequency, "Hz - playing tone at", self.level, "dBHL.")
         self.ap.play_beep(self.frequency, self.dbhl_to_volume(self.level), self.signal_length, self.side)
         listener = keyboard.Listener(on_press=self.key_press, on_release=None)
         listener.start()
         current_wait_time = 0
         max_wait_time = 4000 # in ms 
         step_size = 50 # in ms
-        while current_wait_time < max_wait_time and self.tone_heard == False: # wait for keypress
+        while current_wait_time < max_wait_time and not self.tone_heard: # wait for keypress
             time.sleep(step_size / 1000)
             current_wait_time += step_size
         listener.stop()
-        print("listener stopped.")
         self.ap.stop()
-        if self.tone_heard == False:
+        if not self.tone_heard:
             print("Tone not heard :(")
         else:
-            sleep_time = random.uniform(1, 2.5) # random wait time vetween 1 and 2.5
+            sleep_time = random.uniform(1, 2.5) # random wait time between 1 and 2.5
             time.sleep(sleep_time) # wait before next tone is played. #TODO test times
 
     
-    def create_temp_csv(self, id="", **aditional_data):
-        """creates a temporary CSV file with the relevant frequency bands as a header
+    def create_temp_csv(self, id="", **additional_data):
+        """Creates a temporary CSV file with the relevant frequency bands as a header
         and NaN in the second and third line as starting value for each band.
         (second line: left ear, third line: right ear)
         ID and additional data will be stored in subsequent lines in the format: key, value.
@@ -93,22 +95,21 @@ class Procedure():
             csv_writer.writerow(self.freq_bands)
 
             # Write value NaN for each frequency in second and third row
-            csv_writer.writerow(['NaN' for i in range(len(self.freq_bands))])
-            csv_writer.writerow(['NaN' for i in range(len(self.freq_bands))])
+            csv_writer.writerow(['NaN' for _ in range(len(self.freq_bands))])
+            csv_writer.writerow(['NaN' for _ in range(len(self.freq_bands))])
 
             # Write id and additional data
             if id:
                 csv_writer.writerow(["id", id])
-            if aditional_data:
-                for i in aditional_data:
-                    csv_writer.writerow([i, aditional_data[i]])
-
+            if additional_data:
+                for key, value in additional_data.items():
+                    csv_writer.writerow([key, value])
 
             return temp_file.name
         
         
     def add_to_temp_csv(self, value, frequency, side, temp_filename):
-        """add a value in for a specific frequency to the temporary csv file
+        """Add a value in for a specific frequency to the temporary csv file
 
         Args:
             value (str): level in dBHL at specific frequency
@@ -126,6 +127,9 @@ class Procedure():
             rows[0][frequency] = value
         elif side == 'r':
             rows[1][frequency] = value
+        else:
+            rows[0][frequency] = value
+            rows[1][frequency] = value
 
         # Write all rows back to the CSV file
         with open(temp_filename, mode='w', newline='') as temp_file:
@@ -134,13 +138,12 @@ class Procedure():
             dict_writer.writerows(rows)
 
         print(rows[0], rows[1])
-        for i in rows[2:]:
-            print(i['125'], i['250'])
+        for row in rows[2:]:
+            print(row['125'], row['250'])
 
 
-    
     def get_value_from_csv(self, frequency, temp_filename, side='l'):
-        """get the value at a specific frequency from the temporary csv file
+        """Get the value at a specific frequency from the temporary csv file
 
         Args:
             frequency (str): frequency where value is stored
@@ -156,59 +159,120 @@ class Procedure():
             if side == 'r': # go to next line if right side
                 freq_dict = next(dict_reader)    
             return freq_dict[frequency]
+        
+
+    def create_final_csv(self, temp_filename):
+        """makes a permanent csv file from the temporary file
+
+        Args:
+            temp_filename (str): name of temporary csv file
+        """
+        # read temp file
+        with open(temp_filename, mode='r', newline='') as temp_file:
+            dict_reader = csv.DictReader(temp_file)
+            rows = list(dict_reader)
+        # get date and time    
+        now = datetime.now()
+        date_str = now.strftime("%Y%m%d_%H%M%S")
+        try:
+            id = rows[2]['250']
+        except:
+            id = False
+
+        if id:
+            final_filename = id + "_audiogramm_" + date_str + ".csv"
+        else:
+            final_filename = "missingID_audiogramm_" + date_str + ".csv"
 
 
+        with open(final_filename, mode='x', newline='') as final_file:
+            dict_writer = csv.DictWriter(final_file, fieldnames=self.freq_bands)
+            dict_writer.writeheader()
+            dict_writer.writerows(rows)
+        
+        print("Datei gespeicher als " + final_filename)
 
+
+    def create_final_audiogram(self, temp_filename):
+        """Creates audiogram from temporary csv file
+
+        Args:
+            temp_filename (str): name of temporary csv file
+
+        Returns:
+            fig: audiogramm as matplotlib figure
+        """
+        freqs = [int(x) for x in self.freq_bands]
+
+        if temp_filename == None:
+            audiogram = create_audiogram([], [], [])
+
+        else:
+            # read temp file
+            with open(temp_filename, mode='r', newline='') as temp_file:
+                dict_reader = csv.DictReader(temp_file)
+                rows = list(dict_reader)
+
+            
+            left_levels = [int(x) for x in self.rows[0]]
+            right_levels = [int(x) for x in self.rows[1]]
+
+            audiogram = create_audiogram(freqs, left_levels, right_levels)
+
+        return audiogram  
 
 
 class Familiarization(Procedure):
 
     def __init__(self, startlevel=40, signal_length=1, id="", **additional_data):
-        """familiarization process
+        """Familiarization process
 
         Args:
             startlevel (int, optional): starting level of procedure in dBHL. Defaults to 40.
             signal_length (int, optional): length of played signals in seconds. Defaults to 1.
         """
-
         super().__init__(startlevel, signal_length)      
         self.fails = 0 # number of times familiarization failed
         self.tempfile = self.create_temp_csv(id=id, **additional_data) # create a temporary file to store level at frequencies
 
+
     def get_temp_csv_filename(self):
         return self.tempfile
 
+
     def familiarize(self):
-        """main funtion
+        """Main function
 
         Returns:
-            bool: familiarization successfull
+            bool: familiarization successful
         """
-
         while True:
-
             self.tone_heard = True
 
             # first loop (always -20dBHL)
-            while self.tone_heard == True:
+            while self.tone_heard:
                 self.play_tone()
+
+                if self.jump_to_end == True:
+                    for f in self.freq_bands:
+                        self.add_to_temp_csv(20, f, 'lr', self.get_temp_csv_filename())
+                    return True
                 
-                if self.tone_heard == True:
+                if self.tone_heard:
                     self.level -= 20
                 else:
                     self.level += 10
             
             # second loop (always +10dBHL)
-            while self.tone_heard == False:
+            while not self.tone_heard:
                 self.play_tone()
-
-                if self.tone_heard == False:
+                if not self.tone_heard:
                     self.level += 10
 
             # replay tone with same level
             self.play_tone()
 
-            if self.tone_heard == False:
+            if not self.tone_heard:
                 self.fails += 1
                 if self.fails >= 2:
                     print("Familiarization unsuccessful. Please read rules and start again.")
@@ -220,6 +284,7 @@ class Familiarization(Procedure):
                 print("Familiarization successful!")
                 self.add_to_temp_csv(self.level, '1000', 'l', self.tempfile)
                 return True
+            
 
 
 
@@ -227,7 +292,7 @@ class Familiarization(Procedure):
 class StandardProcedure(Procedure):
 
     def __init__(self, temp_filename, signal_length=1):
-        """standard audiometer process (rising level)
+        """Standard audiometer process (rising level)
 
         Args:
             temp_filename (str): name of temporary csv file where starting level is stored and future values will be stored
@@ -236,43 +301,68 @@ class StandardProcedure(Procedure):
         startlevel = int(self.get_value_from_csv('1000', temp_filename)) - 10 # 10 dB under level from familiarization
         super().__init__(startlevel, signal_length)
         self.temp_filename = temp_filename
-        self.freq_order = [1000, 2000, 4000, 8000, 500, 250, 125] # order in which frequencies are tested
+        self.freq_order = [1000]#, 2000, 4000, 8000, 500, 250, 125] # order in which frequencies are tested
 
-    def standard_test(self):
-        """main funtion
+
+    def standard_test(self, binaural=False, **additional_data):
+        """Main function
 
         Returns:
-            bool: test successfull
+            bool: test successful
         """
 
-        self.side = 'l'
-        success_l = self.standard_test_one_ear()
-        self.side = 'r'
-        success_r = self.standard_test_one_ear()
-        if success_l and success_r:
-            return True
-        else:
-            return False
+        if not binaural:
+            self.side = 'l'
+            success_l = self.standard_test_one_ear()
+
+            if self.test_mode == True and self.jump_to_end == True:
+                self.create_final_csv(self.temp_filename)
+                return True
+            
+            self.side = 'r'
+            success_r = self.standard_test_one_ear()
+
+            if success_l and success_r:
+                self.create_final_csv(self.temp_filename)
+                return True
+        
+        if binaural:
+            self.side = 'lr'
+            success_lr = self.standard_test_one_ear()
+
+            if self.test_mode == True and self.jump_to_end == True:
+                self.create_final_csv(self.temp_filename)
+                return True
+            
+            if success_lr:
+                self.create_final_csv(self.temp_filename)
+                return True
+
+        return False
 
         
     def standard_test_one_ear(self):
-        """audiometer for one ear
+        """Audiometer for one ear
 
         Returns:
-            bool: test successfull
+            bool: test successful
         """
         success = []
         # test every frequency
         for f in self.freq_order:
-            print(f"Testing frequeny {f} Hz")
+            print(f"Testing frequency {f} Hz")
             s = self.standard_test_one_freq(f)
+
+            if self.test_mode == True and self.jump_to_end == True:
+                return True
+            
             success.append(s)
 
         # retest 1000 Hz (and more frequencies if discrepancy is too high)
         for f in self.freq_order:
-            print(f"Retest at frequeny {f} Hz")
+            print(f"Retest at frequency {f} Hz")
             s = self.standard_test_one_freq(f, retest=True)
-            if s == True:
+            if s:
                 break
 
         if all(success):
@@ -283,24 +373,28 @@ class StandardProcedure(Procedure):
 
 
     def standard_test_one_freq(self, freq, retest=False):
-        """test for one frequency
+        """Test for one frequency
 
         Args:
             freq (int): frequency at which hearing is tested
             retest (bool, optional): Is this the retest at the end of step 3 according to DIN. Defaults to False
 
         Returns:
-            bool: test successfull
+            bool: test successful
         """
-
         self.tone_heard = False
         self.frequency = freq
         self.level = self.startlevel
 
         # Step 1 (raise tone in 5 dB steps until it is heard)
-        while self.tone_heard == False:
+        while not self.tone_heard:
             self.play_tone()
-            if self.tone_heard == False:
+
+            if self.test_mode == True and self.jump_to_end == True:
+                return True
+
+
+            if not self.tone_heard:
                 self.level += 5
 
         # Step 2
@@ -308,14 +402,13 @@ class StandardProcedure(Procedure):
         tries = 0
 
         while tries < 6:
-
             # reduce in 10dB steps until no answer
-            while self.tone_heard == True:
+            while self.tone_heard:
                 self.level -= 10
                 self.play_tone()
 
             # raise in 5 dB steps until answer
-            while self.tone_heard == False:
+            while not self.tone_heard:
                 self.level += 5
                 self.play_tone()
 
@@ -324,7 +417,7 @@ class StandardProcedure(Procedure):
             print(f"Try nr {tries}: level: {self.level}")
 
             if answers.count(self.level) >= 2:
-                if retest == True:
+                if retest:
                     if abs(self.level - int(self.get_value_from_csv(str(self.frequency), self.temp_filename, self.side))) > 5:
                         self.add_to_temp_csv(str(self.level), str(self.frequency), self.side, self.temp_filename)
                         return False
@@ -346,8 +439,90 @@ class StandardProcedure(Procedure):
         return False
 
         
+class ScreeningProcedure(Procedure):
+    def __init__(self,  temp_filename, signal_length=1):
+        """short screening process to check if subject can hear specific frequencies at certain levels
 
-
+        Args:
+            signal_length (int, optional): length of played signals in seconds. Defaults to 1.
+        """
+        super().__init__(startlevel=0, signal_length=signal_length)
+        self.temp_filename = temp_filename
+        self.freq_order = [1000, 2000]#, 4000, 8000, 500, 250, 125]
         
-                
+        #TODO das als default, aber  variabel in der GUI
+        self.freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
+    
+    def screen_test(self, binaural=False, **additional_data):
+        """main functions
+
+        Returns:
+            bool: test successful
+        """
+        if not binaural:
+            self.side = 'l'
+            success_l = self.screen_one_ear()
+            
+            self.side = 'r'
+            success_r = self.screen_one_ear()
+
+            if success_l and success_r:
+                self.create_final_csv(self.temp_filename)
+                return True
+        
+        if binaural:
+            self.side = 'lr'
+            success_lr = self.screen_one_ear()
+
+            if success_lr:
+                self.create_final_csv(self.temp_filename)
+                return True
+
+        return False
+
+
+    def screen_one_ear(self):
+        success = []
+        # test every frequency
+        for f in self.freq_order:
+            print(f"Testing frequeny {f} Hz")
+            s = self.screen_one_freq(f)
+            success.append(s)
+
+        if all(success):
+            return True
+        
+        else:
+            return False
+
+
+    def screen_one_freq(self, freq):
+        """screening for one frequency
+
+        Args:
+            freq (int): frequency to be tested
+            level (int): level at which the frequency is tested
+
+        Returns:
+            bool: tone heard
+        """
+        self.frequency = freq
+        self.level = self.freq_levels[freq]
+        self.tone_heard = False
+        self.num_heard = 0
+        
+        for i in range(3):
+            self.play_tone()
+            
+            if self.tone_heard:
+                self.num_heard += 1
+
+            if self.num_heard >= 2:
+                self.add_to_temp_csv(str(self.level), str(self.frequency), self.side, self.temp_filename)
+                return True
+        
+        return self.tone_heard
+    
+
+
 

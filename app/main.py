@@ -1,26 +1,42 @@
 from .ui import setup_ui
 from .model import *
-from .dummy_model import TestProcedure
-from .audiogram import create_audiogram
 
 class Controller():
 
     def __init__(self):
         program_functions = {"Klassisches Audiogramm" : self.start_standard_procedure,
-                             "Test" : self.start_test_procedure}
-        self.view = setup_ui(self.start_familiarization, 
-                             program_functions) 
+                             "Kurzes Screening" : self.start_screen_procedure}
+        
+        self.selected_program = ""
+
+        self.view = setup_ui(self.start_familiarization, self.create_audiogram, 
+                             program_functions)
+
+         
+        
     def run_app(self):
         self.view.mainloop()
 
     def start_familiarization(self, id="", **additional_data):
         self.familiarization = Familiarization(id=id, **additional_data)
         return self.familiarization.familiarize()
+    
+    def create_audiogram(self):
+        if self.selected_program == "standard":
+            return self.standard_procedure.create_final_audiogram(self.familiarization.get_temp_csv_filename()) 
+        elif self.selected_program == "screening":
+            return self.screen_procedure.create_final_audiogram(self.familiarization.get_temp_csv_filename())
+        else:
+            print("There was an error, no process selected.")
+            self.screen_procedure = ScreeningProcedure("")
+            return self.screen_procedure.create_final_audiogram(None)
 
-    def start_standard_procedure(self):
-        self.standard_procedure = StandardProcedure(self.familiarization.get_temp_csv_filename())
-        self.standard_procedure.standard_test()
+    def start_standard_procedure(self, binaural=False, **additional_data):
+        self.selected_program = "standard"
+        self.standard_procedure = StandardProcedure(self.familiarization.get_temp_csv_filename(), **additional_data)
+        self.standard_procedure.standard_test(binaural)
 
-    def start_test_procedure(self):
-        self.test_procedure = TestProcedure()
-        self.test_procedure.test_test()
+    def start_screen_procedure(self, binaural=False, **additional_data):
+        self.selected_program = "screening"
+        self.screen_procedure = ScreeningProcedure(self.familiarization.get_temp_csv_filename(), **additional_data)
+        self.screen_procedure.screen_test(binaural)
