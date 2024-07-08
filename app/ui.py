@@ -270,12 +270,12 @@ class MainMenu(ttk.Frame):
         self.show_start_button()
         if self.selected_option == "Kalibrierung":
             self.cal_button.config(state=tk.DISABLED)
-            self.bi_button.config(state=tk.DISABLED)
+            self.binaural_button.config(state=tk.DISABLED)
             self.gender_dropdown.config(state=tk.DISABLED)
             self.patient_number_entry.config(state=tk.DISABLED)
         else:
             self.cal_button.config(state=tk.NORMAL)
-            self.bi_button.config(state=tk.NORMAL)
+            self.binaural_button.config(state=tk.NORMAL)
             self.gender_dropdown.config(state=tk.NORMAL)
             self.patient_number_entry.config(state=tk.NORMAL)    
 
