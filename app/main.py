@@ -15,7 +15,6 @@ class Controller():
     def start_familiarization(self, id="", **additional_data):
         self.familiarization = Familiarization(id=id, **additional_data)
         return self.familiarization.familiarize()
-    
 
     def start_standard_procedure(self, binaural=False, **additional_data):
         self.selected_program = "standard"
