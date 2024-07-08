@@ -26,7 +26,21 @@ class AudioPlayer:
                         num=int(self.fs * self.beep_duration), 
                         endpoint=False)
         tone = np.sin(2 * np.pi * self.frequency * t) * self.volume
+
+        # Create fade-in and fade-out envelopes
+        fade_duration = 0.003  # 3 ms fade-in and fade-out
+        fade_samples = int(self.fs * fade_duration)
+        fade_in = np.linspace(0, 1, fade_samples)
+        fade_out = np.linspace(1, 0, fade_samples)
+        envelope = np.ones_like(tone)
+        envelope[:fade_samples] = fade_in
+        envelope[-fade_samples:] = fade_out
+
+        # Apply the envelope to the tone
+        tone = tone * envelope
+
         return tone
+    
 
     def play_beep(self, frequency, volume, duration, channel='lr'):
         """Sets the frequency, volume and beep duration of the audio player and then plays a beep with those parameters
