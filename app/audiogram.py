@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -14,6 +16,8 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
     print("Creating audiogram with frequencies:", freqs)
     print("Left ear values:", left_values)
     print("Right ear values:", right_values)
+
+    # plt.ioff()
 
     fig, ax = plt.subplots(figsize=(10, 6))  # Größeres Diagramm
 
