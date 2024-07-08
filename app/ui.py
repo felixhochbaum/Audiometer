@@ -29,8 +29,8 @@ class App(tb.Window):
         self.attributes('-fullscreen', True)
         self.bind("<Escape>", self.exit_fullscreen)
 
-        self.save_path = os.path.join(os.getcwd(), "default_save_folder")
-
+        self.save_path = os.path.join(os.getcwd())
+        
         # Ensure the default save path exists
         os.makedirs(self.save_path, exist_ok=True)
 

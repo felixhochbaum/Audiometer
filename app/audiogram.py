@@ -38,10 +38,10 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
     
     else: 
         if right_values:
-            ax.plot(range(len(freqs)), right_values, marker='o', linestyle='-', color='firebrick', label='rechtes Ohr')
+            ax.plot(range(len(freqs)), right_values, markersize=12, marker='o', linestyle='-', linewidth=2, color='firebrick', label='rechtes Ohr', markerfacecolor='white')
 
         if left_values:
-            ax.plot(range(len(freqs)), np.array(left_values)+0.5, marker='x', linestyle='-', color='dodgerblue', label='linkes Ohr')
+            ax.plot(range(len(freqs)), np.array(left_values)+0.4,  markersize=12, marker='x', linestyle='-', linewidth=2, color='dodgerblue', label='linkes Ohr')
 
     # Achse invertieren und beschriften
     ax.invert_yaxis()  
@@ -71,10 +71,10 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
 
 
 #Test	
-# freqs = [125, 250, 500, 1000, 2000, 4000, 8000]
-# left_values = [10, 10, 10, 10, 10, 10, 10]
-# #right_values = [20, 20, 20, 20, 20, 20, 20]
-# right_values = [10, 10, 10, 10, 10, 10, 10]
+freqs = [125, 250, 500, 1000, 2000, 4000, 8000]
+left_values = [10, 10, 10, 10, 10, 10, 10]
+#right_values = [20, 20, 20, 20, 20, 20, 20]
+right_values = [10, 10, 10, 10, 10, 10, 10]
 
-# fig = create_audiogram(freqs, left_values, right_values, binaural=False, save=False)
-# plt.show()
+fig = create_audiogram(freqs, left_values, right_values, binaural=True, save=False)
+plt.show()
