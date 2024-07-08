@@ -10,7 +10,7 @@ class AudioPlayer:
         """
         self.fs = self.get_device_samplerate()
         self.beep_duration = 10
-        self.volume = 0.5
+        self.volume = 0
         self.frequency = 440
         self.stream = None
         self.is_playing = False
