@@ -412,7 +412,8 @@ class StandardProcedure(Procedure):
             success_l = self.standard_test_one_ear()
 
             if self.test_mode == True and self.jump_to_end == True:
-                self.create_final_csv(self.temp_filename)
+                final_filename = self.create_final_csv(self.temp_filename)
+                self.create_final_audiogram(final_filename, binaural)
                 return True
             
             self.side = 'r'
