@@ -456,11 +456,11 @@ class ResultPage(ttk.Frame):
         self.info.pack(padx=10, pady=10)
 
         # Set the title on the parent window
-        self.parent.title("Audiogram")
+        self.parent.title("Audiogramm")
 
         # Create a frame for the images
         self.image_frame = ttk.Frame(self)
-        self.image_frame.pack(fill="both", expand=True)
+        self.image_frame.pack(anchor="center")   #,fill="both", expand=True)
 
         # Button to go back to the main menu
         self.BackToMainMenu = ttk.Button(self, text="Zurück zur Startseite", command=lambda: self.parent.show_frame(MainMenu))
