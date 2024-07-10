@@ -24,7 +24,7 @@ class Procedure:
         self.level = startlevel
         self.signal_length = signal_length
         self.frequency = 1000
-        self.zero_dbhl = 0.000002 # zero_dbhl in absolute numbers. Needs to be calibrated!
+        self.zero_dbhl = 0.000005 # zero_dbhl in absolute numbers. Needs to be calibrated!
         self.tone_heard = False
         self.freq_bands = ['125', '250', '500', '1000', '2000', '4000', '8000']
         self.side = 'l'
