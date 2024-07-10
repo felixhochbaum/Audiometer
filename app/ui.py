@@ -9,11 +9,12 @@ from tkcalendar import DateEntry
 from datetime import datetime
 import os
 import csv
+import time
 from .instructions import *
 
 class App(tb.Window):
 
-    def __init__(self, familiarization_func, program_funcs:dict, calibration_funcs:list):
+    def __init__(self, familiarization_func, program_funcs:dict, calibration_funcs:list, progress_func):
         """Main application window. Contains all pages and controls the flow of the program.
 
         Args:
@@ -58,7 +59,7 @@ class App(tb.Window):
         frame.grid(row=0, column=0, sticky="nsew")
 
         # View during familiarization
-        frame = DuringFamiliarizationView(self, familiarization_func)
+        frame = DuringFamiliarizationView(self, familiarization_func, progress_func)
         self.frames[DuringFamiliarizationView] = frame
         frame.grid(row=0, column=0, sticky="nsew")
 
@@ -95,7 +96,7 @@ class App(tb.Window):
         ChangeTheme = tk.Menu(file_menu, tearoff=0)
         
         ChangeTheme.add_command(label="light", command=lambda: self.change_theme("sandstone"))
-        ChangeTheme.add_command(label="dark", command=lambda: self.change_theme("solar"))
+        ChangeTheme.add_command(label="dark", command=lambda: self.change_theme("superhero"))
         file_menu.add_cascade(label="Theme ändern", menu=ChangeTheme)
 
         file_menu.add_separator()
@@ -207,13 +208,12 @@ class MainMenu(ttk.Frame):
         self.gender_dropdown = ttk.Combobox(self, values=["Männlich", "Weiblich", "Divers", "Keine Angabe"], state="readonly", width=self.button_width - 1)
         self.gender_dropdown.set("Geschlecht...")
         self.gender_dropdown.pack(padx=10, pady=10)
-        ''' # doesn't work yet
-        self.birthday_label = ttk.Label(self, text="Geburstag (Optional):", font=('Arial', 12))
-        self.birthday_label.pack(padx=10, pady=10)
-        self.birthday_entry = DateEntry(self, date_pattern='dd.mm.yyyy', width=24, background='darkblue',
-                                        foreground='white', borderwidth=2, maxdate=datetime.today())
-        '''
-
+        # doesn't work yet
+        # self.birthday_label = ttk.Label(self, text="Geburstag (Optional):", font=('Arial', 12))
+        # self.birthday_label.pack(padx=10, pady=10)
+        # self.birthday_entry = DateEntry(self, date_pattern='dd.mm.yyyy', width=24, background='darkblue',
+        #                                 foreground='white', borderwidth=2, maxdate=datetime.today())
+        # self.birthday_entry.pack(padx=10, pady=10)
         self.label = ttk.Label(self, text="\nBitte wählen Sie ein Programm", font=('Arial', 16))
         self.label.pack(pady=10)
 
@@ -351,6 +351,11 @@ class FamiliarizationPage(ttk.Frame):
         self.parent.show_frame(DuringFamiliarizationView)
         self.parent.wait_for_process(lambda: self.parent.frames[DuringFamiliarizationView].program(id=self.parent.frames[MainMenu].patient_number, calibrate=self.use_calibration), 
                                      lambda: self.parent.show_frame(ProgramPage))
+        time.sleep(0.01)
+        while self.parent.frames[DuringFamiliarizationView].progress_var.get() < 100:
+            progress = int(self.parent.frames[DuringFamiliarizationView].get_progress() * 100)
+            self.parent.frames[DuringFamiliarizationView].progress_var.set(progress)
+            time.sleep(0.01)
 
 
 class ProgramPage(ttk.Frame):
@@ -395,7 +400,7 @@ class ProgramPage(ttk.Frame):
 
 class DuringFamiliarizationView(ttk.Frame):
     
-    def __init__(self, parent, familiarization_func):
+    def __init__(self, parent, familiarization_func, progress_func):
         """View during familiarization process
         
         Args:
@@ -403,15 +408,23 @@ class DuringFamiliarizationView(ttk.Frame):
             familiarization_func (function): function to be called for familiarization"""
         super().__init__(parent)
         self.parent = parent
-        self.program = familiarization_func 
+        self.program = familiarization_func
+        self.get_progress = progress_func 
         self.text = "Eingewöhnung läuft..."
         self.create_widgets()
+        # while self.progress_var.get() < 1:
+        #     progress = self.get_progress()
+        #     self.progress_var.set(progress)
+        #     time.sleep(0.01)
 
     def create_widgets(self):
         """Creates the widgets for the view
         """
         self.info = ttk.Label(self, text=self.text)
         self.info.grid(row=0, column=0, padx=10, pady=10)
+        self.progress_var = tk.IntVar()
+        self.progress_bar = ttk.Progressbar(self.parent, variable=self.progress_var, maximum=100)
+        self.progress_bar.grid(row=1, column=1, padx=10, pady=10)
 
 
 class DuringProcedureView(ttk.Frame):
@@ -456,7 +469,7 @@ class ResultPage(ttk.Frame):
         self.info.pack(padx=10, pady=10)
 
         # Set the title on the parent window
-        self.parent.title("Audiogram")
+        self.parent.title("Audiogramm")
 
         # Create a frame for the images
         self.image_frame = ttk.Frame(self)
@@ -625,7 +638,7 @@ class CalibrationPage(ttk.Frame):
     def stop_playing(self):
         self.cal_stop()
 
-def setup_ui(startfunc, programfuncs, calibrationfuncs):
-    app = App(startfunc, programfuncs, calibrationfuncs)
+def setup_ui(startfunc, programfuncs, calibrationfuncs, progressfunc):
+    app = App(startfunc, programfuncs, calibrationfuncs, progressfunc)
     return app
 

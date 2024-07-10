@@ -31,6 +31,7 @@ class Procedure:
         self.test_mode = True # TODO turn off for delivery
         self.jump_to_end = False
         self.use_calibration = calibrate
+        self.progress = 0 # value for progressbar
 
         self.retspl = self.get_retspl_values(headphone_name)
         self.calibration = self.get_calibration_values()
@@ -334,6 +335,16 @@ class Procedure:
             return int(value)
         except ValueError:
             return None
+        
+
+    
+    def get_progress(self):
+        """gets the current progress
+
+        Returns:
+            float: progress value between 0.0 and 1.0
+        """
+        return self.progress
 
 
 
@@ -362,6 +373,7 @@ class Familiarization(Procedure):
             bool: familiarization successful
         """
         while True:
+            self.progress = 0.01
             self.tone_heard = True
 
             # first loop (always -20dBHL)
@@ -377,6 +389,8 @@ class Familiarization(Procedure):
                     self.level -= 20
                 else:
                     self.level += 10
+
+            self.progress = 1/3        
             
             # second loop (always +10dBHL)
             while not self.tone_heard:
@@ -384,12 +398,15 @@ class Familiarization(Procedure):
                 if not self.tone_heard:
                     self.level += 10
 
+            self.progress = 2/3
+
             # replay tone with same level
             self.play_tone()
 
             if not self.tone_heard:
                 self.fails += 1
                 if self.fails >= 2:
+                    self.progress = 1
                     print("Familiarization unsuccessful. Please read rules and start again.")
                     return False
                 else:
@@ -397,6 +414,7 @@ class Familiarization(Procedure):
 
             else:
                 print("Familiarization successful!")
+                self.progress = 1
                 self.add_to_temp_csv(self.level, '1000', 'l', self.tempfile)
                 return True
             
