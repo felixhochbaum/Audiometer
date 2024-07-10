@@ -109,12 +109,3 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
     lgd = ax.legend(loc='upper left', bbox_to_anchor=(1.15, 0.205), fontsize=11, frameon=False)
     fig.savefig(name, bbox_extra_artists=(lgd, t1, t2, t3, t4, t5), bbox_inches='tight')
     plt.close(fig)
-
-
-# Beispielaufruf
-freqs = [125, 250, 500, 1000, 2000, 4000, 8000]
-left_values = [20, 'NH', 20, 20, 20, 20, 20]
-right_values = [20, 'NH', 20, 'NH', 20, 'NH', 20]
-freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
-
-create_audiogram(freqs, left_values=left_values, right_values=right_values, binaural=False)
