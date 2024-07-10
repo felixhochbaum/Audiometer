@@ -5,7 +5,22 @@ import numpy as np
 
 # TODO screening -> not heard
 
-def create_audiogram(freqs, left_values=None, right_values=None, binaural=False, save=False, name="audiogram.png", freq_levels=None):
+freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
+
+def split_values(x_vals, values, target_values):
+
+    heard = np.array([[i,v] for i, v in zip(x_vals, values) if v != 'NH']).T
+    if len(heard) == 0: heard_i, heard_level = [], []
+    else: heard_i, heard_level = heard
+    
+    not_heard = np.array([[i,t] for i, v, t in zip(x_vals, values, target_values) if v == 'NH']).T
+    if len(not_heard) == 0: not_heard_i, not_heard_level = [], []
+    else: not_heard_i, not_heard_level = not_heard
+    
+    return heard_i, heard_level, not_heard_i, not_heard_level
+
+
+def create_audiogram(freqs, left_values=None, right_values=None, binaural=False, name="audiogram.png", freq_levels=freq_levels):
     """Erstellt ein Audiogramm basierend auf den gegebenen Frequenzen und Hörschwellenwerten mit benutzerdefinierten x-Achsen-Beschriftungen.
 
     Args:
@@ -29,23 +44,45 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
     ax.axhspan(90, 120, facecolor='red', alpha=0.3)
 
     # Text für die Hörgrade direkt neben die y-Achse setzen
-    ax.text(8, 15, 'Normalhörigkeit', ha='left', va='center', fontsize=10, color='black')
-    ax.text(8, 30, 'Leichte Schwerhörigkeit', ha='left', va='center', fontsize=10)
-    ax.text(8, 55, 'Mittlere Schwerhörigkeit', ha='left', va='center', fontsize=10)
-    ax.text(8, 80, 'Schwere Schwerhörigkeit', ha='left', va='center', fontsize=10)
-    ax.text(8, 105, 'Hochgradige Schwerhörigkeit', ha='left', va='center', fontsize=10)
+    t1 = ax.text(6.4, 5, 'Normalhörigkeit', ha='left', va='center', fontsize=10, color='black')
+    t2 = ax.text(6.4, 30, 'Leichte Schwerhörigkeit', ha='left', va='center', fontsize=10)
+    t3 = ax.text(6.4, 55, 'Mittlere Schwerhörigkeit', ha='left', va='center', fontsize=10)
+    t4 = ax.text(6.4, 80, 'Schwere Schwerhörigkeit', ha='left', va='center', fontsize=10)
+    t5 = ax.text(6.4, 105, 'Hochgradige Schwerhörigkeit', ha='left', va='center', fontsize=10)
+
+    x_vals = range(len(freqs))
+    target_values = list(freq_levels.values())
 
     # Plot der Hörschwellen
-    if binaural:
-        ax.plot(range(len(freqs)), left_values, marker='o', markersize=10, linestyle='-', color='black', markerfacecolor='none')
-        ax.plot(range(len(freqs)), left_values, marker='x', markersize=8, linestyle='None', color='black')
-    
-    else: 
-        if right_values:
-            ax.plot(range(len(freqs)), right_values, markersize=12, marker='o', linestyle='-', linewidth=2, color='firebrick', label='rechtes Ohr', markerfacecolor='white')
+    if 'NH' in left_values or 'NH' in right_values:
+        
+        heard_i_left, heard_level_left, not_heard_i_left, not_heard_level_left = split_values(x_vals, left_values, target_values)
+        heard_i_right, heard_level_right, not_heard_i_right, not_heard_level_right = split_values(x_vals, right_values, target_values)
+        
+        if binaural:
+            ax.plot(x_vals, target_values, linestyle='-', color='black')
+            ax.plot(heard_i_left, heard_level_left, marker='o', markersize=10, linestyle='-', color='black', markerfacecolor='none')
+            ax.plot(heard_i_left, heard_level_left, marker='x', markersize=8, linestyle='None', color='black', label='gehört')
+            ax.plot(not_heard_i_left, not_heard_level_left, marker='|', markersize=10, linestyle='None', color='black', label='nicht gehört')
 
-        if left_values:
-            ax.plot(range(len(freqs)), np.array(left_values)+0.4,  markersize=12, marker='x', linestyle='-', linewidth=2, color='dodgerblue', label='linkes Ohr')
+        else:
+            ax.plot(x_vals, target_values, linestyle='-', color='firebrick')
+            ax.plot(x_vals,  np.array(target_values)+0.4, linestyle='-', color='dodgerblue')
+
+            ax.plot(heard_i_right, heard_level_right, markersize=12, marker='o', linewidth=2, color='firebrick', markerfacecolor='none', label='rechts gehört', linestyle='None')
+            ax.plot(heard_i_left, np.array(heard_level_left)+0.4, markersize=12, marker='x', linewidth=2, label='links gehört', color='dodgerblue', linestyle='None')
+            
+            ax.plot(not_heard_i_right, not_heard_level_right, markersize=12, marker='|', linewidth=2, color='firebrick', label='rechts nicht gehört', linestyle='None')
+            ax.plot(not_heard_i_left, np.array(not_heard_level_left)+0.4, markersize=12, marker='|', linewidth=2, label='links nicht gehört', color='dodgerblue', linestyle='None')
+    
+    else:
+        if binaural:
+            ax.plot(x_vals, left_values, marker='o', markersize=10, linestyle='-', color='black', markerfacecolor='none')
+            ax.plot(x_vals, left_values, marker='x', markersize=8, linestyle='None', color='black')
+        
+        else: 
+            ax.plot(x_vals, right_values, markersize=12, marker='o', linestyle='-', linewidth=2, color='firebrick', label='rechtes Ohr')
+            ax.plot(x_vals, np.array(left_values)+0.4,  markersize=12, marker='x', linestyle='-', linewidth=2, color='dodgerblue', label='linkes Ohr')
 
     # Achse invertieren und beschriften
     ax.invert_yaxis()  
@@ -62,21 +99,19 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
     ax.set_yticklabels(np.arange(0, 121, 10), fontsize=12)
     ax.grid(True, which='both', linestyle='--', linewidth=0.5)  # Grid for better readability
     
-    if not binaural:
-        ax.legend(loc='upper right', fontsize=12)
+    # Legende außerhalb des Diagramms aber noch sichtbar im Bild
+    lgd = ax.legend(loc='upper left', bbox_to_anchor=(0, -0.15), fontsize=11, frameon=False)
+    #lgd = ax.legend(loc='lower left', fontsize=11)
+    fig.savefig(name, bbox_extra_artists=(lgd, t1, t2, t3, t4, t5), bbox_inches='tight')
+    plt.close(fig)
 
-    if save:
-        plt.savefig(name)
-        print(f"Saved audiogram as {name}")
-        return name
     
-    print("Displaying audiogram")
-    return fig
 
-# freqs = [125, 250, 500, 1000, 2000, 4000, 8000]
-# left_values = [20, 10, 20, 10, 20, 10, 20]
-# right_values = [20, 10, 20, 10, 20, 10, 20]
-# #right_values = [20, 'NH', 20, 'NH', 20, 'NH', 20]
-# freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
+freqs = [125, 250, 500, 1000, 2000, 4000, 8000]
+left_values = [20, 'NH', 20, 20, 20, 20, 20]
+right_values = [20, 10, 20, 10, 20, 10, 20]
+right_values = [20, 'NH', 20, 'NH', 20, 'NH', 20]
+freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
 
-# create_audiogram(freqs, left_values=left_values, right_values=right_values, save=True, name="audiogram.png", freq_levels=freq_levels)
+a = create_audiogram(freqs, left_values=left_values, right_values=right_values, binaural=False)
+
