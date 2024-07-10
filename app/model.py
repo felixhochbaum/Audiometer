@@ -431,7 +431,8 @@ class StandardProcedure(Procedure):
         startlevel = int(self.get_value_from_csv('1000', temp_filename)) - 10 # 10 dB under level from familiarization
         super().__init__(startlevel, signal_length, headphone_name=headphone_name, calibrate=calibrate)
         self.temp_filename = temp_filename
-        self.freq_order = [1000, 2000]#, 4000, 8000, 500, 250, 125] # order in which frequencies are tested
+        self.freq_order = [1000, 2000, 4000, 8000, 500, 250, 125] # order in which frequencies are tested
+        self.progress_step = 0.95 / 14
 
 
     def standard_test(self, binaural=False, **additional_data):
@@ -557,13 +558,16 @@ class StandardProcedure(Procedure):
                         return False
                     else:
                         self.add_to_temp_csv(str(self.level), str(self.frequency), self.side, self.temp_filename)
+                        self.progress = 1
                         return True
 
                 # TODO Wenn Streuung mehr als 10 dB: Vermerk im Audiogramm
                 self.add_to_temp_csv(str(self.level), str(self.frequency), self.side, self.temp_filename)
+                if self.progress < 0.95 - self.progress_step:
+                    self.progress += self.progress_step
                 return True
             
-            # no three same answers in five tries
+            # no two same answers in three tries
             if tries == 3:
                 self.level += 10
                 self.play_tone()
