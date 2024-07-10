@@ -318,6 +318,7 @@ class Procedure:
 
         # Generate the audiogram filename
         audiogram_filename = os.path.join(folder_name, f"{os.path.splitext(os.path.basename(filename))[0]}.png")
+        print(left_levels, right_levels)
         create_audiogram(freqs, left_levels, right_levels, binaural=binaural, name=audiogram_filename, freq_levels=self.freq_levels)
 
     def parse_dbhl_value(self, value):
@@ -330,7 +331,7 @@ class Procedure:
             int or None: The parsed value or None if 'NH'.
         """
         if value == 'NH':
-            return None
+            return 'NH'
         try:
             return int(value)
         except ValueError:
@@ -613,7 +614,7 @@ class ScreeningProcedure(Procedure):
             bool: tone heard
         """
         self.frequency = freq
-        self.level = self.parent.freq_levels[freq]
+        self.level = self.freq_levels[freq]
         self.tone_heard = False
         self.num_heard = 0
 
