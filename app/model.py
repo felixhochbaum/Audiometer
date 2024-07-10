@@ -126,7 +126,7 @@ class Procedure:
             # only add RETSPL
             dbspl = dbhl + self.retspl[self.frequency] 
 
-        return self.zero_dbhl * 20 ** (dbspl / 10) # calculate from dB to absolute numbers using the reference point self.zero_dbhl
+        return self.zero_dbhl * 10 ** (dbspl / 20) # calculate from dB to absolute numbers using the reference point self.zero_dbhl
     
 
     def key_press(self, key):
