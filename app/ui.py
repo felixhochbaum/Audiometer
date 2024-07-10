@@ -356,6 +356,7 @@ class FamiliarizationPage(ttk.Frame):
             progress = int(self.parent.frames[DuringFamiliarizationView].get_progress() * 100)
             self.parent.frames[DuringFamiliarizationView].progress_var.set(progress)
             time.sleep(0.01)
+            self.update()
 
 
 class ProgramPage(ttk.Frame):
@@ -412,10 +413,6 @@ class DuringFamiliarizationView(ttk.Frame):
         self.get_progress = progress_func 
         self.text = "Eingewöhnung läuft..."
         self.create_widgets()
-        # while self.progress_var.get() < 1:
-        #     progress = self.get_progress()
-        #     self.progress_var.set(progress)
-        #     time.sleep(0.01)
 
     def create_widgets(self):
         """Creates the widgets for the view
