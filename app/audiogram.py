@@ -3,7 +3,9 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
-def create_audiogram(freqs, left_values=None, right_values=None, binaural=False, save=False, name="audiogram.png"):
+# TODO screening -> not heard
+
+def create_audiogram(freqs, left_values=None, right_values=None, binaural=False, save=False, name="audiogram.png", freq_levels=None):
     """Erstellt ein Audiogramm basierend auf den gegebenen Frequenzen und Hörschwellenwerten mit benutzerdefinierten x-Achsen-Beschriftungen.
 
     Args:
@@ -16,8 +18,6 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
     print("Creating audiogram with frequencies:", freqs)
     print("Left ear values:", left_values)
     print("Right ear values:", right_values)
-
-    # plt.ioff()
 
     fig, ax = plt.subplots(figsize=(10, 6))  # Größeres Diagramm
 
@@ -73,3 +73,10 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
     print("Displaying audiogram")
     return fig
 
+# freqs = [125, 250, 500, 1000, 2000, 4000, 8000]
+# left_values = [20, 10, 20, 10, 20, 10, 20]
+# right_values = [20, 10, 20, 10, 20, 10, 20]
+# #right_values = [20, 'NH', 20, 'NH', 20, 'NH', 20]
+# freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
+
+# create_audiogram(freqs, left_values=left_values, right_values=right_values, save=True, name="audiogram.png", freq_levels=freq_levels)
