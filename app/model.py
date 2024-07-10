@@ -27,6 +27,9 @@ class Procedure:
         self.zero_dbhl = 0.000005 # zero_dbhl in absolute numbers. Needs to be calibrated!
         self.tone_heard = False
         self.freq_bands = ['125', '250', '500', '1000', '2000', '4000', '8000']
+        
+        #TODO das als default, aber  variabel in der GUI?
+        self.freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20} # screening levels
         self.side = 'l'
         self.test_mode = True # TODO turn off for delivery
         self.jump_to_end = False
@@ -290,8 +293,6 @@ class Procedure:
             temp_filename (str): name of temporary csv file
             binaural (bool): if the test is binaural
 
-        Returns:
-            fig: audiogramm as matplotlib figure
         """
         freqs = [int(x) for x in self.freq_bands]
 
@@ -317,7 +318,8 @@ class Procedure:
 
         # Generate the audiogram filename
         audiogram_filename = os.path.join(folder_name, f"{os.path.splitext(os.path.basename(filename))[0]}.png")
-        create_audiogram(freqs, left_levels, right_levels, binaural=binaural, save=True, name=audiogram_filename)
+        print(left_levels, right_levels)
+        create_audiogram(freqs, left_levels, right_levels, binaural=binaural, name=audiogram_filename, freq_levels=self.freq_levels)
 
     def parse_dbhl_value(self, value):
         """Parses the dBHL value from the CSV file.
@@ -329,7 +331,7 @@ class Procedure:
             int or None: The parsed value or None if 'NH'.
         """
         if value == 'NH':
-            return None
+            return 'NH'
         try:
             return int(value)
         except ValueError:
@@ -567,9 +569,6 @@ class ScreeningProcedure(Procedure):
         self.temp_filename = temp_filename
         self.freq_order = [1000, 2000, 4000, 8000, 500, 250, 125]
         
-        #TODO das als default, aber  variabel in der GUI?
-        self.freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
-    
 
     def screen_test(self, binaural=False, **additional_data):
         """main functions
