@@ -2,11 +2,8 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import threading
 from tkinter import messagebox, filedialog
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import ttkbootstrap as tb
 from PIL import Image, ImageTk
-from tkcalendar import DateEntry
-from datetime import datetime
 import os
 import csv
 from .instructions import *
@@ -82,6 +79,7 @@ class App(tb.Window):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
+
     def create_menubar(self):
         """Create a menubar with options for changing the theme and exiting the program"""
         menubar = tk.Menu(self)
@@ -102,6 +100,7 @@ class App(tb.Window):
         file_menu.add_command(label="Programm beenden", command=self.on_closing)
         menubar.add_cascade(label="Einstellungen", menu=file_menu)
 
+
     def change_theme(self, theme_name):
         """Change to the specified theme"""
         current_theme = self.style.theme_use()
@@ -111,15 +110,18 @@ class App(tb.Window):
         else:
             self.style.theme_use(theme_name)
 
+
     def exit_fullscreen(self, event=None):
         """Exit fullscreen mode"""
         self.attributes('-fullscreen', False)
+
 
     def set_icon(self, path):
         """Set the window icon using Pillow"""
         img = Image.open(path)
         photo = ImageTk.PhotoImage(img)
         self.iconphoto(False, photo)          
+
 
     def show_frame(self, page):
         """Show a frame for the given page name
@@ -129,6 +131,7 @@ class App(tb.Window):
         """
         frame = self.frames[page]
         frame.tkraise()
+
 
     def wait_for_process(self, process, callback):
         """Starts a process in a new thread and calls a callback function when the process is done
@@ -141,6 +144,7 @@ class App(tb.Window):
         t.daemon = True
         t.start()
 
+
     def run_process(self, process, callback):
         """Runs a process and calls a callback function when the process is done
 
@@ -151,6 +155,7 @@ class App(tb.Window):
         process()
         self.after(0, callback)
 
+
     def change_save_path(self):
         """Ask the user to select a folder to save the files"""
         new_path = filedialog.askdirectory(title="Select Folder to Save Files")
@@ -158,10 +163,12 @@ class App(tb.Window):
             self.save_path = new_path
             messagebox.showinfo("Speicherort geändert", f"Neuer Speicherort: {self.save_path}")
 
+
     def on_closing(self):
         """Ask for confirmation before closing the program"""
         if messagebox.askyesno(title="Quit", message="Möchten Sie wirklich das Programm beenden?"):
             self.destroy()
+
 
     def get_images_in_path(self, directory, image_extensions=[".png", ".jpg", ".jpeg", ".gif", ".bmp"]):
         """
@@ -298,6 +305,7 @@ class MainMenu(ttk.Frame):
             if not self.patient_number:
                 messagebox.showwarning("Warnung", "Bitte geben Sie eine Probandennummer ein.")
                 return
+            
 
             patient_folder = os.path.join(self.parent.save_path, self.patient_number)
             pics = self.parent.get_images_in_path(patient_folder)
