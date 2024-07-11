@@ -37,6 +37,7 @@ class Procedure:
 
         self.retspl = self.get_retspl_values(headphone_name)
         self.calibration = self.get_calibration_values()
+        self.save_path = os.getcwd()  # Initialize save_path
 
 
     def get_retspl_values(self, headphone_name):
@@ -568,7 +569,7 @@ class ScreeningProcedure(Procedure):
         success = []
 
         for f in self.freq_order:
-            print(f"Testing frequeny {f} Hz")
+            print(f"Testing frequency {f} Hz")
             s = self.screen_one_freq(f)
             success.append(s)
 

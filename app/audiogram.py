@@ -40,6 +40,7 @@ def split_values(x_vals, values, target_values):
 
     return np.array(heard_i, dtype=int), np.array(heard_level, dtype=int), np.array(not_heard_i, dtype=int), np.array(not_heard_level, dtype=int)
 
+
 def filter_none(x_vals, values):
     filtered = np.array([[i, v] for i, v in zip(x_vals, values) if v is not None]).T
     if len(filtered) == 0:
