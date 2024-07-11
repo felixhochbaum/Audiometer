@@ -8,6 +8,7 @@ import os
 import csv
 from .instructions import *
 
+
 class App(tb.Window):
 
     def __init__(self, familiarization_func, program_funcs:dict, calibration_funcs:list):
@@ -201,6 +202,7 @@ class MainMenu(ttk.Frame):
         self.patient_number = ""
         self.create_widgets()
 
+
     def create_widgets(self):
         """Creates the widgets for the page
         """
@@ -273,7 +275,6 @@ class MainMenu(ttk.Frame):
             return
         
 
-
     def on_option_selected(self, event):
         self.selected_option = self.dropdown.get()
         self.show_start_button()
@@ -288,6 +289,7 @@ class MainMenu(ttk.Frame):
             self.gender_dropdown.config(state=tk.NORMAL)
             self.patient_number_entry.config(state=tk.NORMAL)    
 
+
     def show_start_button(self):
         if self.start_button is None:
             self.start_button = ttk.Button(self,
@@ -295,6 +297,7 @@ class MainMenu(ttk.Frame):
                                            command=self.go_to_next_page,
                                            width=self.button_width)
             self.start_button.pack(pady=10)
+
 
     def go_to_next_page(self):
         if self.selected_option == "Kalibrierung":
@@ -306,7 +309,6 @@ class MainMenu(ttk.Frame):
                 messagebox.showwarning("Warnung", "Bitte geben Sie eine Probandennummer ein.")
                 return
             
-
             patient_folder = os.path.join(self.parent.save_path, self.patient_number)
             pics = self.parent.get_images_in_path(patient_folder)
             if pics:
@@ -331,6 +333,7 @@ class FamiliarizationPage(ttk.Frame):
         self.parent = parent
         self.create_widgets()
 
+
     def create_widgets(self):
         """Creates the widgets for the page
         """
@@ -351,6 +354,7 @@ class FamiliarizationPage(ttk.Frame):
 
         for widget in self.winfo_children():
             widget.pack_configure(anchor='center')
+
 
     def run_familiarization(self):
         """Runs the familiarization process
@@ -374,6 +378,7 @@ class ProgramPage(ttk.Frame):
         self.selected_option = None 
         self.create_widgets()
 
+
     def create_widgets(self):
         """Creates the widgets for the page"""
         self.start_button = ttk.Button(self, text="Starte Prozess", command=self.run_program)
@@ -381,6 +386,7 @@ class ProgramPage(ttk.Frame):
     
         for widget in self.winfo_children():
             widget.pack_configure(anchor='center')
+
 
     def run_program(self):
         """Runs the main program"""
@@ -401,6 +407,7 @@ class ProgramPage(ttk.Frame):
         self.parent.show_frame(ResultPage)
 
 
+
 class DuringFamiliarizationView(ttk.Frame):
     
     def __init__(self, parent, familiarization_func):
@@ -414,6 +421,7 @@ class DuringFamiliarizationView(ttk.Frame):
         self.program = familiarization_func 
         self.text = "Eingewöhnung läuft..."
         self.create_widgets()
+
 
     def create_widgets(self):
         """Creates the widgets for the view
@@ -438,6 +446,7 @@ class DuringProcedureView(ttk.Frame):
         self.text = text
         self.create_widgets()
 
+
     def create_widgets(self):
         """Creates the widgets for the view
         """
@@ -458,6 +467,7 @@ class ResultPage(ttk.Frame):
 
         self.create_widgets()
 
+
     def create_widgets(self):
         """Creates the widgets for the view"""
         self.info = ttk.Label(self, text="Ergebnisse", font=('Arial', 18))
@@ -473,6 +483,7 @@ class ResultPage(ttk.Frame):
         # Button to go back to the main menu
         self.BackToMainMenu = ttk.Button(self, text="Zurück zur Startseite", command=lambda: self.parent.show_frame(MainMenu))
         self.BackToMainMenu.pack(padx=10, pady=10)
+
 
     def display_images(self, folder_name):
         """Display all images in the given folder"""
@@ -493,8 +504,10 @@ class ResultPage(ttk.Frame):
                 label.image = photo
                 label.pack(padx=10, pady=10, side="left")
 
+
     def back_to_MainMenu(self):
         self.parent.show_frame(MainMenu)
+
 
 
 class CalibrationPage(ttk.Frame):
@@ -513,6 +526,7 @@ class CalibrationPage(ttk.Frame):
         self.cal_stop = calibration_funcs[3]
         self.cal_setlevel = calibration_funcs[4]
         self.create_widgets()
+
 
     def create_widgets(self):
         """Creates the widgets for the page
@@ -578,6 +592,7 @@ class CalibrationPage(ttk.Frame):
         for widget in self.winfo_children():
             widget.pack_configure(anchor='center')
 
+
     def start_calibration(self):
         try:
             current_freq, current_spl = self.cal_start(float(self.level_entry_var.get()))
@@ -623,15 +638,18 @@ class CalibrationPage(ttk.Frame):
             self.next_button.config(text="Kalibrierung abschließen")
             finished = True
 
-
         self.current_freq_var.set("Aktuelle Frequenz: " + str(current_freq) + " Hz")
         self.level_expected_var.set("Schalldruckpegel (soll): " + str(current_spl) + " dB")    
+
 
     def repeat_frequency(self):
         self.cal_repeat()
 
+
     def stop_playing(self):
         self.cal_stop()
+
+
 
 def setup_ui(startfunc, programfuncs, calibrationfuncs):
     app = App(startfunc, programfuncs, calibrationfuncs)
