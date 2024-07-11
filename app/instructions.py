@@ -9,4 +9,6 @@ Sie werden Tonabfolgen mit unterschiedlichen Lautstärken und Frequenzen hören.
 Sie jedes Mal, wenn Sie einen Ton wahrnehmen, unverzüglich die Leertaste. Beachten Sie, dass
 Sie vom Programm keinerlei Feedback erhalten werden – das ist normal."""
 
-text_calibration = """So geht's."""
+text_calibration = """Für präzise Ergebnisse ist eine Kalibrierung der Software notwendig. Die Kalibrierung ist simple. 
+Wählen Sie ein Kalibrierungslevel und messen sie die Pegel der einzelnen Frequenzen. Tragen Sie den Wert dann in das vorgegebene Fenster ein. 
+Den Rest übernimmt die Software für Sie."""

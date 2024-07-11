@@ -131,7 +131,7 @@ class App(tb.Window):
         frame.tkraise()
 
     def wait_for_process(self, process, callback):
-        """Starts a process in a new thread and calls a callback function when the process is done
+        """Starts a process in a new thread and calls a callback function when the process is done.
 
         Args:
             process (function): function to be called
@@ -314,7 +314,7 @@ class MainMenu(ttk.Frame):
 class FamiliarizationPage(ttk.Frame):
 
     def __init__(self, parent):
-        """Page for starting the familiarization process
+        """Page for starting the familiarization process.
 
         Args:
             parent (App): parent application
@@ -356,7 +356,7 @@ class FamiliarizationPage(ttk.Frame):
 class ProgramPage(ttk.Frame):
 
     def __init__(self, parent):
-        """Page for starting the main program
+        """Page for starting the main program.
 
         Args:
             parent (App): parent application
@@ -396,7 +396,7 @@ class ProgramPage(ttk.Frame):
 class DuringFamiliarizationView(ttk.Frame):
     
     def __init__(self, parent, familiarization_func):
-        """View during familiarization process
+        """View during familiarization process.
         
         Args:
             parent (App): parent application
@@ -417,7 +417,7 @@ class DuringFamiliarizationView(ttk.Frame):
 class DuringProcedureView(ttk.Frame):
 
     def __init__(self, parent, program_func, text):
-        """View during main program
+        """View during main program.
 
         Args:
             parent (App): parent application
@@ -440,7 +440,7 @@ class DuringProcedureView(ttk.Frame):
 class ResultPage(ttk.Frame):
 
     def __init__(self, parent):
-        """Page for showing the results of the program
+        """Page for showing the results of the program.
 
         Args:
             parent (App): parent application"""
@@ -492,7 +492,7 @@ class ResultPage(ttk.Frame):
 class CalibrationPage(ttk.Frame):
 
     def __init__(self, parent, calibration_funcs):
-        """Page for calibrating the audiometer
+        """Page for calibrating the audiometer.
 
         Args:
             parent (App): parent application
@@ -507,7 +507,7 @@ class CalibrationPage(ttk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        """Creates the widgets for the page
+        """Creates the widgets for the page.
         """
         button_width = 25 
 

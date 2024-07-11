@@ -16,10 +16,10 @@ class AudioPlayer:
         self.is_playing = False
 
     def generate_tone(self):
-        """generates a sine tone with current audio player settings
+        """Generates a sine tone with current audio player settings.
 
         Returns:
-            np.array: sine wave as numpy array
+            array: sine wave as numpy array
         """
         t = np.linspace(start=0, 
                         stop=self.beep_duration, 
@@ -41,12 +41,12 @@ class AudioPlayer:
     
 
     def play_beep(self, frequency, volume, duration, channel='lr'):
-        """Sets the frequency, volume and beep duration of the audio player and then plays a beep with those parameters
+        """Sets the frequency, volume and beep duration of the audio player and then plays a beep with those parameters.
 
         Args:
-            frequency (int): f in Hz
+            frequency (int): frequency in Hz
             volume (float): volume multiplier (between 0 and 1)
-            duration (int): duration of beep in seconds
+            duration (int): duration of the beep in seconds
             channel (string): 'l', 'r' or 'lr' for only left, only right or both channels respectively
         """
         self.frequency = frequency
@@ -75,7 +75,7 @@ class AudioPlayer:
 
 
     def get_device_samplerate(self):
-        """gets current samplerate from the selected audio output device
+        """Gets current samplerate from the selected audio output device.
 
         Returns:
             float: samplerate of current sound device

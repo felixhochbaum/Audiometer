@@ -13,10 +13,10 @@ from .audiogram import create_audiogram
 class Procedure:
 
     def __init__(self, startlevel, signal_length, headphone_name="Sennheiser_HDA200", calibrate=True):
-        """The parent class for the familiarization, the main procedure, and the short version
+        """The parent class for the familiarization, the main procedure, and the screening.
 
         Args:
-            startlevel (float): starting level of procedure in dBHL
+            startlevel (float): starting level of procedure in dB HL
             signal_length (float): length of played signals in seconds
         """
         self.ap = AudioPlayer()
@@ -37,13 +37,13 @@ class Procedure:
 
 
     def get_retspl_values(self, headphone_name):
-        """Read the correct retspl values from the retspl.csv file
+        """Read the correct RETSPL values from the retspl.csv file
 
         Args:
             headphone_name (str): exact name of headphone as it appears in csv file
 
         Returns:
-            dict of int:float : retspl values for each frequency band from 125 Hz to 8000 Hz
+            dict of int:float : RETSPL values for each frequency band from 125 Hz to 8000 Hz
         """
         file_name = 'retspl.csv'
         
@@ -74,7 +74,7 @@ class Procedure:
     
 
     def get_calibration_values(self):
-        """Read the correct calibration values from the calibration.csv file
+        """Read the correct calibration values from the calibration.csv file.
 
         Returns:
             dict of int:float : calibration values for each frequency band from 125 Hz to 8000 Hz
@@ -111,10 +111,10 @@ class Procedure:
 
 
     def dbhl_to_volume(self, dbhl):
-        """Calculate dBHL into absolute numbers
+        """Calculate dB HL into absolute numbers.
 
         Args:
-            dbhl (float): value in dBHL
+            dbhl (float): value in dB HL
 
         Returns:
             float: value in absolute numbers
@@ -199,7 +199,7 @@ class Procedure:
         """Add a value in for a specific frequency to the temporary csv file
 
         Args:
-            value (str): level in dBHL at specific frequency
+            value (str): level in dB HL at specific frequency
             frequency (str): frequency where value should be added
             side (str): specify which ear ('l' or 'r')
             temp_filename (str): name of temporary csv file
@@ -231,7 +231,7 @@ class Procedure:
 
 
     def get_value_from_csv(self, frequency, temp_filename, side='l'):
-        """Get the value at a specific frequency from the temporary csv file
+        """Get the value at a specific frequency from the temporary csv file.
 
         Args:
             frequency (str): frequency where value is stored
@@ -239,7 +239,7 @@ class Procedure:
             side (str, optional): specify which ear ('l' or 'r'). Defaults to 'l'.
 
         Returns:
-            str: dBHL value at specified frequency
+            str: dB HL value at specified frequency
         """
         with open(temp_filename, mode='r', newline='') as temp_file:
             dict_reader = csv.DictReader(temp_file)
@@ -250,7 +250,7 @@ class Procedure:
         
 
     def create_final_csv(self, temp_filename):
-        """makes a permanent csv file from the temporary file
+        """Makes a permanent csv file from the temporary file.
 
         Args:
             temp_filename (str): name of temporary csv file
@@ -284,7 +284,7 @@ class Procedure:
 
 
     def create_final_audiogram(self, filename, binaural=False):
-        """Creates audiogram from temporary csv file
+        """Creates audiogram from temporary csv file.
 
         Args:
             temp_filename (str): name of temporary csv file
@@ -323,10 +323,10 @@ class Procedure:
         """Parses the dBHL value from the CSV file.
 
         Args:
-            value (str): The value from the CSV file.
+            value (str): the value from the CSV file
 
         Returns:
-            int or None: The parsed value or None if 'NH'.
+            int or None: the parsed value or None if 'NH'
         """
         if value == 'NH':
             return None
@@ -343,7 +343,7 @@ class Familiarization(Procedure):
         """Familiarization process
 
         Args:
-            startlevel (int, optional): starting level of procedure in dBHL. Defaults to 40.
+            startlevel (int, optional): starting level of procedure in dB HL. Defaults to 40.
             signal_length (int, optional): length of played signals in seconds. Defaults to 1.
         """
         super().__init__(startlevel, signal_length, headphone_name=headphone_name, calibrate=calibrate)      
@@ -404,7 +404,7 @@ class Familiarization(Procedure):
 class StandardProcedure(Procedure):
 
     def __init__(self, temp_filename, signal_length=1, headphone_name="Sennheiser_HDA200", calibrate=True):
-        """Standard audiometer process (rising level)
+        """Standard audiometer process (rising level).
 
         Args:
             temp_filename (str): name of temporary csv file where starting level is stored and future values will be stored
@@ -493,7 +493,7 @@ class StandardProcedure(Procedure):
 
         Args:
             freq (int): frequency at which hearing is tested
-            retest (bool, optional): Is this the retest at the end of step 3 according to DIN. Defaults to False
+            retest (bool, optional): this is the retest at the end of step 3 according to DIN. Defaults to False
 
         Returns:
             bool: test successful
@@ -558,7 +558,7 @@ class StandardProcedure(Procedure):
 class ScreeningProcedure(Procedure):
 
     def __init__(self,  temp_filename, signal_length=1, headphone_name="Sennheiser_HDA200", calibrate=True):
-        """short screening process to check if subject can hear specific frequencies at certain levels
+        """Short screening process to check if subject can hear specific frequencies at certain levels.
 
         Args:
             signal_length (int, optional): length of played signals in seconds. Defaults to 1.
@@ -643,10 +643,10 @@ class ScreeningProcedure(Procedure):
 class Calibration(Procedure):
 
     def __init__(self, startlevel=60, signal_length=10, headphone_name="Sennheiser_HDA200", **additional_data):
-        """Process for calibrating system
+        """Process for calibrating system.
 
         Args:
-            startlevel (int, optional): starting level of procedure in dBHL. Defaults to 60.
+            startlevel (int, optional): starting level of procedure in dB HL. Defaults to 60.
             signal_length (int, optional): length of played signals in seconds. Defaults to 10.
         """
         super().__init__(startlevel, signal_length, headphone_name=headphone_name, calibrate=False)      
@@ -676,7 +676,7 @@ class Calibration(Procedure):
 
 
     def play_one_freq(self):
-        """Get the next frequency and play it
+        """Get the next frequency and play it.
 
         Returns:
             bool: False if no more frequencies left
@@ -700,7 +700,7 @@ class Calibration(Procedure):
         
 
     def repeat_freq(self):
-        """repeats the last played frequency
+        """Repeats the last played frequency.
         """
         self.ap.stop()
         print(f" Repeating side {self.side} at {self.frequency} Hz: The SPL value should be {self.dbspl} dB.")
@@ -718,7 +718,7 @@ class Calibration(Procedure):
 
 
     def finish_calibration(self):
-        """makes a permanent csv file from the temporary file that overwrites calibration.csv
+        """Makes a permanent csv file from the temporary file that overwrites calibration.csv.
 
         Args:
             temp_filename (str): name of temporary csv file
