@@ -8,6 +8,21 @@ import os
 import csv
 from .instructions import *
 
+# Theme settings
+LIGHT_THEME = "sandstone"
+DARK_THEME = "superhero"
+
+# Font settings
+HEADER_SIZE = 20
+SUBHEADER_SIZE = 16
+TEXT_SIZE = 12
+FONT_FAMILY = 'Arial'
+
+# UI settings
+BUTTON_WIDTH = 25
+BUTTON_SIZE = 12
+GEOMETRY = "800x800"
+
 
 class App(tb.Window):
 
@@ -21,11 +36,11 @@ class App(tb.Window):
             calibration_funcs (list function): list of function(s) for calibration in this order: start, next, repeat, stop, set_level
 
         """
-        super().__init__(themename="sandstone")
+        super().__init__(themename=LIGHT_THEME)
 
         # General theme settings
         self.title("Sound Player")
-        self.geometry("800x800")
+        self.geometry(GEOMETRY)
         self.minsize(650,650)
         self.attributes('-fullscreen', True)
         self.bind("<Escape>", self.exit_fullscreen)
@@ -93,8 +108,8 @@ class App(tb.Window):
         # Settings for changing the theme Link: lighthttps://ttkbootstrap.readthedocs.io/en/latest/themes/dark/
         ChangeTheme = tk.Menu(file_menu, tearoff=0)
         
-        ChangeTheme.add_command(label="light", command=lambda: self.change_theme("sandstone"))
-        ChangeTheme.add_command(label="dark", command=lambda: self.change_theme("solar"))
+        ChangeTheme.add_command(label="light", command=lambda: self.change_theme(LIGHT_THEME))
+        ChangeTheme.add_command(label="dark", command=lambda: self.change_theme(DARK_THEME))
         file_menu.add_cascade(label="Theme ändern", menu=ChangeTheme)
 
         file_menu.add_separator()
@@ -206,24 +221,24 @@ class MainMenu(ttk.Frame):
     def create_widgets(self):
         """Creates the widgets for the page
         """
-        self.patient_number_label = ttk.Label(self, text="Probandennummer:",font=('Arial', 12))
+        self.patient_number_label = ttk.Label(self, text="Probandennummer:",font=(FONT_FAMILY, TEXT_SIZE))
         self.patient_number_label.pack(padx=10, pady=10)
         self.patient_number_entry = ttk.Entry(self,width=self.button_width+1)
         self.patient_number_entry.pack(padx=10, pady=10)
 
-        self.gender_label = ttk.Label(self, text="Geschlecht (Optional):", font=('Arial', 12))
+        self.gender_label = ttk.Label(self, text="Geschlecht (Optional):", font=(FONT_FAMILY, TEXT_SIZE))
         self.gender_label.pack(padx=10, pady=10)
         self.gender_dropdown = ttk.Combobox(self, values=["Männlich", "Weiblich", "Divers", "Keine Angabe"], state="readonly", width=self.button_width - 1)
         self.gender_dropdown.set("Geschlecht...")
         self.gender_dropdown.pack(padx=10, pady=10)
         ''' # doesn't work yet
-        self.birthday_label = ttk.Label(self, text="Geburstag (Optional):", font=('Arial', 12))
+        self.birthday_label = ttk.Label(self, text="Geburstag (Optional):", font=(FONT_FAMILY, TEXT_SIZE))
         self.birthday_label.pack(padx=10, pady=10)
         self.birthday_entry = DateEntry(self, date_pattern='dd.mm.yyyy', width=24, background='darkblue',
                                         foreground='white', borderwidth=2, maxdate=datetime.today())
         '''
 
-        self.label = ttk.Label(self, text="\nBitte wählen Sie ein Programm", font=('Arial', 16))
+        self.label = ttk.Label(self, text="\nBitte wählen Sie ein Programm", font=(FONT_FAMILY, TEXT_SIZE))
         self.label.pack(pady=10)
 
         # Dropdown menu
@@ -248,7 +263,7 @@ class MainMenu(ttk.Frame):
         self.headphone_dropdown = ttk.Combobox(self, values=self.get_headphone_options(), state="readonly", width=self.button_width - 1)
         self.headphone_dropdown.set("Sennheiser_HDA200")
         self.headphone_dropdown.pack(padx=10, pady=10, side="bottom")
-        self.headphone_label = ttk.Label(self, text="Kopfhörer:", font=('Arial', 12))
+        self.headphone_label = ttk.Label(self, text="Kopfhörer:", font=(FONT_FAMILY, TEXT_SIZE))
         self.headphone_label.pack(padx=10, pady=10, side="bottom")
 
 
@@ -339,7 +354,7 @@ class FamiliarizationPage(ttk.Frame):
         """
         button_width = 25 
 
-        self.label = ttk.Label(self, text=text_Familiarization, font=('Arial', 16))
+        self.label = ttk.Label(self, text=text_Familiarization, font=(FONT_FAMILY, SUBHEADER_SIZE))
         self.label.pack(padx=10, pady=10)
         self.play_button = ttk.Button(self, 
                                       text="Starte Eingewöhnung", 
@@ -470,7 +485,7 @@ class ResultPage(ttk.Frame):
 
     def create_widgets(self):
         """Creates the widgets for the view"""
-        self.info = ttk.Label(self, text="Ergebnisse", font=('Arial', 18))
+        self.info = ttk.Label(self, text="Ergebnisse", font=(FONT_FAMILY, HEADER_SIZE))
         self.info.pack(padx=10, pady=10)
 
         # Set the title on the parent window
@@ -533,9 +548,9 @@ class CalibrationPage(ttk.Frame):
         """
         button_width = 25 
 
-        self.intro = ttk.Label(self, text=text_calibration, font=('Arial', 16))
+        self.intro = ttk.Label(self, text=text_calibration, font=(FONT_FAMILY, SUBHEADER_SIZE))
         self.intro.pack(padx=10, pady=10)
-        self.level_label = ttk.Label(self, text="Wert in dBHL, bei dem kalibriert werden soll:", font=('Arial', 16))
+        self.level_label = ttk.Label(self, text="Wert in dBHL, bei dem kalibriert werden soll:", font=(FONT_FAMILY, SUBHEADER_SIZE))
         self.level_label.pack(padx=10, pady=10)
         self.level_entry_var = tk.StringVar()
         self.level_entry_var.set("10")
@@ -575,16 +590,16 @@ class CalibrationPage(ttk.Frame):
         self.spacer_frame.pack()
 
         self.current_freq_var = tk.StringVar(value="Aktuelle Frequenz:")
-        self.current_freq = ttk.Label(self, textvariable=self.current_freq_var, font=('Arial', 22))
+        self.current_freq = ttk.Label(self, textvariable=self.current_freq_var, font=(FONT_FAMILY, SUBHEADER_SIZE))
         self.current_freq.pack(padx=10, pady=10)
         self.level_expected_var = tk.StringVar(value="Schalldruckpegel (soll):")
-        self.level_expected_label = ttk.Label(self, textvariable=self.level_expected_var, font=('Arial', 22))
+        self.level_expected_label = ttk.Label(self, textvariable=self.level_expected_var, font=(FONT_FAMILY, SUBHEADER_SIZE))
         self.level_expected_label.pack(padx=10, pady=10)
-        self.level_measured_label = ttk.Label(self, text="Gemessener Schalldruckpegel in dB:", font=('Arial', 22))
+        self.level_measured_label = ttk.Label(self, text="Gemessener Schalldruckpegel in dB:", font=(FONT_FAMILY, SUBHEADER_SIZE))
         self.level_measured_label.pack(padx=10, pady=10)
         self.level_measured_var = tk.StringVar()
         self.level_measured_entry = ttk.Entry(self, width=button_width-10, 
-                                              font=('Arial', 22), state=tk.DISABLED,
+                                              font=(FONT_FAMILY, SUBHEADER_SIZE), state=tk.DISABLED,
                                               textvariable=self.level_measured_var)
         self.level_measured_entry.pack(padx=10, pady=10)
 

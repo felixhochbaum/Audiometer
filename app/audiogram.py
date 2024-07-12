@@ -125,15 +125,14 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
     ax.set_yticks(np.arange(0, 121, 10))
     ax.set_yticklabels(np.arange(0, 121, 10), fontsize=12)
     ax.grid(True, which='both', linestyle='--', linewidth=0.5) 
-    
-    lgd = ax.legend(loc='upper left', bbox_to_anchor=(1.15, 0.205), fontsize=11, frameon=False)
+    lgd = ax.legend(loc='upper left', bbox_to_anchor=(1.15, 0.205), fontsize=11, frameon=False, labelspacing=1)
     fig.savefig(name, bbox_extra_artists=(lgd, t1, t2, t3, t4, t5), bbox_inches='tight')
     plt.close(fig)
 
 
 # if __name__ == '__main__':
 #     freqs = [125, 250, 500, 1000, 2000, 4000, 8000]
-#     left_values = [20, None, None, 20, 20, 20, 20]
-#     right_values = [20, 30, 20, 20, 20, 20, 20]
+#     left_values = [20, 20, "NH", 20, 20, 20, 20]
+#     right_values = [20, 20, 20, 20, 20, 20, 20]
 #     create_audiogram(freqs, left_values, right_values, binaural=False, name="audiogram.png")
 #     print("Audiogram created")
