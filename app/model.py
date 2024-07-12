@@ -460,6 +460,7 @@ class StandardProcedure(Procedure):
                 return True
         
         if binaural:
+            self.progress_step = 0.95 / 7
             self.side = 'lr'
             success_lr = self.standard_test_one_ear()
 
@@ -591,6 +592,8 @@ class ScreeningProcedure(Procedure):
         
         #TODO das als default, aber  variabel in der GUI?
         self.freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
+
+        self.progress_step = 1 / 14
     
 
     def screen_test(self, binaural=False, **additional_data):
@@ -606,13 +609,18 @@ class ScreeningProcedure(Procedure):
             self.side = 'r'
             self.screen_one_ear()
 
+            self.progress = 1
+
             final_filename = self.create_final_csv(self.temp_filename)
             self.create_final_audiogram(final_filename, binaural)
             return True
         
         if binaural:
+            self.progress_step = 1 / 7
             self.side = 'lr'
             self.screen_one_ear()
+
+            self.progress = 1
 
         final_filename = self.create_final_csv(self.temp_filename)
         self.create_final_audiogram(final_filename, binaural)
@@ -655,9 +663,11 @@ class ScreeningProcedure(Procedure):
         
         if self.num_heard >= 2:
             self.add_to_temp_csv(str(self.level), str(self.frequency), self.side, self.temp_filename)
+            self.progress += self.progress_step
             return
  
         self.add_to_temp_csv('NH', str(self.frequency), self.side, self.temp_filename)
+        self.progress += self.progress_step
 
 
 

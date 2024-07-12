@@ -10,6 +10,7 @@ from datetime import datetime
 import os
 import csv
 import time
+import random
 from .instructions import *
 
 class App(tb.Window):
@@ -66,7 +67,7 @@ class App(tb.Window):
         # View during programs
         for name, program_func in program_funcs.items():
             frame = DuringProcedureView(self, 
-                                        program_func,
+                                        program_func, progress_func,
                                         text="Programm läuft...")
             self.frames[name] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -351,11 +352,12 @@ class FamiliarizationPage(ttk.Frame):
         self.parent.show_frame(DuringFamiliarizationView)
         self.parent.wait_for_process(lambda: self.parent.frames[DuringFamiliarizationView].program(id=self.parent.frames[MainMenu].patient_number, calibrate=self.use_calibration), 
                                      lambda: self.parent.show_frame(ProgramPage))
-        time.sleep(0.01)
+        time.sleep(0.001)
+        self.update()
         while self.parent.frames[DuringFamiliarizationView].progress_var.get() < 100:
             progress = int(self.parent.frames[DuringFamiliarizationView].get_progress() * 100)
             self.parent.frames[DuringFamiliarizationView].progress_var.set(progress)
-            time.sleep(0.01)
+            time.sleep(1)
             self.update()
 
 
@@ -389,6 +391,15 @@ class ProgramPage(ttk.Frame):
 
         self.parent.wait_for_process(lambda: self.parent.frames[self.selected_option].program(self.binaural_test, calibrate=self.use_calibration),
                                      self.show_results)
+        
+        time.sleep(0.001)
+        self.update()
+        while self.parent.frames[self.selected_option].progress_var.get() < 100:
+            progress = int(self.parent.frames[self.selected_option].get_progress() * 100)
+            self.parent.frames[self.selected_option].progress_var.set(progress)
+            sleep_time = random.uniform(1, 2.5) # random time between 1 and 2.5
+            time.sleep(sleep_time) # wait before updating progress bar so that it has no influence
+            self.update()
 
 
     def show_results(self):
@@ -418,15 +429,15 @@ class DuringFamiliarizationView(ttk.Frame):
         """Creates the widgets for the view
         """
         self.info = ttk.Label(self, text=self.text)
-        self.info.grid(row=0, column=0, padx=10, pady=10)
+        self.info.pack(padx=10, pady=10)
         self.progress_var = tk.IntVar()
-        self.progress_bar = ttk.Progressbar(self.parent, variable=self.progress_var, maximum=100)
-        self.progress_bar.grid(row=1, column=1, padx=10, pady=10)
+        self.progress_bar = ttk.Progressbar(self, variable=self.progress_var, maximum=100, length=300)
+        self.progress_bar.pack(padx=10, pady=100)
 
 
 class DuringProcedureView(ttk.Frame):
 
-    def __init__(self, parent, program_func, text):
+    def __init__(self, parent, program_func, progress_func, text):
         """View during main program
 
         Args:
@@ -436,7 +447,8 @@ class DuringProcedureView(ttk.Frame):
         """
         super().__init__(parent)
         self.parent = parent
-        self.program = program_func 
+        self.program = program_func
+        self.get_progress = progress_func  
         self.text = text
         self.create_widgets()
 
@@ -444,7 +456,10 @@ class DuringProcedureView(ttk.Frame):
         """Creates the widgets for the view
         """
         self.info = ttk.Label(self, text=self.text)
-        self.info.grid(row=0, column=0, padx=10, pady=10)
+        self.info.pack(padx=10, pady=10)
+        self.progress_var = tk.IntVar()
+        self.progress_bar = ttk.Progressbar(self, variable=self.progress_var, maximum=100, length=300)
+        self.progress_bar.pack(padx=10, pady=100)
 
 
 class ResultPage(ttk.Frame):
@@ -515,6 +530,7 @@ class CalibrationPage(ttk.Frame):
         self.cal_stop = calibration_funcs[3]
         self.cal_setlevel = calibration_funcs[4]
         self.create_widgets()
+        self.finished = False
 
     def create_widgets(self):
         """Creates the widgets for the page
@@ -598,7 +614,6 @@ class CalibrationPage(ttk.Frame):
         
 
     def next_frequency(self):
-        finished = False
         try:
             if self.level_measured_var.get() != "":
                 self.cal_setlevel(float(self.level_measured_var.get()))
@@ -614,7 +629,7 @@ class CalibrationPage(ttk.Frame):
         if not more_freqs:
 
             # Grey out all buttons when finished
-            if finished:
+            if self.finished:
                 self.next_button.config(state=tk.DISABLED)
                 self.repeat_button.config(state=tk.DISABLED)
                 self.stop_button.config(state=tk.DISABLED)
@@ -623,7 +638,7 @@ class CalibrationPage(ttk.Frame):
                 return
             
             self.next_button.config(text="Kalibrierung abschließen")
-            finished = True
+            self.finished = True
 
 
         self.current_freq_var.set("Aktuelle Frequenz: " + str(current_freq) + " Hz")
