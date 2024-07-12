@@ -1,16 +1,16 @@
 site_name: Audiometer Documentation
 theme:
-  name: readthedocs # or material
+  name: readthedocs
   features:
-  - navigation.tabs
-  - navigation.sections
-  - toc.integrate
-  - navigation.top
-  - search.suggest
-  - search.highlight
-  - content.tabs.link
-  - content.code.annotations
-  - content.code.copy
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotations
+    - content.code.copy
 
 
 plugins:
