@@ -391,7 +391,7 @@ class StandardProcedure(Procedure):
         startlevel = int(self.get_value_from_csv('1000', temp_filename)) - 10 # 10 dB under level from familiarization
         super().__init__(startlevel, signal_length, headphone_name=headphone_name, calibrate=calibrate)
         self.temp_filename = temp_filename
-        self.freq_order = [1000, 2000]#, 4000, 8000, 500, 250, 125] # order in which frequencies are tested
+        self.freq_order = [1000, 2000, 4000, 8000, 500, 250, 125] # order in which frequencies are tested
 
 
     def standard_test(self, binaural=False, **additional_data):
@@ -403,6 +403,7 @@ class StandardProcedure(Procedure):
 
         if not binaural:
             self.side = 'l'
+            
             success_l = self.standard_test_one_ear()
 
             if self.test_mode == True and self.jump_to_end == True:
@@ -438,6 +439,24 @@ class StandardProcedure(Procedure):
             bool: test successful
         """
         success = []
+
+        self.tone_heard = False
+        self.frequency = 1000
+        self.level = self.startlevel
+
+        # Step 1 (raise tone in 5 dB steps until it is heard)
+        while not self.tone_heard:
+            self.play_tone()
+
+            if self.test_mode == True and self.jump_to_end == True:
+                return True
+
+            if not self.tone_heard:
+                self.level += 5
+        
+        self.startlevel = self.level
+        print(f"Starting level: {self.startlevel} dBHL")
+
         # test every frequency
         for f in self.freq_order:
             print(f"Testing frequency {f} Hz")
@@ -472,20 +491,9 @@ class StandardProcedure(Procedure):
         Returns:
             bool: test successful
         """
-        self.tone_heard = False
+        self.tone_heard = True
         self.frequency = freq
         self.level = self.startlevel
-
-        # Step 1 (raise tone in 5 dB steps until it is heard)
-        while not self.tone_heard:
-            self.play_tone()
-
-            if self.test_mode == True and self.jump_to_end == True:
-                return True
-
-
-            if not self.tone_heard:
-                self.level += 5
 
         # Step 2
         answers = []
