@@ -2,16 +2,29 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import threading
 from tkinter import messagebox, filedialog
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import ttkbootstrap as tb
 from PIL import Image, ImageTk
-from tkcalendar import DateEntry
-from datetime import datetime
 import os
 import csv
 import time
 import random
 from .instructions import *
+
+# Theme settings
+LIGHT_THEME = "sandstone"
+DARK_THEME = "superhero"
+
+# Font settings
+HEADER_SIZE = 20
+SUBHEADER_SIZE = 16
+TEXT_SIZE = 12
+FONT_FAMILY = 'Arial'
+
+# UI settings
+BUTTON_WIDTH = 25
+BUTTON_SIZE = 12
+GEOMETRY = "800x800"
+
 
 class App(tb.Window):
 
@@ -25,11 +38,11 @@ class App(tb.Window):
             calibration_funcs (list function): list of function(s) for calibration in this order: start, next, repeat, stop, set_level
 
         """
-        super().__init__(themename="sandstone")
+        super().__init__(themename=LIGHT_THEME)
 
         # General theme settings
         self.title("Sound Player")
-        self.geometry("800x800")
+        self.geometry(GEOMETRY)
         self.minsize(650,650)
         self.attributes('-fullscreen', True)
         self.bind("<Escape>", self.exit_fullscreen)
@@ -84,6 +97,7 @@ class App(tb.Window):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
+
     def create_menubar(self):
         """Create a menubar with options for changing the theme and exiting the program"""
         menubar = tk.Menu(self)
@@ -96,13 +110,16 @@ class App(tb.Window):
         # Settings for changing the theme Link: lighthttps://ttkbootstrap.readthedocs.io/en/latest/themes/dark/
         ChangeTheme = tk.Menu(file_menu, tearoff=0)
         
-        ChangeTheme.add_command(label="light", command=lambda: self.change_theme("sandstone"))
-        ChangeTheme.add_command(label="dark", command=lambda: self.change_theme("superhero"))
+
+        ChangeTheme.add_command(label="light", command=lambda: self.change_theme(LIGHT_THEME))
+        ChangeTheme.add_command(label="dark", command=lambda: self.change_theme(DARK_THEME))
+
         file_menu.add_cascade(label="Theme ändern", menu=ChangeTheme)
 
         file_menu.add_separator()
         file_menu.add_command(label="Programm beenden", command=self.on_closing)
         menubar.add_cascade(label="Einstellungen", menu=file_menu)
+
 
     def change_theme(self, theme_name):
         """Change to the specified theme"""
@@ -113,15 +130,18 @@ class App(tb.Window):
         else:
             self.style.theme_use(theme_name)
 
+
     def exit_fullscreen(self, event=None):
         """Exit fullscreen mode"""
         self.attributes('-fullscreen', False)
+
 
     def set_icon(self, path):
         """Set the window icon using Pillow"""
         img = Image.open(path)
         photo = ImageTk.PhotoImage(img)
         self.iconphoto(False, photo)          
+
 
     def show_frame(self, page):
         """Show a frame for the given page name
@@ -131,6 +151,7 @@ class App(tb.Window):
         """
         frame = self.frames[page]
         frame.tkraise()
+
 
     def wait_for_process(self, process, callback):
         """Starts a process in a new thread and calls a callback function when the process is done
@@ -143,6 +164,7 @@ class App(tb.Window):
         t.daemon = True
         t.start()
 
+
     def run_process(self, process, callback):
         """Runs a process and calls a callback function when the process is done
 
@@ -153,6 +175,7 @@ class App(tb.Window):
         process()
         self.after(0, callback)
 
+
     def change_save_path(self):
         """Ask the user to select a folder to save the files"""
         new_path = filedialog.askdirectory(title="Select Folder to Save Files")
@@ -160,10 +183,12 @@ class App(tb.Window):
             self.save_path = new_path
             messagebox.showinfo("Speicherort geändert", f"Neuer Speicherort: {self.save_path}")
 
+
     def on_closing(self):
         """Ask for confirmation before closing the program"""
         if messagebox.askyesno(title="Quit", message="Möchten Sie wirklich das Programm beenden?"):
             self.destroy()
+
 
     def get_images_in_path(self, directory, image_extensions=[".png", ".jpg", ".jpeg", ".gif", ".bmp"]):
         """
@@ -196,26 +221,29 @@ class MainMenu(ttk.Frame):
         self.patient_number = ""
         self.create_widgets()
 
+
     def create_widgets(self):
         """Creates the widgets for the page
         """
-        self.patient_number_label = ttk.Label(self, text="Probandennummer:",font=('Arial', 12))
+        self.patient_number_label = ttk.Label(self, text="Probandennummer:",font=(FONT_FAMILY, TEXT_SIZE))
         self.patient_number_label.pack(padx=10, pady=10)
         self.patient_number_entry = ttk.Entry(self,width=self.button_width+1)
         self.patient_number_entry.pack(padx=10, pady=10)
 
-        self.gender_label = ttk.Label(self, text="Geschlecht (Optional):", font=('Arial', 12))
+        self.gender_label = ttk.Label(self, text="Geschlecht (Optional):", font=(FONT_FAMILY, TEXT_SIZE))
         self.gender_label.pack(padx=10, pady=10)
         self.gender_dropdown = ttk.Combobox(self, values=["Männlich", "Weiblich", "Divers", "Keine Angabe"], state="readonly", width=self.button_width - 1)
         self.gender_dropdown.set("Geschlecht...")
         self.gender_dropdown.pack(padx=10, pady=10)
-        # doesn't work yet
-        # self.birthday_label = ttk.Label(self, text="Geburstag (Optional):", font=('Arial', 12))
-        # self.birthday_label.pack(padx=10, pady=10)
-        # self.birthday_entry = DateEntry(self, date_pattern='dd.mm.yyyy', width=24, background='darkblue',
-        #                                 foreground='white', borderwidth=2, maxdate=datetime.today())
-        # self.birthday_entry.pack(padx=10, pady=10)
-        self.label = ttk.Label(self, text="\nBitte wählen Sie ein Programm", font=('Arial', 16))
+
+        ''' # doesn't work yet
+        self.birthday_label = ttk.Label(self, text="Geburstag (Optional):", font=(FONT_FAMILY, TEXT_SIZE))
+        self.birthday_label.pack(padx=10, pady=10)
+        self.birthday_entry = DateEntry(self, date_pattern='dd.mm.yyyy', width=24, background='darkblue',
+                                        foreground='white', borderwidth=2, maxdate=datetime.today())
+        '''
+
+        self.label = ttk.Label(self, text="\nBitte wählen Sie ein Programm", font=(FONT_FAMILY, TEXT_SIZE))
         self.label.pack(pady=10)
 
         # Dropdown menu
@@ -240,7 +268,7 @@ class MainMenu(ttk.Frame):
         self.headphone_dropdown = ttk.Combobox(self, values=self.get_headphone_options(), state="readonly", width=self.button_width - 1)
         self.headphone_dropdown.set("Sennheiser_HDA200")
         self.headphone_dropdown.pack(padx=10, pady=10, side="bottom")
-        self.headphone_label = ttk.Label(self, text="Kopfhörer:", font=('Arial', 12))
+        self.headphone_label = ttk.Label(self, text="Kopfhörer:", font=(FONT_FAMILY, TEXT_SIZE))
         self.headphone_label.pack(padx=10, pady=10, side="bottom")
 
 
@@ -267,7 +295,6 @@ class MainMenu(ttk.Frame):
             return
         
 
-
     def on_option_selected(self, event):
         self.selected_option = self.dropdown.get()
         self.show_start_button()
@@ -282,6 +309,7 @@ class MainMenu(ttk.Frame):
             self.gender_dropdown.config(state=tk.NORMAL)
             self.patient_number_entry.config(state=tk.NORMAL)    
 
+
     def show_start_button(self):
         if self.start_button is None:
             self.start_button = ttk.Button(self,
@@ -289,6 +317,7 @@ class MainMenu(ttk.Frame):
                                            command=self.go_to_next_page,
                                            width=self.button_width)
             self.start_button.pack(pady=10)
+
 
     def go_to_next_page(self):
         if self.selected_option == "Kalibrierung":
@@ -299,7 +328,7 @@ class MainMenu(ttk.Frame):
             if not self.patient_number:
                 messagebox.showwarning("Warnung", "Bitte geben Sie eine Probandennummer ein.")
                 return
-
+            
             patient_folder = os.path.join(self.parent.save_path, self.patient_number)
             pics = self.parent.get_images_in_path(patient_folder)
             if pics:
@@ -324,12 +353,13 @@ class FamiliarizationPage(ttk.Frame):
         self.parent = parent
         self.create_widgets()
 
+
     def create_widgets(self):
         """Creates the widgets for the page
         """
         button_width = 25 
 
-        self.label = ttk.Label(self, text=text_Familiarization, font=('Arial', 16))
+        self.label = ttk.Label(self, text=text_Familiarization, font=(FONT_FAMILY, SUBHEADER_SIZE))
         self.label.pack(padx=10, pady=10)
         self.play_button = ttk.Button(self, 
                                       text="Starte Eingewöhnung", 
@@ -344,6 +374,7 @@ class FamiliarizationPage(ttk.Frame):
 
         for widget in self.winfo_children():
             widget.pack_configure(anchor='center')
+
 
     def run_familiarization(self):
         """Runs the familiarization process
@@ -374,6 +405,7 @@ class ProgramPage(ttk.Frame):
         self.selected_option = None 
         self.create_widgets()
 
+
     def create_widgets(self):
         """Creates the widgets for the page"""
         self.start_button = ttk.Button(self, text="Starte Prozess", command=self.run_program)
@@ -381,6 +413,7 @@ class ProgramPage(ttk.Frame):
     
         for widget in self.winfo_children():
             widget.pack_configure(anchor='center')
+
 
     def run_program(self):
         """Runs the main program"""
@@ -410,6 +443,7 @@ class ProgramPage(ttk.Frame):
         self.parent.show_frame(ResultPage)
 
 
+
 class DuringFamiliarizationView(ttk.Frame):
     
     def __init__(self, parent, familiarization_func, progress_func):
@@ -424,6 +458,7 @@ class DuringFamiliarizationView(ttk.Frame):
         self.get_progress = progress_func 
         self.text = "Eingewöhnung läuft..."
         self.create_widgets()
+
 
     def create_widgets(self):
         """Creates the widgets for the view
@@ -452,6 +487,7 @@ class DuringProcedureView(ttk.Frame):
         self.text = text
         self.create_widgets()
 
+
     def create_widgets(self):
         """Creates the widgets for the view
         """
@@ -475,9 +511,10 @@ class ResultPage(ttk.Frame):
 
         self.create_widgets()
 
+
     def create_widgets(self):
         """Creates the widgets for the view"""
-        self.info = ttk.Label(self, text="Ergebnisse", font=('Arial', 18))
+        self.info = ttk.Label(self, text="Ergebnisse", font=(FONT_FAMILY, HEADER_SIZE))
         self.info.pack(padx=10, pady=10)
 
         # Set the title on the parent window
@@ -485,11 +522,12 @@ class ResultPage(ttk.Frame):
 
         # Create a frame for the images
         self.image_frame = ttk.Frame(self)
-        self.image_frame.pack(fill="both", expand=True)
+        self.image_frame.pack(anchor="center")   #,fill="both", expand=True)
 
         # Button to go back to the main menu
         self.BackToMainMenu = ttk.Button(self, text="Zurück zur Startseite", command=lambda: self.parent.show_frame(MainMenu))
         self.BackToMainMenu.pack(padx=10, pady=10)
+
 
     def display_images(self, folder_name):
         """Display all images in the given folder"""
@@ -510,8 +548,10 @@ class ResultPage(ttk.Frame):
                 label.image = photo
                 label.pack(padx=10, pady=10, side="left")
 
+
     def back_to_MainMenu(self):
         self.parent.show_frame(MainMenu)
+
 
 
 class CalibrationPage(ttk.Frame):
@@ -532,14 +572,15 @@ class CalibrationPage(ttk.Frame):
         self.create_widgets()
         self.finished = False
 
+
     def create_widgets(self):
         """Creates the widgets for the page
         """
         button_width = 25 
 
-        self.intro = ttk.Label(self, text=text_calibration, font=('Arial', 16))
+        self.intro = ttk.Label(self, text=text_calibration, font=(FONT_FAMILY, SUBHEADER_SIZE))
         self.intro.pack(padx=10, pady=10)
-        self.level_label = ttk.Label(self, text="Wert in dBHL, bei dem kalibriert werden soll:", font=('Arial', 16))
+        self.level_label = ttk.Label(self, text="Wert in dBHL, bei dem kalibriert werden soll:", font=(FONT_FAMILY, SUBHEADER_SIZE))
         self.level_label.pack(padx=10, pady=10)
         self.level_entry_var = tk.StringVar()
         self.level_entry_var.set("10")
@@ -579,22 +620,23 @@ class CalibrationPage(ttk.Frame):
         self.spacer_frame.pack()
 
         self.current_freq_var = tk.StringVar(value="Aktuelle Frequenz:")
-        self.current_freq = ttk.Label(self, textvariable=self.current_freq_var, font=('Arial', 22))
+        self.current_freq = ttk.Label(self, textvariable=self.current_freq_var, font=(FONT_FAMILY, SUBHEADER_SIZE))
         self.current_freq.pack(padx=10, pady=10)
         self.level_expected_var = tk.StringVar(value="Schalldruckpegel (soll):")
-        self.level_expected_label = ttk.Label(self, textvariable=self.level_expected_var, font=('Arial', 22))
+        self.level_expected_label = ttk.Label(self, textvariable=self.level_expected_var, font=(FONT_FAMILY, SUBHEADER_SIZE))
         self.level_expected_label.pack(padx=10, pady=10)
-        self.level_measured_label = ttk.Label(self, text="Gemessener Schalldruckpegel in dB:", font=('Arial', 22))
+        self.level_measured_label = ttk.Label(self, text="Gemessener Schalldruckpegel in dB:", font=(FONT_FAMILY, SUBHEADER_SIZE))
         self.level_measured_label.pack(padx=10, pady=10)
         self.level_measured_var = tk.StringVar()
         self.level_measured_entry = ttk.Entry(self, width=button_width-10, 
-                                              font=('Arial', 22), state=tk.DISABLED,
+                                              font=(FONT_FAMILY, SUBHEADER_SIZE), state=tk.DISABLED,
                                               textvariable=self.level_measured_var)
         self.level_measured_entry.pack(padx=10, pady=10)
 
 
         for widget in self.winfo_children():
             widget.pack_configure(anchor='center')
+
 
     def start_calibration(self):
         try:
@@ -640,15 +682,17 @@ class CalibrationPage(ttk.Frame):
             self.next_button.config(text="Kalibrierung abschließen")
             self.finished = True
 
-
         self.current_freq_var.set("Aktuelle Frequenz: " + str(current_freq) + " Hz")
         self.level_expected_var.set("Schalldruckpegel (soll): " + str(current_spl) + " dB")    
+
 
     def repeat_frequency(self):
         self.cal_repeat()
 
+
     def stop_playing(self):
         self.cal_stop()
+
 
 def setup_ui(startfunc, programfuncs, calibrationfuncs, progressfunc):
     app = App(startfunc, programfuncs, calibrationfuncs, progressfunc)
