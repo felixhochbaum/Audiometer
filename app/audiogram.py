@@ -9,7 +9,7 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
     """Erstellt ein Audiogramm basierend auf den gegebenen Frequenzen und Hörschwellenwerten mit benutzerdefinierten x-Achsen-Beschriftungen.
 
     Args:
-        freqs (list of int): Eine Liste von Frequenzen in Hertz.
+        freqs (list of int): Eine Liste von Frequenzen in Hz.
         right_values (list of int): Eine Liste von Hörschwellen in dB HL vom rechten Ohr.
         left_values (list of int): Eine Liste von Hörschwellen in dB HL vom linken Ohr
         save (bool): Ob das Diagramm gespeichert werden soll
