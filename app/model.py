@@ -414,7 +414,7 @@ class StandardProcedure(Procedure):
         self.progress_step = 0.95 / 14
 
 
-    def standard_test(self, binaural=False, **additional_data):
+    def standard_test(self, binaural=False):
         """Main function
 
         Returns:
@@ -582,7 +582,7 @@ class ScreeningProcedure(Procedure):
 
         self.progress_step = 1 / 14
 
-    def screen_test(self, binaural=False, **additional_data):
+    def screen_test(self, binaural=False):
         """main functions
 
         Returns:
