@@ -91,6 +91,9 @@ class App(tb.Window):
         # Create menubar
         self.create_menubar()
 
+        # Variable for threading
+        self.process_done = False
+
         # Override the close button protocol
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -173,7 +176,8 @@ class App(tb.Window):
             callback (function): function to be called when process is done
         """
         process()
-        self.after(0, callback)
+        self.process_done = True
+        self.after(100, callback)
 
 
     def change_save_path(self):
@@ -385,11 +389,17 @@ class FamiliarizationPage(ttk.Frame):
                                      lambda: self.parent.show_frame(ProgramPage))
         time.sleep(0.001)
         self.update()
-        while self.parent.frames[DuringFamiliarizationView].progress_var.get() < 100:
+        counter = 0
+        sleep_time = random.uniform(1, 2.5) # random time in seconds between 1 and 2.5 to update progress bar
+        while self.parent.frames[DuringFamiliarizationView].progress_var.get() < 100 and not self.parent.process_done:
             progress = int(self.parent.frames[DuringFamiliarizationView].get_progress() * 100)
-            self.parent.frames[DuringFamiliarizationView].progress_var.set(progress)
-            time.sleep(1)
+            if counter >= sleep_time * 1000:
+                self.parent.frames[DuringFamiliarizationView].progress_var.set(progress)
+                counter = 0
+            time.sleep(0.001)
+            counter += 1
             self.update()
+        self.parent.process_done = False
 
 
 class ProgramPage(ttk.Frame):
@@ -427,12 +437,17 @@ class ProgramPage(ttk.Frame):
         
         time.sleep(0.001)
         self.update()
-        while self.parent.frames[self.selected_option].progress_var.get() < 100:
+        counter = 0
+        sleep_time = random.uniform(1, 2.5) # random time in seconds between 1 and 2.5 to update progress bar
+        while self.parent.frames[self.selected_option].progress_var.get() < 100 and not self.parent.process_done:
             progress = int(self.parent.frames[self.selected_option].get_progress() * 100)
-            self.parent.frames[self.selected_option].progress_var.set(progress)
-            sleep_time = random.uniform(1, 2.5) # random time between 1 and 2.5
-            time.sleep(sleep_time) # wait before updating progress bar so that it has no influence
+            if counter >= sleep_time * 1000:
+                self.parent.frames[self.selected_option].progress_var.set(progress)
+                counter = 0
+            time.sleep(0.001)
+            counter += 1
             self.update()
+        self.parent.process_done = False
 
 
     def show_results(self):
