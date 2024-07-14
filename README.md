@@ -7,8 +7,8 @@ Für eine detaillierte Dokumentation und eine ausführlichere Installationsanlei
 ## Funktionen
 
 - **AudioPlayer**: Spielt Sinustöne mit verschiedenen Frequenzen, Lautstärken und Dauern ab.
-- **Audiogrammerstellung**: Visualisiert audiometrische Daten für beide Ohren.
-- **Kalibrierung**: Kalibriert das Audiometer, um genaue Schallpegel zu gewährleisten.
+- **Audiogrammerstellung**: Visualisiert audiometrische Daten.
+- **Kalibrierung**: Siehe [Dokumentation](https://satur42.github.io/Audiometer/).
 - **Benutzeroberfläche**: Intuitive Benutzeroberfläche zur Durchführung von Tests und zur Anzeige von Ergebnissen.
 
 ## Schnelle Installation mit venv
@@ -21,10 +21,10 @@ Für eine detaillierte Dokumentation und eine ausführlichere Installationsanlei
     ```bash
     python -m venv venv
 3. **Virtuelle Umgebung aktivieren:**
-    - On Windows:
+    - Auf Windows:
         ```bash
         venv\Scripts\activate
-    - On macOS and Linux::
+    - Auf macOS und Linux::
         ```bash
         source venv/bin/activate
 4. **Benötigte Abhängigkeiten installieren:**
@@ -44,6 +44,7 @@ Dieses Projekt ist unter der MIT-Lizenz lizenziert. Siehe die LICENSE-Datei für
 
 _______________________________________________________________
 _______________________________________________________________
+# Audiometer (English)
 Audiometer is a Python-based application designed to create audiograms and perform various audiometric tests. It includes features for familiarization, standard audiometric procedures, and calibration. Currently only a German version is available.
 
 
@@ -54,7 +55,7 @@ For detailed documentation and a more detailed Installation guide, please refer 
 
 - **AudioPlayer**: Plays sine beeps at various frequencies, volumes, and durations.
 - **Audiogram Generation**: Visualizes audiometric data for both left and right ears.
-- **Calibration**: Calibrates the audiometer to ensure accurate sound levels.
+- **Calibration**: For more information visit [documentation](https://satur42.github.io/Audiometer/).
 - **User Interface**: Intuitive UI for performing tests and viewing results.
 
 
