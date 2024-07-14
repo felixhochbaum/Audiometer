@@ -135,9 +135,9 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
         fig.savefig(name, bbox_extra_artists=(lgd, t1, t2, t3, t4, t5), bbox_inches='tight')
     plt.close(fig)
 
-if __name__ == '__main__':
-    freqs = [125, 250, 500, 1000, 2000, 4000, 8000]
-    left_values = [5, 15, 15, 20, 20, 0, 0]
-    right_values = [5, 15, 10, "NaN", 25, 15, 5]
-    create_audiogram(freqs, left_values, right_values, binaural=False, name="audiogram.png")
-    print("Audiogram created")
+# if __name__ == '__main__':
+#     freqs = [125, 250, 500, 1000, 2000, 4000, 8000]
+#     left_values = [5, 15, 15, 20, 20, 0, 0]
+#     right_values = [5, 15, 10, "NaN", 25, 15, 5]
+#     create_audiogram(freqs, left_values, right_values, binaural=False, name="audiogram.png")
+#     print("Audiogram created")
