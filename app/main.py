@@ -1,7 +1,6 @@
 from .ui import setup_ui
 from .model import *
 
-#test
 class Controller():
 
     def __init__(self):
