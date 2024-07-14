@@ -109,6 +109,7 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
     else:
         x_vals_left, left_values = filter_none(x_vals, left_values)
         x_vals_right, right_values = filter_none(x_vals, right_values)
+        nan_t = False
 
         if binaural:
             ax.plot(x_vals_left, left_values, marker=MARKER_BINAURAL, markersize=MARKER_SIZE, linestyle='-', color=COLOR_BINAURAL, label='binaural')

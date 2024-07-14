@@ -598,8 +598,6 @@ class ScreeningProcedure(Procedure):
 
             self.progress = 1
 
-            final_filename = self.create_final_csv(self.temp_filename)
-            self.create_final_audiogram(final_filename, binaural)
             self.create_final_csv_and_audiogram(self.temp_filename, binaural)
             return True
         
@@ -609,8 +607,6 @@ class ScreeningProcedure(Procedure):
             self.screen_one_ear()
             self.progress = 1
 
-        final_filename = self.create_final_csv(self.temp_filename)
-        self.create_final_audiogram(final_filename, binaural)
         self.create_final_csv_and_audiogram(self.temp_filename, binaural)
 
 
