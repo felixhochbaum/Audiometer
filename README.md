@@ -39,7 +39,7 @@ Für eine detaillierte Dokumentation und eine ausführlichere Installationsanlei
 Beiträge sind willkommen! Wenn du Vorschläge oder Verbesserungen hast, erstelle gerne ein Issue oder reiche einen Pull-Request ein.
 
 ## Lizenz
-Dieses Projekt ist unter der MIT-Lizenz lizenziert. Siehe die LICENSE-Datei für weitere Details.
+Dieses Projekt ist unter der MIT-Lizenz lizenziert.
 
 
 _______________________________________________________________
@@ -87,4 +87,4 @@ For detailed documentation and a more detailed installation guide, please refer 
 Contributions are welcome! If you have any suggestions or improvements, feel free to create an issue or submit a pull request.
 
 ## License
-This project is licensed under the MIT License. See the LICENSE file for more details.
+This project is licensed under the MIT License.
