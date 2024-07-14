@@ -369,7 +369,8 @@ class Familiarization(Procedure):
                 else:
                     self.level += 10
 
-            self.progress = 1/3        
+            if self.progress < 1/3:
+                self.progress = 1/3        
             
             # second loop (always +10dBHL)
             while not self.tone_heard:
