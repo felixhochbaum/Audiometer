@@ -6,7 +6,7 @@ import numpy as np
 COLOR_LEFT = 'blue'
 COLOR_RIGHT = 'firebrick'
 COLOR_BINAURAL = 'black'
-LINE_WIDTH = 2
+LINE_WIDTH = 1.5
 MARKER_SIZE = 12
 NOT_HEARD_MARKER_SIZE = 25
 MARKER_EDGE_WIDTH = LINE_WIDTH
@@ -17,6 +17,14 @@ MARKER_BINAURAL = 'x'
 NOT_HEARD_MARKER = '|'
 NOT_HEARD_LEFT_MARKER = '3'
 NOT_HEARD_RIGHT_MARKER = '4'
+
+HEADER_SIZE = 18
+LABEL_FONT_SIZE = 12
+LEGEND_FONT_SIZE = 12
+TICK_FONT_SIZE = 10
+TEXT_FONT_SIZE = 9
+
+#TODO maybe add date as subtitle (subtitle is already implemented)
 
 freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
 
@@ -42,7 +50,7 @@ def filter_none(x_vals, values):
     i_vals, v_vals = filtered
     return np.array(i_vals, dtype=int), np.array(v_vals, dtype=int)
 
-def create_audiogram(freqs, left_values=None, right_values=None, binaural=False, name="audiogram.png", freq_levels=freq_levels):
+def create_audiogram(freqs, left_values=None, right_values=None, binaural=False, name="audiogram.png", freq_levels=freq_levels, subtitle=None):
     print("Creating audiogram with frequencies:", freqs)
     print("Left ear values:", left_values)
     print("Right ear values:", right_values)
@@ -55,11 +63,11 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
     ax.axhspan(70, 90, facecolor='orange', alpha=0.2)
     ax.axhspan(90, 120, facecolor='red', alpha=0.2)
 
-    t1 = ax.text(6.4, 5, 'Normalhörigkeit', ha='left', va='center', fontsize=8)
-    t2 = ax.text(6.4, 30, 'Leichte\nSchwerhörigkeit', ha='left', va='center', fontsize=8)
-    t3 = ax.text(6.4, 55, 'Mittlere\nSchwerhörigkeit', ha='left', va='center', fontsize=8)
-    t4 = ax.text(6.4, 80, 'Schwere\nSchwerhörigkeit', ha='left', va='center', fontsize=8)
-    t5 = ax.text(6.4, 105, 'Hochgradige\nSchwerhörigkeit', ha='left', va='center', fontsize=8)
+    t1 = ax.text(6.4, 5, 'Normalhörigkeit', ha='left', va='center', fontsize=TEXT_FONT_SIZE)
+    t2 = ax.text(6.4, 30, 'Leichte\nSchwerhörigkeit', ha='left', va='center', fontsize=TEXT_FONT_SIZE)
+    t3 = ax.text(6.4, 55, 'Mittlere\nSchwerhörigkeit', ha='left', va='center', fontsize=TEXT_FONT_SIZE)
+    t4 = ax.text(6.4, 80, 'Schwere\nSchwerhörigkeit', ha='left', va='center', fontsize=TEXT_FONT_SIZE)
+    t5 = ax.text(6.4, 105, 'Hochgradige\nSchwerhörigkeit', ha='left', va='center', fontsize=TEXT_FONT_SIZE)
 
     x_vals = range(len(freqs))
     target_values = np.array(list(freq_levels.values()))
@@ -96,34 +104,40 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
             ax.plot(x_vals_left, left_values+SHIFT, marker=MARKER_LEFT, markersize=MARKER_SIZE, linestyle='-', linewidth=LINE_WIDTH, color=COLOR_LEFT, markeredgewidth=MARKER_EDGE_WIDTH, label='linkes Ohr')
 
         if nan_freqs_left or nan_freqs_right:
+            and_str = ""
             nan_text = "Bei folgenden Frequenzen konnte kein Wert ermittelt werden:\n"
             print(nan_freqs_left, nan_freqs_right)
             if nan_freqs_left:
-                nan_text += f"{', '.join(map(str, nan_freqs_left))} - links\n"
+                nan_text += f"links: {', '.join(map(str, nan_freqs_left))} "
+                and_str = "und "
             if nan_freqs_right:
-                nan_text += f"{', '.join(map(str, nan_freqs_right))} - rechts\n"
-            nan_t = ax.text(0.2, -0.18, nan_text, transform=ax.transAxes, fontsize=10, ha='left', va='top', bbox=dict(facecolor='white', alpha=0.1))
+                nan_text += f"{and_str}rechts: {', '.join(map(str, nan_freqs_right))}"
+            nan_t = ax.text(0.05, -0.2, nan_text, transform=ax.transAxes, fontsize=TEXT_FONT_SIZE, ha='left', va='top', bbox=dict(facecolor='None', edgecolor='None'))
 
     ax.invert_yaxis()
-    ax.set_title('Audiogramm', fontsize=16)
-    ax.set_xlabel('Frequenzen (Hz)', fontsize=14)
-    ax.set_ylabel('Hörschwelle (dB HL)', fontsize=14)
+    if subtitle:
+        title = fig.suptitle('Audiogramm', fontsize=HEADER_SIZE, y=1.02) 
+        ax.set_title(subtitle, fontsize=LABEL_FONT_SIZE, pad=20)
+    else:
+        title = fig.suptitle('Audiogramm', fontsize=HEADER_SIZE) 
+    ax.set_xlabel('Frequenzen (Hz)', fontsize=LABEL_FONT_SIZE)
+    ax.set_ylabel('Hörschwelle (dB HL)', fontsize=LABEL_FONT_SIZE)
     ax.set_ylim(120, -10)
     ax.set_xticks(range(len(freqs)))
-    ax.set_xticklabels([f"{int(freq)}" for freq in freqs], fontsize=12)
+    ax.set_xticklabels([f"{int(freq)}" for freq in freqs], fontsize=TICK_FONT_SIZE)
     ax.set_yticks(np.arange(0, 121, 10))
-    ax.set_yticklabels(np.arange(0, 121, 10), fontsize=12)
+    ax.set_yticklabels(np.arange(0, 121, 10), fontsize=TICK_FONT_SIZE)
     ax.grid(True, which='both', linestyle='--', linewidth=0.5)
-    lgd = ax.legend(loc='upper left', bbox_to_anchor=(1.15, 0.205), fontsize=11, frameon=False, labelspacing=1)
+    lgd = ax.legend(loc='upper left', bbox_to_anchor=(1.15, 0.205), fontsize=LEGEND_FONT_SIZE, frameon=False, labelspacing=1)
     if nan_t:
-        fig.savefig(name, bbox_extra_artists=(lgd, t1, t2, t3, t4, t5, nan_t), bbox_inches='tight')
+        fig.savefig(name, bbox_extra_artists=(title, lgd, t1, t2, t3, t4, t5, nan_t), bbox_inches='tight')
     else:
         fig.savefig(name, bbox_extra_artists=(lgd, t1, t2, t3, t4, t5), bbox_inches='tight')
     plt.close(fig)
 
-# if __name__ == '__main__':
-#     freqs = [125, 250, 500, 1000, 2000, 4000, 8000]
-#     left_values = [5, 15, 15, 20, 20, "NaN", "NaN"]
-#     right_values = [5, 15, "NaN", 20, 25, 15, 5]
-#     create_audiogram(freqs, left_values, right_values, binaural=False, name="audiogram.png")
-#     print("Audiogram created")
+if __name__ == '__main__':
+    freqs = [125, 250, 500, 1000, 2000, 4000, 8000]
+    left_values = [5, 15, 15, 20, 20, 0, 0]
+    right_values = [5, 15, 10, "NaN", 25, 15, 5]
+    create_audiogram(freqs, left_values, right_values, binaural=False, name="audiogram.png")
+    print("Audiogram created")
