@@ -89,6 +89,7 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
     nan_freqs_right = [freq for i, freq in zip(right_values, freqs) if i == 'NaN']
 
     nan_text = ""
+    nan_t = False
 
     if 'NH' in left_values or 'NH' in right_values:
         heard_i_left, heard_level_left, not_heard_i_left, not_heard_level_left = split_values(x_vals, left_values, target_values)
@@ -109,7 +110,6 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
     else:
         x_vals_left, left_values = filter_none(x_vals, left_values)
         x_vals_right, right_values = filter_none(x_vals, right_values)
-        nan_t = False
 
         if binaural:
             ax.plot(x_vals_left, left_values, marker=MARKER_BINAURAL, markersize=MARKER_SIZE, linestyle='-', color=COLOR_BINAURAL, label='binaural')
