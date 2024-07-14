@@ -27,13 +27,18 @@ class Procedure:
         self.zero_dbhl = 0.000005 # zero_dbhl in absolute numbers. Needs to be calibrated!
         self.tone_heard = False
         self.freq_bands = ['125', '250', '500', '1000', '2000', '4000', '8000']
+        
+        #TODO das als default, aber  variabel in der GUI?
+        self.freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20} # screening levels
         self.side = 'l'
         self.test_mode = True # TODO turn off for delivery
         self.jump_to_end = False
         self.use_calibration = calibrate
+        self.progress = 0 # value for progressbar
 
         self.retspl = self.get_retspl_values(headphone_name)
         self.calibration = self.get_calibration_values()
+        self.save_path = os.getcwd()  # Initialize save_path
 
 
     def get_retspl_values(self, headphone_name):
@@ -126,7 +131,7 @@ class Procedure:
             # only add RETSPL
             dbspl = dbhl + self.retspl[self.frequency] 
 
-        return self.zero_dbhl * 20 ** (dbspl / 10) # calculate from dB to absolute numbers using the reference point self.zero_dbhl
+        return self.zero_dbhl * 10 ** (dbspl / 20) # calculate from dB to absolute numbers using the reference point self.zero_dbhl
     
 
     def key_press(self, key):
@@ -249,18 +254,20 @@ class Procedure:
             return freq_dict[frequency]
         
 
-    def create_final_csv(self, temp_filename):
-        """Makes a permanent csv file from the temporary file.
+
+    def create_final_csv_and_audiogram(self, temp_filename, binaural=False):
+        """Creates a permanent CSV file and audiogram from the temporary file.
 
         Args:
-            temp_filename (str): name of temporary csv file
+            temp_filename (str): Name of the temporary CSV file.
+            binaural (bool): If the test is binaural.
         """
-        # read temp file
+        # Read the temporary file
         with open(temp_filename, mode='r', newline='') as temp_file:
             dict_reader = csv.DictReader(temp_file)
             rows = list(dict_reader)
-        
-        # get date and time    
+
+        # Get date and time
         now = datetime.now()
         date_str = now.strftime("%Y%m%d_%H%M%S")
         try:
@@ -269,55 +276,28 @@ class Procedure:
             id = "missingID"
 
         # Create folder for the subject
-        folder_name = f"{id}"
+        folder_name = os.path.join(self.save_path, f"{id}")
         if not os.path.exists(folder_name):
             os.makedirs(folder_name)
 
-        final_filename = os.path.join(folder_name, f"{id}_audiogramm_{date_str}.csv")
+        final_csv_filename = os.path.join(folder_name, f"{id}_audiogramm_{date_str}.csv")
 
-        with open(final_filename, mode='x', newline='') as final_file:
+        # Write the permanent CSV file
+        with open(final_csv_filename, mode='x', newline='') as final_file:
             dict_writer = csv.DictWriter(final_file, fieldnames=self.freq_bands)
             dict_writer.writeheader()
             dict_writer.writerows(rows)
-        
-        return final_filename
 
-
-    def create_final_audiogram(self, filename, binaural=False):
-        """Creates audiogram from temporary csv file.
-
-        Args:
-            temp_filename (str): name of temporary csv file
-            binaural (bool): if the test is binaural
-
-        Returns:
-            fig: audiogramm as matplotlib figure
-        """
         freqs = [int(x) for x in self.freq_bands]
-
-        if filename is None:
-            print("No temporary file found. Please start a procedure first.")
-            return False
-
-        # read temp file
-        with open(filename, mode='r', newline='') as temp_file:
-            dict_reader = csv.DictReader(temp_file)
-            rows = list(dict_reader)
 
         left_levels = [self.parse_dbhl_value(rows[0][freq]) for freq in self.freq_bands]
         right_levels = [self.parse_dbhl_value(rows[1][freq]) for freq in self.freq_bands]
 
-        # Extract the subject ID from the filename
-        subject_id = os.path.basename(filename).split('_')[0]
-        # Create the folder name
-        folder_name = subject_id
-        # Ensure the folder exists
-        if not os.path.exists(folder_name):
-            os.makedirs(folder_name)
-
         # Generate the audiogram filename
-        audiogram_filename = os.path.join(folder_name, f"{os.path.splitext(os.path.basename(filename))[0]}.png")
-        create_audiogram(freqs, left_levels, right_levels, binaural=binaural, save=True, name=audiogram_filename)
+        audiogram_filename = os.path.join(folder_name, f"{id}_audiogram_{date_str}.png")
+        print(left_levels, right_levels)
+        create_audiogram(freqs, left_levels, right_levels, binaural=binaural, name=audiogram_filename, freq_levels=self.freq_levels)
+
 
     def parse_dbhl_value(self, value):
         """Parses the dBHL value from the CSV file.
@@ -329,11 +309,21 @@ class Procedure:
             int or None: the parsed value or None if 'NH'
         """
         if value == 'NH':
-            return None
+            return 'NH'
         try:
             return int(value)
         except ValueError:
             return None
+        
+
+    
+    def get_progress(self):
+        """gets the current progress
+
+        Returns:
+            float: progress value between 0.0 and 1.0
+        """
+        return self.progress
 
 
 
@@ -362,6 +352,7 @@ class Familiarization(Procedure):
             bool: familiarization successful
         """
         while True:
+            self.progress = 0.01
             self.tone_heard = True
 
             # first loop (always -20dBHL)
@@ -377,6 +368,8 @@ class Familiarization(Procedure):
                     self.level -= 20
                 else:
                     self.level += 10
+
+            self.progress = 1/3        
             
             # second loop (always +10dBHL)
             while not self.tone_heard:
@@ -384,12 +377,15 @@ class Familiarization(Procedure):
                 if not self.tone_heard:
                     self.level += 10
 
+            self.progress = 2/3
+
             # replay tone with same level
             self.play_tone()
 
             if not self.tone_heard:
                 self.fails += 1
                 if self.fails >= 2:
+                    self.progress = 1
                     print("Familiarization unsuccessful. Please read rules and start again.")
                     return False
                 else:
@@ -397,6 +393,7 @@ class Familiarization(Procedure):
 
             else:
                 print("Familiarization successful!")
+                self.progress = 1
                 self.add_to_temp_csv(self.level, '1000', 'l', self.tempfile)
                 return True
             
@@ -413,10 +410,12 @@ class StandardProcedure(Procedure):
         startlevel = int(self.get_value_from_csv('1000', temp_filename)) - 10 # 10 dB under level from familiarization
         super().__init__(startlevel, signal_length, headphone_name=headphone_name, calibrate=calibrate)
         self.temp_filename = temp_filename
-        self.freq_order = [1000, 2000]#, 4000, 8000, 500, 250, 125] # order in which frequencies are tested
+        self.freq_order = [1000, 2000, 4000, 8000, 500, 250, 125] # order in which frequencies are tested
+        
+        self.progress_step = 0.95 / 14
 
 
-    def standard_test(self, binaural=False, **additional_data):
+    def standard_test(self, binaural=False):
         """Main function
 
         Returns:
@@ -425,33 +424,35 @@ class StandardProcedure(Procedure):
 
         if not binaural:
             self.side = 'l'
+            
             success_l = self.standard_test_one_ear()
 
             if self.test_mode == True and self.jump_to_end == True:
-                final_filename = self.create_final_csv(self.temp_filename)
-                self.create_final_audiogram(final_filename, binaural)
+                self.create_final_csv_and_audiogram(self.temp_filename, binaural)
+                self.progress = 1
                 return True
             
             self.side = 'r'
             success_r = self.standard_test_one_ear()
 
             if success_l and success_r:
-                final_filename = self.create_final_csv(self.temp_filename)
-                self.create_final_audiogram(final_filename, binaural)
+                self.create_final_csv_and_audiogram(self.temp_filename, binaural)
+                self.progress = 1
                 return True
         
         if binaural:
+            self.progress_step = 0.95 / 7
             self.side = 'lr'
             success_lr = self.standard_test_one_ear()
 
             if self.test_mode == True and self.jump_to_end == True:
-                final_filename = self.create_final_csv(self.temp_filename)
-                self.create_final_audiogram(final_filename, binaural)
+                self.create_final_csv_and_audiogram(self.temp_filename, binaural)
+                self.progress = 1
                 return True
             
             if success_lr:
-                final_filename = self.create_final_csv(self.temp_filename)
-                self.create_final_audiogram(final_filename, binaural)
+                self.create_final_csv_and_audiogram(self.temp_filename, binaural)
+                self.progress = 1
                 return True
 
         return False
@@ -464,6 +465,24 @@ class StandardProcedure(Procedure):
             bool: test successful
         """
         success = []
+
+        self.tone_heard = False
+        self.frequency = 1000
+        self.level = self.startlevel
+
+        # Step 1 (raise tone in 5 dB steps until it is heard)
+        while not self.tone_heard:
+            self.play_tone()
+
+            if self.test_mode == True and self.jump_to_end == True:
+                return True
+
+            if not self.tone_heard:
+                self.level += 5
+        
+        self.startlevel = self.level
+        print(f"Starting level: {self.startlevel} dBHL")
+
         # test every frequency
         for f in self.freq_order:
             print(f"Testing frequency {f} Hz")
@@ -498,20 +517,9 @@ class StandardProcedure(Procedure):
         Returns:
             bool: test successful
         """
-        self.tone_heard = False
+        self.tone_heard = True
         self.frequency = freq
         self.level = self.startlevel
-
-        # Step 1 (raise tone in 5 dB steps until it is heard)
-        while not self.tone_heard:
-            self.play_tone()
-
-            if self.test_mode == True and self.jump_to_end == True:
-                return True
-
-
-            if not self.tone_heard:
-                self.level += 5
 
         # Step 2
         answers = []
@@ -543,9 +551,11 @@ class StandardProcedure(Procedure):
 
                 # TODO Wenn Streuung mehr als 10 dB: Vermerk im Audiogramm
                 self.add_to_temp_csv(str(self.level), str(self.frequency), self.side, self.temp_filename)
+                if self.progress < 0.95 - self.progress_step:
+                    self.progress += self.progress_step
                 return True
             
-            # no three same answers in five tries
+            # no two same answers in three tries
             if tries == 3:
                 self.level += 10
                 self.play_tone()
@@ -567,11 +577,13 @@ class ScreeningProcedure(Procedure):
         self.temp_filename = temp_filename
         self.freq_order = [1000, 2000, 4000, 8000, 500, 250, 125]
         
+
         #TODO das als default, aber  variabel in der GUI?
         self.freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
-    
 
-    def screen_test(self, binaural=False, **additional_data):
+        self.progress_step = 1 / 14
+
+    def screen_test(self, binaural=False):
         """main functions
 
         Returns:
@@ -584,23 +596,29 @@ class ScreeningProcedure(Procedure):
             self.side = 'r'
             self.screen_one_ear()
 
+            self.progress = 1
+
             final_filename = self.create_final_csv(self.temp_filename)
             self.create_final_audiogram(final_filename, binaural)
+            self.create_final_csv_and_audiogram(self.temp_filename, binaural)
             return True
         
         if binaural:
+            self.progress_step = 1 / 7
             self.side = 'lr'
             self.screen_one_ear()
+            self.progress = 1
 
         final_filename = self.create_final_csv(self.temp_filename)
         self.create_final_audiogram(final_filename, binaural)
+        self.create_final_csv_and_audiogram(self.temp_filename, binaural)
 
 
     def screen_one_ear(self):
         success = []
 
         for f in self.freq_order:
-            print(f"Testing frequeny {f} Hz")
+            print(f"Testing frequency {f} Hz")
             s = self.screen_one_freq(f)
             success.append(s)
 
@@ -633,10 +651,11 @@ class ScreeningProcedure(Procedure):
         
         if self.num_heard >= 2:
             self.add_to_temp_csv(str(self.level), str(self.frequency), self.side, self.temp_filename)
+            self.progress += self.progress_step
             return
  
         self.add_to_temp_csv('NH', str(self.frequency), self.side, self.temp_filename)
-
+        self.progress += self.progress_step
 
 
 
@@ -742,3 +761,4 @@ class Calibration(Procedure):
 
     def stop_playing(self):
         self.ap.stop()
+

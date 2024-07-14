@@ -4,21 +4,23 @@ from .model import *
 class Controller():
 
     def __init__(self):
+        self.selected_program = ""
         program_functions = {"Klassisches Audiogramm" : self.start_standard_procedure,
                              "Kurzes Screening" : self.start_screen_procedure,
                              "Kalibrierung" : self.start_calibration}
         
         self.calibration_funcs = [self.start_calibration, self.calibration_next_freq, self.calibration_repeat_freq, self.stop_sound, self.calibration_set_level]
         self.view = setup_ui(self.start_familiarization, 
-                             program_functions, self.calibration_funcs)
+                             program_functions, self.calibration_funcs, self.get_progress)
 
         # helper variable for calibration
         self.button_changed = False
-
+    
     def run_app(self):
         self.view.mainloop()
 
     def start_familiarization(self, id="", headphone="Sennheiser_HDA200", calibrate=True, **additional_data):
+        self.selected_program = "familiarization"
         self.familiarization = Familiarization(id=id, headphone_name=headphone, calibrate=calibrate, **additional_data)
         return self.familiarization.familiarize()
 
@@ -57,3 +59,17 @@ class Controller():
 
     def stop_sound(self):
         self.calibration.stop_playing()
+
+    def get_progress(self):
+        if self.selected_program == "familiarization":
+            return self.familiarization.get_progress()
+        elif self.selected_program == "standard":
+            return self.standard_procedure.get_progress()
+        elif self.selected_program == "screening":
+            return self.screen_procedure.get_progress()
+        elif self.selected_program == "calibration":
+            return 0.0
+        else:
+            return 0.0
+
+        
