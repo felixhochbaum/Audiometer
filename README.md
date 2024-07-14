@@ -24,7 +24,7 @@ Für eine detaillierte Dokumentation und eine ausführlichere Installationsanlei
     - Auf Windows:
         ```bash
         venv\Scripts\activate
-    - Auf macOS und Linux::
+    - Auf macOS und Linux:
         ```bash
         source venv/bin/activate
 4. **Benötigte Abhängigkeiten installieren:**
@@ -49,7 +49,7 @@ Audiometer is a Python-based application designed to create audiograms and perfo
 
 
 ## Documentation
-For detailed documentation and a more detailed Installation guide, please refer to the [Audiometer Documentation](https://satur42.github.io/Audiometer/).
+For detailed documentation and a more detailed installation guide, please refer to the [Audiometer Documentation](https://satur42.github.io/Audiometer/).
 
 ## Features
 
@@ -72,7 +72,7 @@ For detailed documentation and a more detailed Installation guide, please refer 
     - On Windows:
         ```bash
         venv\Scripts\activate
-    - On macOS and Linux::
+    - On macOS and Linux:
         ```bash
         source venv/bin/activate
 4. **Install the required dependencies:**
