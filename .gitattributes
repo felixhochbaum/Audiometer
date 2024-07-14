@@ -1,3 +1,4 @@
 *.py linguist-language=Python
-docs/* linguist-vendored
-site/* linguist-vendored
+
+docs/** linguist-vendored
+site/** linguist-vendored
