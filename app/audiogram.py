@@ -3,6 +3,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 COLOR_LEFT = 'blue'
 COLOR_RIGHT = 'firebrick'
 COLOR_BINAURAL = 'black'
@@ -43,6 +44,7 @@ def split_values(x_vals, values, target_values):
 
     return np.array(heard_i, dtype=int), np.array(heard_level, dtype=int), np.array(not_heard_i, dtype=int), np.array(not_heard_level, dtype=int)
 
+  
 def filter_none(x_vals, values):
     filtered = np.array([[i, v] for i, v in zip(x_vals, values) if v not in (None, "NaN")]).T
     if len(filtered) == 0:
@@ -50,7 +52,18 @@ def filter_none(x_vals, values):
     i_vals, v_vals = filtered
     return np.array(i_vals, dtype=int), np.array(v_vals, dtype=int)
 
+  
 def create_audiogram(freqs, left_values=None, right_values=None, binaural=False, name="audiogram.png", freq_levels=freq_levels, subtitle=None):
+    """Erstellt ein Audiogramm basierend auf den gegebenen Frequenzen und Hörschwellenwerten mit benutzerdefinierten x-Achsen-Beschriftungen.
+
+    Args:
+        freqs (list of int): Eine Liste von Frequenzen in Hz.
+        right_values (list of int): Eine Liste von Hörschwellen in dB HL vom rechten Ohr.
+        left_values (list of int): Eine Liste von Hörschwellen in dB HL vom linken Ohr
+        save (bool): Ob das Diagramm gespeichert werden soll
+        name (str): Der Name der Datei, wenn das Diagramm gespeichert werden soll
+    """
+
     print("Creating audiogram with frequencies:", freqs)
     print("Left ear values:", left_values)
     print("Right ear values:", right_values)
