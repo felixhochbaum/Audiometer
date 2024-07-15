@@ -1,4 +1,4 @@
-# Hardware Requirements
+# Hardware Anforderungen
 #### 1. Computer System
 - **Operating System**: Windows 10 oder höher, macOS
 - **Processor**: Intel i5 oder gleichwertiger AMD processor oder höher
@@ -20,8 +20,7 @@
 
 
 ______________________________________________________________________
-
-
+# Hardware Requirements
 
 #### 1. Computer System
 - **Operating System**: Windows 10 or higher, macOS

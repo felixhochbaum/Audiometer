@@ -12,7 +12,6 @@ theme:
     - content.code.annotations
     - content.code.copy
 
-
 plugins:
   - search
   - mkdocstrings:
@@ -21,6 +20,20 @@ plugins:
         python:
           options:
             docstring_style: google
+            separate_signature: true  # Signature separate from the description
+            show_root_full_path: true  # Show the full module path
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - toc:  # Table of contents extension
+      permalink: true  # Add permalinks to headers
+  - admonition  # For block quotes and notices
 
 nav:
   - Home: index.md

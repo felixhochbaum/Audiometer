@@ -1,4 +1,4 @@
-# Introduction
+# Einleitung
 Willkommen zur Dokumentation des Audiometer-Projekts, das im Rahmen des "Projekt Python und Akustik 2024" an der Technischen Universität Berlin entwickelt wurde. Dieses Projekt zielt darauf ab, ein automatisiertes Audiometer zu programmieren, das die Hörfähigkeit von Probanden präzise und benutzerfreundlich ermittelt.
 
 Ein Audiometer ist ein diagnostisches Gerät, das verwendet wird, um die Hörschwellen eines Menschen zu bestimmen. Es gibt verschiedene Methoden zur Durchführung von Hörtests, in diesem Projekt wurde das Einzelton-Verfahren mit ansteigendem Pegel, über Kopfhörer und ohne Verdeckung, realisiert. Dieses Verfahren ist gemäß der DIN EN ISO 8253-1 normiert.
@@ -14,7 +14,7 @@ Es ist zu beachten, dass diese computergesteuerte Audiometer nur dazu dient, Ihr
 
 _____________________________________________________________________________________________________________________________________________
 
-
+# Introduction
 
 Welcome to the documentation of the audiometer project, which was developed as part of the "Project Python and Acoustics 2024" at the Technical University of Berlin. This project aims to programme an automated audiometer that determines the hearing ability of test persons in a precise and user-friendly way.
 
