@@ -408,7 +408,7 @@ class FamiliarizationPage(ttk.Frame):
                                      lambda: self.parent.show_frame(ProgramPage))
         time.sleep(0.001)
         self.update()
-        counter = 0
+        counter = 3000 # set a high value so that progress bar is updated once at the beginning
         sleep_time = random.uniform(1, 2.5) # random time in seconds between 1 and 2.5 to update progress bar
         while self.parent.frames[DuringFamiliarizationView].progress_var.get() < 100 and not self.parent.process_done:
             progress = int(self.parent.frames[DuringFamiliarizationView].get_progress() * 100)
@@ -456,7 +456,7 @@ class ProgramPage(ttk.Frame):
         
         time.sleep(0.001)
         self.update()
-        counter = 0
+        counter = 3000 # set a high value so that progress bar is updated once at the beginning
         sleep_time = random.uniform(1, 2.5) # random time in seconds between 1 and 2.5 to update progress bar
         while self.parent.frames[self.selected_option].progress_var.get() < 100 and not self.parent.process_done:
             progress = int(self.parent.frames[self.selected_option].get_progress() * 100)

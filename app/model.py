@@ -351,8 +351,8 @@ class Familiarization(Procedure):
         Returns:
             bool: familiarization successful
         """
+        self.progress = 0.01
         while True:
-            self.progress = 0.01
             self.tone_heard = True
 
             # first loop (always -20dBHL)
@@ -369,7 +369,8 @@ class Familiarization(Procedure):
                 else:
                     self.level += 10
 
-            self.progress = 1/3        
+            if self.progress < 1/3:
+                self.progress = 1/3        
             
             # second loop (always +10dBHL)
             while not self.tone_heard:
@@ -421,6 +422,7 @@ class StandardProcedure(Procedure):
         Returns:
             bool: test successful
         """
+        self.progress = 0.01
 
         if not binaural:
             self.side = 'l'
@@ -589,6 +591,8 @@ class ScreeningProcedure(Procedure):
         Returns:
             bool: test successful
         """
+        self.progress = 0.01
+        
         if not binaural:
             self.side = 'l'
             self.screen_one_ear()
