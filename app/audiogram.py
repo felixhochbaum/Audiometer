@@ -30,6 +30,19 @@ TEXT_FONT_SIZE = 9
 freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
 
 def split_values(x_vals, values, target_values):
+    """Split values into "heard" and "not heard" arrays
+
+    Args:
+        x_vals (list of int): indices of values
+        values (list of float and str): list of hearing levels and 'NH' if a sound was not heard
+        target_values (_type_): target value for "not heard" array
+
+    Returns:
+        np.array: indices of heard array
+        np.array: values of heard array
+        np.array: indices of "not heard" array
+        np.array: values of "not heard" array
+    """
     heard = np.array([[i, int(v)] for i, v in zip(x_vals, values) if v != 'NH' and v != None]).T
     if len(heard) == 0:
         heard_i, heard_level = [], []
@@ -46,6 +59,16 @@ def split_values(x_vals, values, target_values):
 
   
 def filter_none(x_vals, values):
+    """Removes None or NaN values from list
+
+    Args:
+        x_vals (list of int): indices of values
+        values (float): list of hearing levels
+
+    Returns:
+        np.array: indices of values
+        np.array: array of hearing levels
+    """
     filtered = np.array([[i, v] for i, v in zip(x_vals, values) if v not in (None, "NaN")]).T
     if len(filtered) == 0:
         return np.array([], dtype=int), np.array([], dtype=int)
@@ -54,14 +77,17 @@ def filter_none(x_vals, values):
 
   
 def create_audiogram(freqs, left_values=None, right_values=None, binaural=False, name="audiogram.png", freq_levels=freq_levels, subtitle=None):
-    """Erstellt ein Audiogramm basierend auf den gegebenen Frequenzen und Hörschwellenwerten mit benutzerdefinierten x-Achsen-Beschriftungen.
+    """
+    Creates an audiogram based on the given frequencies and hearing threshold values with custom x-axis labels.
 
     Args:
-        freqs (list of int): Eine Liste von Frequenzen in Hz.
-        right_values (list of int): Eine Liste von Hörschwellen in dB HL vom rechten Ohr.
-        left_values (list of int): Eine Liste von Hörschwellen in dB HL vom linken Ohr
-        save (bool): Ob das Diagramm gespeichert werden soll
-        name (str): Der Name der Datei, wenn das Diagramm gespeichert werden soll
+        freqs (list of int): A list of frequencies in Hz.
+        left_values (list of int, optional): A list of hearing thresholds in dB HL for the left ear. Defaults to None.
+        right_values (list of int, optional): A list of hearing thresholds in dB HL for the right ear. Defaults to None.
+        binaural (bool, optional): Whether the audiogram is made from binaural test values. Defaults to False.
+        name (str, optional): The name of the saved audiogram file. Defaults to "audiogram.png".
+        freq_levels (dict, optional): A dictionary mapping frequencies to their target values. Defaults to freq_levels.
+        subtitle (str, optional): A subtitle for the audiogram. Defaults to None.
     """
 
     print("Creating audiogram with frequencies:", freqs)

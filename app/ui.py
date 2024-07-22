@@ -215,6 +215,7 @@ class App(tb.Window):
 class MainMenu(ttk.Frame):
 
     def __init__(self, parent):
+        """Main menu page"""
         super().__init__(parent)
         self.parent = parent
         self.button_width = 25
@@ -275,6 +276,11 @@ class MainMenu(ttk.Frame):
 
 
     def get_headphone_options(self):
+        """Reads all possible headphone models from retspl.csv file
+
+        Returns:
+            list of str: all headphone models listed in retspl.csv
+        """
 
         file_name = 'retspl.csv'
         
@@ -298,6 +304,7 @@ class MainMenu(ttk.Frame):
         
 
     def on_option_selected(self, event):
+        """Change state of buttons and show start button depending on procedure selected"""
         self.selected_option = self.dropdown.get()
         self.show_start_button()
         if self.selected_option == "Kalibrierung":
@@ -313,6 +320,8 @@ class MainMenu(ttk.Frame):
 
 
     def show_start_button(self):
+        """Show start button if not already shown
+        """
         if self.start_button is None:
             self.start_button = ttk.Button(self,
                                            text="Test starten",
@@ -322,6 +331,8 @@ class MainMenu(ttk.Frame):
 
 
     def go_to_next_page(self):
+        """go to next page depending on selected options
+        """
         if self.selected_option == "Kalibrierung":
             self.parent.show_frame(CalibrationPage)
             
@@ -586,6 +597,7 @@ class ResultPage(ttk.Frame):
 
 
     def back_to_MainMenu(self):
+        """Goes back to main menu"""
         self.parent.show_frame(MainMenu)
 
 
@@ -675,6 +687,8 @@ class CalibrationPage(ttk.Frame):
 
 
     def start_calibration(self):
+        """Start the calibration process and change state of buttons
+        """
         try:
             current_freq, current_spl = self.cal_start(float(self.level_entry_var.get()))
         except:
@@ -692,6 +706,8 @@ class CalibrationPage(ttk.Frame):
         
 
     def next_frequency(self):
+        """Set previously entered level, then get next frequency and play it.
+        """
         try:
             if self.level_measured_var.get() != "":
                 self.cal_setlevel(float(self.level_measured_var.get()))
@@ -723,14 +739,17 @@ class CalibrationPage(ttk.Frame):
 
 
     def repeat_frequency(self):
+        """Replay the same frequency"""
         self.cal_repeat()
 
 
     def stop_playing(self):
+        """Stop playing audio"""
         self.cal_stop()
 
 
 def setup_ui(startfunc, programfuncs, calibrationfuncs, progressfunc):
+    """Create tkinter app and return it."""
     app = App(startfunc, programfuncs, calibrationfuncs, progressfunc)
     return app
 
