@@ -18,20 +18,22 @@ class Procedure:
         Args:
             startlevel (float): starting level of procedure in dB HL
             signal_length (float): length of played signals in seconds
+            headphone_name (str, optional): Name of headphone model being used. Defaults to Sennheiser_HDA200.
+            calibrate (bool, optional): Use calibration file. Defaults to True.
         """
         self.ap = AudioPlayer()
         self.startlevel = startlevel
         self.level = startlevel
         self.signal_length = signal_length
         self.frequency = 1000
-        self.zero_dbhl = 0.000005 # zero_dbhl in absolute numbers. Needs to be calibrated!
+        self.zero_dbhl = 0.000005 # zero_dbhl in absolute numbers. This is a rough guess for uncalibrated systems and will be adjusted through the calibration file
         self.tone_heard = False
         self.freq_bands = ['125', '250', '500', '1000', '2000', '4000', '8000']
         
         #TODO das als default, aber  variabel in der GUI?
         self.freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20} # screening levels
         self.side = 'l'
-        self.test_mode = True # TODO turn off for delivery
+        self.test_mode = False # set True to be able to skip procedures with right arrow key
         self.jump_to_end = False
         self.use_calibration = calibrate
         self.progress = 0 # value for progressbar
@@ -45,7 +47,7 @@ class Procedure:
         """Read the correct RETSPL values from the retspl.csv file
 
         Args:
-            headphone_name (str): exact name of headphone as it appears in csv file
+            headphone_name (str): exact name of headphone as it appears in CSV file
 
         Returns:
             dict of int:float : RETSPL values for each frequency band from 125 Hz to 8000 Hz
@@ -135,6 +137,11 @@ class Procedure:
     
 
     def key_press(self, key):
+        """Function for pynputto be called on key press
+
+        Args:
+            key (keyboard.Key): key that was pressed
+        """
         if key == keyboard.Key.space:
             self.tone_heard = True
             print("Tone heard!")
@@ -143,9 +150,9 @@ class Procedure:
         
 
     def play_tone(self):
-        """Set tone_heard to False, play beep, then wait max 4s for keypress.
+        """Set tone_heard to False, play beep, then wait max 4 s for keypress.
         If key is pressed, set tone_heard to True.
-        Then wait for around about 2s (randomized).
+        Then wait for around 1 s to 2.5 s (randomized).
         """
         self.tone_heard = False
         print(self.frequency, "Hz - playing tone at", self.level, "dBHL.")
@@ -174,7 +181,8 @@ class Procedure:
         ID and additional data will be stored in subsequent lines in the format: key, value.
 
         Args:
-            id (string, optional): id to be stored, that will later be used for naming exported csv file
+            id (str, optional): id to be stored, that will later be used for naming exported csv file
+            **additional_data: additional key/value pairs to be stored in CSV file after procedure is done
 
         Returns:
             str: name of temporary file
@@ -201,13 +209,13 @@ class Procedure:
         
         
     def add_to_temp_csv(self, value, frequency, side, temp_filename):
-        """Add a value in for a specific frequency to the temporary csv file
+        """Add a value in for a specific frequency to the temporary CSV file
 
         Args:
             value (str): level in dB HL at specific frequency
             frequency (str): frequency where value should be added
             side (str): specify which ear ('l' or 'r')
-            temp_filename (str): name of temporary csv file
+            temp_filename (str): name of temporary CSV file
         """
         # Read all rows from the CSV file
         with open(temp_filename, mode='r', newline='') as temp_file:
@@ -236,11 +244,11 @@ class Procedure:
 
 
     def get_value_from_csv(self, frequency, temp_filename, side='l'):
-        """Get the value at a specific frequency from the temporary csv file.
+        """Get the value at a specific frequency from the temporary CSV file.
 
         Args:
             frequency (str): frequency where value is stored
-            temp_filename (str): name of temporary csv file
+            temp_filename (str): name of temporary CSV file
             side (str, optional): specify which ear ('l' or 'r'). Defaults to 'l'.
 
         Returns:
@@ -335,6 +343,10 @@ class Familiarization(Procedure):
         Args:
             startlevel (int, optional): starting level of procedure in dB HL. Defaults to 40.
             signal_length (int, optional): length of played signals in seconds. Defaults to 1.
+            headphone_name (str, optional): Name of headphone model being used. Defaults to Sennheiser_HDA200.
+            calibrate (bool, optional): Use calibration file. Defaults to True.
+            id (str, optional): id to be stored, that will later be used for naming exported CSV file
+            **additional_data: additional key/value pairs to be stored in CSV file after procedure is done
         """
         super().__init__(startlevel, signal_length, headphone_name=headphone_name, calibrate=calibrate)      
         self.fails = 0 # number of times familiarization failed
@@ -342,6 +354,11 @@ class Familiarization(Procedure):
 
 
     def get_temp_csv_filename(self):
+        """gets name of temp CSV file
+
+        Returns:
+            str: name of CSV file
+        """
         return self.tempfile
 
 
@@ -405,8 +422,10 @@ class StandardProcedure(Procedure):
         """Standard audiometer process (rising level).
 
         Args:
-            temp_filename (str): name of temporary csv file where starting level is stored and future values will be stored
+            temp_filename (str): name of temporary CSV file where starting level is stored and future values will be stored
             signal_length (int, optional): length of played signal in seconds. Defaults to 1.
+            headphone_name (str, optional): Name of headphone model being used. Defaults to Sennheiser_HDA200.
+            calibrate (bool, optional): Use calibration file. Defaults to True.
         """
         startlevel = int(self.get_value_from_csv('1000', temp_filename)) - 10 # 10 dB under level from familiarization
         super().__init__(startlevel, signal_length, headphone_name=headphone_name, calibrate=calibrate)
@@ -569,17 +588,19 @@ class StandardProcedure(Procedure):
         
 class ScreeningProcedure(Procedure):
 
-    def __init__(self,  temp_filename, signal_length=1, headphone_name="Sennheiser_HDA200", calibrate=True):
+    def __init__(self, temp_filename, signal_length=1, headphone_name="Sennheiser_HDA200", calibrate=True):
         """Short screening process to check if subject can hear specific frequencies at certain levels.
 
         Args:
+            temp_filename (str): name of temporary CSV file where starting level is stored and future values will be stored.
             signal_length (int, optional): length of played signals in seconds. Defaults to 1.
+            headphone_name (str, optional): Name of headphone model being used. Defaults to Sennheiser_HDA200.
+            calibrate (bool, optional): Use calibration file. Defaults to True.
         """
         super().__init__(startlevel=0, signal_length=signal_length, headphone_name=headphone_name, calibrate=calibrate)
         self.temp_filename = temp_filename
         self.freq_order = [1000, 2000, 4000, 8000, 500, 250, 125]
         
-
         #TODO das als default, aber  variabel in der GUI?
         self.freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
 
@@ -667,6 +688,8 @@ class Calibration(Procedure):
         Args:
             startlevel (int, optional): starting level of procedure in dB HL. Defaults to 60.
             signal_length (int, optional): length of played signals in seconds. Defaults to 10.
+            headphone_name (str, optional): Name of headphone model being used. Defaults to Sennheiser_HDA200.
+            **additional_data: additional key/value pairs to be stored in CSV file after procedure is done
         """
         super().__init__(startlevel, signal_length, headphone_name=headphone_name, calibrate=False)      
         self.tempfile = self.create_temp_csv(id="", **additional_data) # create a temporary file to store level at frequencies
@@ -727,7 +750,7 @@ class Calibration(Procedure):
 
 
     def set_calibration_value(self, measured_value):
-        """Rights the given calibration value into temporary csv file
+        """Rights the given calibration value into temporary CSV file
 
         Args:
             measured_value (float): measured SPL value in dB
@@ -737,10 +760,10 @@ class Calibration(Procedure):
 
 
     def finish_calibration(self):
-        """Makes a permanent csv file from the temporary file that overwrites calibration.csv.
+        """Makes a permanent CSV file from the temporary file that overwrites calibration.csv.
 
         Args:
-            temp_filename (str): name of temporary csv file
+            temp_filename (str): name of temporary CSV file
         """
         #TODO csv name
         self.ap.stop()
@@ -760,5 +783,7 @@ class Calibration(Procedure):
         
 
     def stop_playing(self):
+        """Stops the audio player.
+        """
         self.ap.stop()
 
