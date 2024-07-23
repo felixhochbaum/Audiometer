@@ -40,7 +40,7 @@ class Procedure:
 
         self.retspl = self.get_retspl_values(headphone_name)
         self.calibration = self.get_calibration_values()
-        self.save_path = os.getcwd()  # Initialize save_path
+        self.save_path = self.get_save_path()  # Initialize save_path
 
 
     def get_retspl_values(self, headphone_name):
@@ -324,7 +324,6 @@ class Procedure:
             return None
         
 
-    
     def get_progress(self):
         """gets the current progress
 
@@ -332,6 +331,38 @@ class Procedure:
             float: progress value between 0.0 and 1.0
         """
         return self.progress
+    
+
+    def get_save_path(self):
+        """gets selected path from settings.csv file for saving files
+
+        Returns:
+            str: save path
+        """
+
+        file_name = 'settings.csv'
+        
+        # Check if the CSV file exists
+        if not os.path.isfile(file_name):
+            print(f"File '{file_name}' not found.")
+            return
+        
+        save_path = ""
+        
+        try:
+            with open(file_name, mode='r') as file:
+                reader = csv.DictReader(file)
+                settings = next(reader)
+                if settings['file path']:
+                    save_path = settings['file path']
+                else:
+                    save_path = os.getcwd()
+
+        except Exception as e:
+            print(f"Error reading the file: {e}")
+            return
+
+        return save_path
 
 
 
