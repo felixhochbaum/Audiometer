@@ -38,7 +38,9 @@ class App(tb.Window):
             calibration_funcs (list function): list of function(s) for calibration in this order: start, next, repeat, stop, set_level
 
         """
-        super().__init__(themename=LIGHT_THEME)
+        themename = self.get_theme()
+
+        super().__init__(themename=themename)
 
         # General theme settings
         self.title("Sound Player")
@@ -133,6 +135,46 @@ class App(tb.Window):
         else:
             self.style.theme_use(theme_name)
 
+            # change in settings.csv file
+            filename = "settings.csv"
+            fieldnames = ['file path', 'theme']
+
+            # Read all rows from the settings.csv file
+            with open(filename, mode='r', newline='') as file:
+                dict_reader = csv.DictReader(file)
+                rows = list(dict_reader)
+
+            # Update the relevant row
+            rows[0]['theme'] = theme_name
+
+            # Write all rows back to the CSV file
+            with open(filename, mode='w', newline='') as file:
+                dict_writer = csv.DictWriter(file, fieldnames=fieldnames)
+                dict_writer.writeheader()
+                dict_writer.writerows(rows)
+
+
+    
+    def get_theme(self):
+        """gets currently selected theme from settings.csv file
+
+        Returns:
+            str: name of light theme or name of dark theme
+        """
+            
+        file_name = "settings.csv"
+
+        with open(file_name, mode='r') as file:
+            reader = csv.DictReader(file)
+            settings = next(reader)
+            if settings['theme'] == LIGHT_THEME:
+                return LIGHT_THEME
+            elif settings['theme'] == DARK_THEME:
+                return DARK_THEME
+            else:
+                return LIGHT_THEME
+        
+
 
     def exit_fullscreen(self, event=None):
         """Exit fullscreen mode"""
@@ -181,10 +223,30 @@ class App(tb.Window):
 
 
     def change_save_path(self):
-        """Ask the user to select a folder to save the files"""
+        """Ask the user to select a folder to save the files. Changes settings.csv file accordingly."""
         new_path = filedialog.askdirectory(title="Select Folder to Save Files")
         if new_path:
+
+            # change in settings.csv file
+            filename = "settings.csv"
+            fieldnames = ['file path', 'theme']
+
+            # Read all rows from the settings.csv file
+            with open(filename, mode='r', newline='') as file:
+                dict_reader = csv.DictReader(file)
+                rows = list(dict_reader)
+
+            # Update the relevant row
+            rows[0]['file path'] = new_path
+
+            # Write all rows back to the CSV file
+            with open(filename, mode='w', newline='') as file:
+                dict_writer = csv.DictWriter(file, fieldnames=fieldnames)
+                dict_writer.writeheader()
+                dict_writer.writerows(rows)
+            
             self.save_path = new_path
+
             messagebox.showinfo("Speicherort geändert", f"Neuer Speicherort: {self.save_path}")
 
 
@@ -420,7 +482,7 @@ class FamiliarizationPage(ttk.Frame):
         time.sleep(0.001)
         self.update()
         counter = 3000 # set a high value so that progress bar is updated once at the beginning
-        sleep_time = random.uniform(1, 2.5) # random time in seconds between 1 and 2.5 to update progress bar
+        sleep_time = random.uniform(0.1, 0.5) # random time in seconds between 0.1 and 0.5 to update progress bar
         while self.parent.frames[DuringFamiliarizationView].progress_var.get() < 100 and not self.parent.process_done:
             progress = int(self.parent.frames[DuringFamiliarizationView].get_progress() * 100)
             if counter >= sleep_time * 1000:
