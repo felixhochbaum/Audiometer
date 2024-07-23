@@ -482,7 +482,7 @@ class FamiliarizationPage(ttk.Frame):
         time.sleep(0.001)
         self.update()
         counter = 3000 # set a high value so that progress bar is updated once at the beginning
-        sleep_time = random.uniform(1, 2.5) # random time in seconds between 1 and 2.5 to update progress bar
+        sleep_time = random.uniform(0.1, 0.5) # random time in seconds between 0.1 and 0.5 to update progress bar
         while self.parent.frames[DuringFamiliarizationView].progress_var.get() < 100 and not self.parent.process_done:
             progress = int(self.parent.frames[DuringFamiliarizationView].get_progress() * 100)
             if counter >= sleep_time * 1000:

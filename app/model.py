@@ -414,6 +414,10 @@ class Familiarization(Procedure):
                 
                 if self.tone_heard:
                     self.level -= 20
+
+                    if self.progress < 1/5:
+                        self.progress = 1/5
+
                 else:
                     self.level += 10
 
