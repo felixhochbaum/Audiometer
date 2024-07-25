@@ -38,10 +38,6 @@ Für eine detaillierte Dokumentation und eine ausführlichere Installationsanlei
 ## Mitmachen
 Beiträge sind willkommen! Wenn du Vorschläge oder Verbesserungen hast, erstelle gerne ein Issue oder reiche einen Pull-Request ein.
 
-## Lizenz
-Dieses Projekt ist unter der MIT-Lizenz lizenziert.
-
-
 _______________________________________________________________
 _______________________________________________________________
 # Audiometer (English)
@@ -85,6 +81,3 @@ For detailed documentation and a more detailed installation guide, please refer 
 
 ## Contributing
 Contributions are welcome! If you have any suggestions or improvements, feel free to create an issue or submit a pull request.
-
-## License
-This project is licensed under the MIT License.
