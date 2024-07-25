@@ -12,8 +12,8 @@ from .audiogram import create_audiogram
 
 class Procedure:
 
-    def __init__(self, startlevel, signal_length, headphone_name="Sennheiser_HDA200", calibrate=True):
-        """The parent class for the familiarization, the main procedure, and the screening.
+    def __init__(self, startlevel:float, signal_length:float, headphone_name:str="Sennheiser_HDA200", calibrate:bool=True):
+        """Creates the parent class for the familiarization, the main procedure, and the screening.
 
         Args:
             startlevel (float): starting level of procedure in dB HL
@@ -29,22 +29,18 @@ class Procedure:
         self.zero_dbhl = 0.000005 # zero_dbhl in absolute numbers. This is a rough guess for uncalibrated systems and will be adjusted through the calibration file
         self.tone_heard = False
         self.freq_bands = ['125', '250', '500', '1000', '2000', '4000', '8000']
-        
-        #TODO das als default, aber  variabel in der GUI?
         self.freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20} # screening levels
         self.side = 'l'
         self.test_mode = False # set True to be able to skip procedures with right arrow key
         self.jump_to_end = False
         self.use_calibration = calibrate
         self.progress = 0 # value for progressbar
-
         self.retspl = self.get_retspl_values(headphone_name)
         self.calibration = self.get_calibration_values()
         self.save_path = self.get_save_path()  # Initialize save_path
 
-
-    def get_retspl_values(self, headphone_name):
-        """Read the correct RETSPL values from the retspl.csv file
+    def get_retspl_values(self, headphone_name:str):
+        """Reads the correct RETSPL values from the retspl.csv file.
 
         Args:
             headphone_name (str): exact name of headphone as it appears in CSV file
@@ -78,9 +74,8 @@ class Procedure:
         
         print(retspl_values)
         return retspl_values
-    
 
-    def get_calibration_values(self):
+    def get_calibration_values(self)->dict:
         """Read the correct calibration values from the calibration.csv file.
 
         Returns:
@@ -116,8 +111,7 @@ class Procedure:
         print(calibration_values)
         return calibration_values
 
-
-    def dbhl_to_volume(self, dbhl):
+    def dbhl_to_volume(self, dbhl:float)->float:
         """Calculate dB HL into absolute numbers.
 
         Args:
@@ -135,8 +129,7 @@ class Procedure:
 
         return self.zero_dbhl * 10 ** (dbspl / 20) # calculate from dB to absolute numbers using the reference point self.zero_dbhl
     
-
-    def key_press(self, key):
+    def key_press(self, key:keyboard.Key):
         """Function for pynputto be called on key press
 
         Args:
@@ -148,11 +141,10 @@ class Procedure:
         elif self.test_mode and key == keyboard.Key.right:
             self.jump_to_end = True
         
-
     def play_tone(self):
-        """Set tone_heard to False, play beep, then wait max 4 s for keypress.
-        If key is pressed, set tone_heard to True.
-        Then wait for around 1 s to 2.5 s (randomized).
+        """Sets tone_heard to False, play beep, then waits 4 s (max) for keypress.
+        Sets tone_heard to True if key is pressed.
+        Then waits for around 1 s to 2.5 s (randomized).
         """
         self.tone_heard = False
         print(self.frequency, "Hz - playing tone at", self.level, "dBHL.")
@@ -162,19 +154,20 @@ class Procedure:
         current_wait_time = 0
         max_wait_time = 4000 # in ms 
         step_size = 50 # in ms
+        
         while current_wait_time < max_wait_time and not self.tone_heard: # wait for keypress
             time.sleep(step_size / 1000)
             current_wait_time += step_size
         listener.stop()
         self.ap.stop()
+        
         if not self.tone_heard:
             print("Tone not heard :(")
         else:
             sleep_time = random.uniform(1, 2.5) # random wait time between 1 and 2.5
             time.sleep(sleep_time) # wait before next tone is played. #TODO test times
-
     
-    def create_temp_csv(self, id="", **additional_data):
+    def create_temp_csv(self, id:str="", **additional_data)->str:
         """Creates a temporary CSV file with the relevant frequency bands as a header
         and NaN in the second and third line as starting value for each band.
         (second line: left ear, third line: right ear)
@@ -207,8 +200,7 @@ class Procedure:
 
             return temp_file.name
         
-        
-    def add_to_temp_csv(self, value, frequency, side, temp_filename):
+    def add_to_temp_csv(self, value:str, frequency:str, side:str, temp_filename:str):
         """Add a value in for a specific frequency to the temporary CSV file
 
         Args:
@@ -242,8 +234,7 @@ class Procedure:
         for row in rows[2:]:
             print(row['125'], row['250'])
 
-
-    def get_value_from_csv(self, frequency, temp_filename, side='l'):
+    def get_value_from_csv(self, frequency:str, temp_filename:str, side:str='l')->str:
         """Get the value at a specific frequency from the temporary CSV file.
 
         Args:
@@ -261,9 +252,7 @@ class Procedure:
                 freq_dict = next(dict_reader)    
             return freq_dict[frequency]
         
-
-
-    def create_final_csv_and_audiogram(self, temp_filename, binaural=False):
+    def create_final_csv_and_audiogram(self, temp_filename:str, binaural:bool=False):
         """Creates a permanent CSV file and audiogram from the temporary file.
 
         Args:
@@ -306,8 +295,7 @@ class Procedure:
         print(left_levels, right_levels)
         create_audiogram(freqs, left_levels, right_levels, binaural=binaural, name=audiogram_filename, freq_levels=self.freq_levels)
 
-
-    def parse_dbhl_value(self, value):
+    def parse_dbhl_value(self, value:str)->int:
         """Parses the dBHL value from the CSV file.
 
         Args:
@@ -323,23 +311,20 @@ class Procedure:
         except ValueError:
             return None
         
-
-    def get_progress(self):
-        """gets the current progress
+    def get_progress(self)->float:
+        """Gets the current progress.
 
         Returns:
             float: progress value between 0.0 and 1.0
         """
         return self.progress
     
-
-    def get_save_path(self):
-        """gets selected path from settings.csv file for saving files
+    def get_save_path(self)->str:
+        """Gets selected path from settings.csv file for saving files.
 
         Returns:
             str: save path
         """
-
         file_name = 'settings.csv'
         
         # Check if the CSV file exists
@@ -365,11 +350,10 @@ class Procedure:
         return save_path
 
 
-
 class Familiarization(Procedure):
 
-    def __init__(self, startlevel=40, signal_length=1, headphone_name="Sennheiser_HDA200", calibrate=True, id="", **additional_data):
-        """Familiarization process
+    def __init__(self, startlevel:int=40, signal_length:int=1, headphone_name:str="Sennheiser_HDA200",calibrate:bool=True, id:str="", **additional_data):
+        """Creates the Familiarization process.
 
         Args:
             startlevel (int, optional): starting level of procedure in dB HL. Defaults to 40.
@@ -383,18 +367,16 @@ class Familiarization(Procedure):
         self.fails = 0 # number of times familiarization failed
         self.tempfile = self.create_temp_csv(id=id, **additional_data) # create a temporary file to store level at frequencies
 
-
-    def get_temp_csv_filename(self):
-        """gets name of temp CSV file
+    def get_temp_csv_filename(self)->str:
+        """Gets name of temp CSV file.
 
         Returns:
             str: name of CSV file
         """
         return self.tempfile
 
-
-    def familiarize(self):
-        """Main function
+    def familiarize(self)->bool:
+        """Main function.
 
         Returns:
             bool: familiarization successful
@@ -450,10 +432,10 @@ class Familiarization(Procedure):
                 self.add_to_temp_csv(self.level, '1000', 'l', self.tempfile)
                 return True
             
-
+            
 class StandardProcedure(Procedure):
 
-    def __init__(self, temp_filename, signal_length=1, headphone_name="Sennheiser_HDA200", calibrate=True):
+    def __init__(self, temp_filename:str, signal_length:int=1, headphone_name:float="Sennheiser_HDA200", calibrate:bool=True):
         """Standard audiometer process (rising level).
 
         Args:
@@ -470,7 +452,7 @@ class StandardProcedure(Procedure):
         self.progress_step = 0.95 / 14
 
 
-    def standard_test(self, binaural=False):
+    def standard_test(self, binaural:bool=False)->bool:
         """Main function
 
         Returns:
@@ -512,10 +494,9 @@ class StandardProcedure(Procedure):
                 return True
 
         return False
-
         
-    def standard_test_one_ear(self):
-        """Audiometer for one ear
+    def standard_test_one_ear(self)->bool:
+        """Audiometer for one ear.
 
         Returns:
             bool: test successful
@@ -562,9 +543,8 @@ class StandardProcedure(Procedure):
         else:
             return False
 
-
-    def standard_test_one_freq(self, freq, retest=False):
-        """Test for one frequency
+    def standard_test_one_freq(self, freq:int, retest:bool=False)->bool:
+        """Test for one frequency.
 
         Args:
             freq (int): frequency at which hearing is tested
@@ -605,7 +585,6 @@ class StandardProcedure(Procedure):
                         self.add_to_temp_csv(str(self.level), str(self.frequency), self.side, self.temp_filename)
                         return True
 
-                # TODO Wenn Streuung mehr als 10 dB: Vermerk im Audiogramm
                 self.add_to_temp_csv(str(self.level), str(self.frequency), self.side, self.temp_filename)
                 if self.progress < 0.95 - self.progress_step:
                     self.progress += self.progress_step
@@ -620,10 +599,10 @@ class StandardProcedure(Procedure):
         print("Something went wrong, please try from the beginning again.")
         return False
 
-        
+
 class ScreeningProcedure(Procedure):
 
-    def __init__(self, temp_filename, signal_length=1, headphone_name="Sennheiser_HDA200", calibrate=True):
+    def __init__(self, temp_filename:str, signal_length:int=1, headphone_name:str="Sennheiser_HDA200", calibrate:bool=True):
         """Short screening process to check if subject can hear specific frequencies at certain levels.
 
         Args:
@@ -635,14 +614,11 @@ class ScreeningProcedure(Procedure):
         super().__init__(startlevel=0, signal_length=signal_length, headphone_name=headphone_name, calibrate=calibrate)
         self.temp_filename = temp_filename
         self.freq_order = [1000, 2000, 4000, 8000, 500, 250, 125]
-        
-        #TODO das als default, aber  variabel in der GUI?
         self.freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
-
         self.progress_step = 1 / 14
 
-    def screen_test(self, binaural=False):
-        """main functions
+    def screen_test(self, binaural:bool=False)->bool:
+        """Main function.
 
         Returns:
             bool: test successful
@@ -669,8 +645,9 @@ class ScreeningProcedure(Procedure):
 
         self.create_final_csv_and_audiogram(self.temp_filename, binaural)
 
-
     def screen_one_ear(self):
+        """Screening for one ear.
+        """
         success = []
 
         for f in self.freq_order:
@@ -678,9 +655,8 @@ class ScreeningProcedure(Procedure):
             s = self.screen_one_freq(f)
             success.append(s)
 
-
-    def screen_one_freq(self, freq):
-        """screening for one frequency
+    def screen_one_freq(self, freq:int)->bool: 
+        """Screening for one frequency.
 
         Args:
             freq (int): frequency to be tested
@@ -714,10 +690,9 @@ class ScreeningProcedure(Procedure):
         self.progress += self.progress_step
 
 
-
 class Calibration(Procedure):
 
-    def __init__(self, startlevel=60, signal_length=10, headphone_name="Sennheiser_HDA200", **additional_data):
+    def __init__(self, startlevel:int=60, signal_length:int=10, headphone_name:str="Sennheiser_HDA200", **additional_data):
         """Process for calibrating system.
 
         Args:
@@ -730,7 +705,6 @@ class Calibration(Procedure):
         self.tempfile = self.create_temp_csv(id="", **additional_data) # create a temporary file to store level at frequencies
         self.generator = self.get_next_freq()
         self.dbspl = self.level + self.retspl[self.frequency]
-
 
     def get_next_freq(self):
         """Generator that goes through all frequencies twice.
@@ -751,8 +725,7 @@ class Calibration(Procedure):
             yield frequency
             frequency *= 2
 
-
-    def play_one_freq(self):
+    def play_one_freq(self)->tuple:
         """Get the next frequency and play it.
 
         Returns:
@@ -774,7 +747,6 @@ class Calibration(Procedure):
             return False, self.frequency, self.dbspl
         else:
             return True, self.frequency, self.dbspl
-        
 
     def repeat_freq(self):
         """Repeats the last played frequency.
@@ -783,8 +755,7 @@ class Calibration(Procedure):
         print(f" Repeating side {self.side} at {self.frequency} Hz: The SPL value should be {self.dbspl} dB.")
         self.ap.play_beep(self.frequency, self.dbhl_to_volume(self.level), self.signal_length, self.side)
 
-
-    def set_calibration_value(self, measured_value):
+    def set_calibration_value(self, measured_value:float):
         """Rights the given calibration value into temporary CSV file
 
         Args:
@@ -793,14 +764,12 @@ class Calibration(Procedure):
         value = measured_value - self.dbspl
         self.add_to_temp_csv(str(value), str(self.frequency), self.side, self.tempfile)
 
-
     def finish_calibration(self):
         """Makes a permanent CSV file from the temporary file that overwrites calibration.csv.
 
         Args:
             temp_filename (str): name of temporary CSV file
         """
-        #TODO csv name
         self.ap.stop()
         # read temp file
         with open(self.tempfile, mode='r', newline='') as temp_file:
@@ -815,7 +784,6 @@ class Calibration(Procedure):
             dict_writer.writerows(rows)
         
         print("Datei gespeicher als " + filename)
-        
 
     def stop_playing(self):
         """Stops the audio player.

@@ -1,6 +1,5 @@
 ## Datei für lange Texte ##
 
-
 text_Familiarization = """
 Es folgt eine kurze Eingewöhnung, in der Sie sich mit dem Programm vertraut machen können.
 Diese Testungen gehen nicht in die späteren Ergebnisse ein und dienen lediglich dazu, zu über-

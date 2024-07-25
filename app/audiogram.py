@@ -2,40 +2,20 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
+from .config import *
 
 
-COLOR_LEFT = 'blue'
-COLOR_RIGHT = 'firebrick'
-COLOR_BINAURAL = 'black'
-LINE_WIDTH = 1.5
-MARKER_SIZE = 12
-NOT_HEARD_MARKER_SIZE = 25
-MARKER_EDGE_WIDTH = LINE_WIDTH
-SHIFT = 0.4
-MARKER_LEFT = 'x'
-MARKER_RIGHT = 'o'
-MARKER_BINAURAL = 'x'
-NOT_HEARD_MARKER = '|'
-NOT_HEARD_LEFT_MARKER = '3'
-NOT_HEARD_RIGHT_MARKER = '4'
-
-HEADER_SIZE = 18
-LABEL_FONT_SIZE = 12
-LEGEND_FONT_SIZE = 12
-TICK_FONT_SIZE = 10
-TEXT_FONT_SIZE = 9
-
-#TODO maybe add date as subtitle (subtitle is already implemented)
+# Maybe add option of date as subtitle. Subtitle is already implemented, but not used.
 
 freq_levels = {125: 20, 250: 20, 500: 20, 1000: 20, 2000: 20, 4000: 20, 8000: 20}
 
-def split_values(x_vals, values, target_values):
-    """Split values into "heard" and "not heard" arrays
+def split_values(x_vals:list, values:list, target_values:np.array)->tuple:
+    """Helper function. Splits values into "heard" and "not heard" arrays.
 
     Args:
         x_vals (list of int): indices of values
         values (list of float and str): list of hearing levels and 'NH' if a sound was not heard
-        target_values (_type_): target value for "not heard" array
+        target_values (np.array): target value for "not heard" array
 
     Returns:
         np.array: indices of heard array
@@ -56,14 +36,13 @@ def split_values(x_vals, values, target_values):
         not_heard_i, not_heard_level = not_heard
 
     return np.array(heard_i, dtype=int), np.array(heard_level, dtype=int), np.array(not_heard_i, dtype=int), np.array(not_heard_level, dtype=int)
-
   
-def filter_none(x_vals, values):
-    """Removes None or NaN values from list
+def filter_none(x_vals:list, values:list)->tuple:
+    """Helper function. Removes None or NaN values from list.
 
     Args:
         x_vals (list of int): indices of values
-        values (float): list of hearing levels
+        values (list of float): list of hearing levels
 
     Returns:
         np.array: indices of values
@@ -73,10 +52,10 @@ def filter_none(x_vals, values):
     if len(filtered) == 0:
         return np.array([], dtype=int), np.array([], dtype=int)
     i_vals, v_vals = filtered
+    
     return np.array(i_vals, dtype=int), np.array(v_vals, dtype=int)
 
-  
-def create_audiogram(freqs, left_values=None, right_values=None, binaural=False, name="audiogram.png", freq_levels=freq_levels, subtitle=None):
+def create_audiogram(freqs:list, left_values:list=None, right_values:list=None, binaural:bool=False, name:str="audiogram.png", freq_levels:dict=freq_levels, subtitle:str=None):
     """
     Creates an audiogram based on the given frequencies and hearing threshold values with custom x-axis labels.
 
@@ -155,11 +134,13 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
             nan_t = ax.text(0.05, -0.2, nan_text, transform=ax.transAxes, fontsize=TEXT_FONT_SIZE, ha='left', va='top', bbox=dict(facecolor='None', edgecolor='None'))
 
     ax.invert_yaxis()
+    
     if subtitle:
         title = fig.suptitle('Audiogramm', fontsize=HEADER_SIZE, y=1.02) 
         ax.set_title(subtitle, fontsize=LABEL_FONT_SIZE, pad=20)
     else:
         title = fig.suptitle('Audiogramm', fontsize=HEADER_SIZE) 
+    
     ax.set_xlabel('Frequenzen (Hz)', fontsize=LABEL_FONT_SIZE)
     ax.set_ylabel('Hörschwelle (dB HL)', fontsize=LABEL_FONT_SIZE)
     ax.set_ylim(120, -10)
@@ -169,15 +150,11 @@ def create_audiogram(freqs, left_values=None, right_values=None, binaural=False,
     ax.set_yticklabels(np.arange(0, 121, 10), fontsize=TICK_FONT_SIZE)
     ax.grid(True, which='both', linestyle='--', linewidth=0.5)
     lgd = ax.legend(loc='upper left', bbox_to_anchor=(1.15, 0.205), fontsize=LEGEND_FONT_SIZE, frameon=False, labelspacing=1)
+    
     if nan_t:
         fig.savefig(name, bbox_extra_artists=(title, lgd, t1, t2, t3, t4, t5, nan_t), bbox_inches='tight')
     else:
         fig.savefig(name, bbox_extra_artists=(title, lgd, t1, t2, t3, t4, t5), bbox_inches='tight')
+    
     plt.close(fig)
 
-# if __name__ == '__main__':
-#     freqs = [125, 250, 500, 1000, 2000, 4000, 8000]
-#     left_values = [5, 15, 15, 20, 20, 0, 0]
-#     right_values = [5, 15, 10, "NaN", 25, 15, 5]
-#     create_audiogram(freqs, left_values, right_values, binaural=False, name="audiogram.png")
-#     print("Audiogram created")

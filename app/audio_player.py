@@ -2,10 +2,11 @@ import numpy as np
 import sounddevice as sd
 import argparse
 
+
 class AudioPlayer:
 
     def __init__(self):
-        """An audio player that can play sine beeps at various frequencies, volumes and with various durations.
+        """Creates an audio player that can play sine beeps at various frequencies, volumes and with various durations.
         Automatically detects current samplerate of selected sound device.
         """
         self.fs = self.get_device_samplerate()
@@ -15,7 +16,7 @@ class AudioPlayer:
         self.stream = None
         self.is_playing = False
 
-    def generate_tone(self):
+    def generate_tone(self)->np.array:
         """Generates a sine tone with current audio player settings.
 
         Returns:
@@ -39,8 +40,7 @@ class AudioPlayer:
 
         return tone
     
-
-    def play_beep(self, frequency, volume, duration, channel='lr'):
+    def play_beep(self, frequency:int, volume:float, duration:int, channel:str='lr'):
         """Sets the frequency, volume and beep duration of the audio player and then plays a beep with those parameters.
 
         Args:
@@ -61,18 +61,17 @@ class AudioPlayer:
             sd.play(tone, self.fs)
 
     def stop(self):
-        """Stops the current playback
+        """Stops the current playback.
         """
         sd.stop()
 
-
-    def int_or_str(self, text):
-        """Helper function for argument parsing."""
+    def int_or_str(self, text: str)->int:
+        """Helper function for argument parsing.
+        """
         try:
             return int(text)
         except ValueError:
             return text
-
 
     def get_device_samplerate(self):
         """Gets current samplerate from the selected audio output device.
