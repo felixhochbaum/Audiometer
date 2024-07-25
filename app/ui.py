@@ -11,6 +11,7 @@ import random
 from .instructions import *
 from .config import *
 
+
 class App(tb.Window):
 
     def __init__(self, familiarization_func:callable, program_funcs:dict, calibration_funcs:list, progress_func:callable):

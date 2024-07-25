@@ -42,5 +42,3 @@ ______________________________________________________________________
 #### 5. Calibration Equipment
 - **Head and Torso Simulator or acoustic coupler**: An artificial head or an acoustic coupler for measuring and calibrating the output levels
 
-
-

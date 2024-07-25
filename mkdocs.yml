@@ -20,8 +20,8 @@ plugins:
         python:
           options:
             docstring_style: google
-            separate_signature: true  # Signature separate from the description
-            show_root_full_path: true  # Show the full module path
+            separate_signature: true
+            show_root_full_path: true
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -31,20 +31,20 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
-  - toc:  # Table of contents extension
-      permalink: true  # Add permalinks to headers
-  - admonition  # For block quotes and notices
+  - toc:
+      permalink: true
+  - admonition 
 
 nav:
-  - Home: index.md
-  - User Guide:
-      - Introduction: user_guide/intro.md
+  - Start: index.md
+  - Benutzerhandbuch (User Guide):
+      - Einleitung (Introduction): user_guide/intro.md
       - Installation: user_guide/installation.md
-      - Hardware Requirements: user_guide/hardware.md
+      - Hardware: user_guide/hardware.md
   - Reference Manual:
       - audio_player: api/audio_player.md
       - audiogram: api/audiogram.md
       - main: api/main.md
       - model: api/model.md
       - ui: api/ui.md
-  - About: about.md
+  - Über Audiometer (About): about.md
