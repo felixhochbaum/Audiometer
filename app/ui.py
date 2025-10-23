@@ -719,13 +719,22 @@ class CalibrationPage(ttk.Frame):
         self.level_expected_label = ttk.Label(self, textvariable=self.level_expected_var, font=(FONT_FAMILY, SUBHEADER_SIZE))
         self.level_expected_label.pack(padx=10, pady=10)
         
+        
+        
+        
         self.level_measured_label = ttk.Label(self, text="Gemessener Schalldruckpegel in dB:", font=(FONT_FAMILY, SUBHEADER_SIZE))
-        self.level_measured_label.pack(padx=10, pady=10)
+        #self.level_measured_label.pack(padx=10, pady=10)
         self.level_measured_var = tk.StringVar()
         self.level_measured_entry = ttk.Entry(self, width=button_width-10, 
                                               font=(FONT_FAMILY, SUBHEADER_SIZE), state=tk.DISABLED,
                                               textvariable=self.level_measured_var)
-        self.level_measured_entry.pack(padx=10, pady=10)
+        #self.level_measured_entry.pack(padx=10, pady=10)
+        self.level_measured_entry.pack(padx=10, pady=10, before=self.start_button)
+        self.level_measured_label.pack(padx=10, pady=10, before=self.start_button)
+
+
+
+
 
         for widget in self.winfo_children():
             widget.pack_configure(anchor='center')
